@@ -18,16 +18,29 @@ function GTurtle.Base:new(options)
     field(options, "name", "string")
     field(options, "fuelWhiteList", "table", "nil")
     field(options, "minimumFuel", "number", "nil")
+    field(options, "term", "table", "nil")
     options = options or {}
     self.name = options.name
     self.fuelWhiteList = options.fuelWhiteList
     self.minimumFuel = options.minimumFuel or 100
     self.type = GTurtle.TYPES.BASE
+    self.term = options.term or term
+    self.logTerm = options.logTerm or term
 
-    self.nav = GNAV.GridNav(vector.new(0, 0, 0))
+    self.term:Clear()
+    self.logTerm:Clear()
+
+    self.nav = GNAV.GridNav(self, vector.new(0, 0, 0))
 
     os.setComputerLabel(self.name)
-    print("Starting: " .. self.name)
+    self:Log("Initiating Turtle: " .. self.name)
+end
+
+function GTurtle.Base:Log(text)
+    self.logTerm.write(text)
+    local _, y = self.logTerm:getCursorPos()
+    self.logTerm.setCursorPos(1, y+1)
+
 end
 
 function GTurtle.Base:IsFuel(i)
@@ -46,7 +59,7 @@ end
 
 function GTurtle.Base:Refuel()
     local fuel = turtle.getFuelLevel()
-    print("Fuel Check: " .. fuel .. "/" .. self.minimumFuel)
+    self:Log("Fuel Check: " .. fuel .. "/" .. self.minimumFuel)
     if fuel >= self.minimumFuel then
         return
     end
@@ -69,7 +82,7 @@ function GTurtle.Base:Refuel()
         end
     end
 
-    print("No Fuel Available")
+    self:Log("No Fuel Available")
 end
 
 function GTurtle.Base:Move(dir)
@@ -88,7 +101,7 @@ function GTurtle.Base:Move(dir)
     if moved then
         self.nav:Move(dir)
     else
-        print("Movement Blocked: " .. tostring(err))
+        self:Log("Movement Blocked: " .. tostring(err))
     end
 end
 
@@ -117,7 +130,7 @@ function GTurtle.Base:Turn(dir)
     if turned then
         self.nav:Turn(dir)
     else
-        print("Turning Blocked: " .. tostring(err))
+        self:Log("Turning Blocked: " .. tostring(err))
     end
 end
 

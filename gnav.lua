@@ -5,8 +5,6 @@ local expect, field = expect.expect, expect.field
 
 local GNAV = {}
 
-GNAV.PathNode = Object:extend()
-
 -- Possible Look Directions (Relative)
 GNAV.HEAD = {
     N = "N", -- North
@@ -38,23 +36,46 @@ GNAV.M_VEC = {
     [GNAV.MOVE.D] = vector.new(0, 0, 1),
 }
 
+GNAV.PathNode = Object:extend()
+
 function GNAV.PathNode:new(pos, lNode)
     self.pos = pos
     self.lNode = lNode
     self.nNode = nil
 end
 
+GNAV.GridNode = Object:extend()
+
+function GNAV.GridNode:new(pos)
+    self.pos = pos
+    self.blockType = nil
+    self.blockName = nil
+end
+
+function GNAV.GridNode:IsEmpty()
+    return self.blockName == nil
+end
+
+GNAV.GridMap = Object:extend()
+
+function GNAV.GridMap:new(initPos)
+    -- 3D Array
+    self.grid = {}
+end
+
 GNAV.GridNav = Object:extend()
 
-function GNAV.GridNav:new(initPos)
+function GNAV.GridNav:new(gTurtle, initPos)
+    self.gTurtle = gTurtle
     self.head = GNAV.HEAD.N
     self.initPos = initPos
     self.pos = initPos
     self.path = {}
-    self:UpdatePath()
+    self.gridMap = GNAV.GridMap()
+    self:UpdatePosition()
 end
 
-function GNAV.GridNav:UpdatePath()
+function GNAV.GridNav:UpdatePosition()
     local lastNode = self.path[#self.path]
 
     local newNode = GNAV.PathNode(self.pos, lastNode)
@@ -96,15 +117,15 @@ function GNAV.GridNav:Move(dir)
         relVec = relVec * (-1)
     end
     self.pos = self.pos + relVec
-    self:UpdatePath()
+    self:UpdatePosition()
 end
 
 function GNAV.GridNav:GetDistanceFromStart()
     return VU:Distance(self.pos, self.initPos)
 end
 
-function GNAV.GridNav:PrintPos()
-    print(string.format("Pos: {%s} Head: %s", tostring(self.pos), self.head))
+function GNAV.GridNav:LogPos()
+    self.gTurtle:Log(string.format("Pos: {%s} Head: %s", tostring(self.pos), self.head))
 end
 
 return GNAV
