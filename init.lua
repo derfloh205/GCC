@@ -1,6 +1,6 @@
 local Object = require("GTurtle/classics")
 local TU = require("GTurtle/table_utils")
-local GNAV = require("GTurtle/nav")
+local GNAV = require("GTurtle/gnav")
 local expect = require("cc.expect")
 local expect, field = expect.expect, expect.field
 
