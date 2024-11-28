@@ -168,8 +168,12 @@ function GNAV.GridMap:GetGridString(z)
     local maxX = boundaries.x.max
     local maxY = boundaries.y.max
     local gridString = ""
-    for x = minX, maxX do
-        for y = maxY, minY, -1 do
+    for _ = minX, maxX do
+        gridString = gridString .. "_"
+    end
+    gridString = "\n"
+    for y = maxY, minY, -1 do
+        for x = minX, maxX do
             local gridNode = self:GetGridNode(vector.new(x, y, z))
             local c = " X "
             if gridNode:IsEmpty() then
@@ -181,9 +185,18 @@ function GNAV.GridMap:GetGridString(z)
             if gridNode:IsTurtlePos() then
                 c = "[T]"
             end
+            if x == minX then
+                c = "|" .. c
+            end
+            if x == maxX then
+                c = c .. "|"
+            end
             gridString = gridString .. c
         end
         gridString = gridString .. "\n"
+    end
+    for _ = minX, maxX do
+        gridString = gridString .. "_"
     end
     return gridString
 end
