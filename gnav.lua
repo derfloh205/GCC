@@ -44,6 +44,7 @@ GNAV.M_VEC = {
 }
 
 ---@class GNAV.GridNode.Options
+---@field gridMap GNAV.GridMap
 ---@field pos Vector
 ---@field blockData table?
 
@@ -54,6 +55,7 @@ GNAV.GridNode = Object:extend()
 ---@param options GNAV.GridNode.Options
 function GNAV.GridNode:new(options)
     options = options or {}
+    self.gridMap = options.gridMap
     self.pos = options.pos
     self.blockData = options.blockData
     -- wether the position ever was scannend
@@ -66,6 +68,11 @@ end
 
 function GNAV.GridNode:IsUnknown()
     return self.unknown
+end
+
+---@return boolean isTurtlePos
+function GNAV.GridNode:IsTurtlePos()
+    return self.pos == self.gridMap.gridNav.pos
 end
 
 ---@class GNAV.GridMap.Options
@@ -125,6 +132,7 @@ function GNAV.GridMap:GetGridNode(pos)
         gridNode =
             GNAV.GridNode(
             {
+                gridMap = self,
                 pos = pos
             }
         )
@@ -160,12 +168,15 @@ function GNAV.GridMap:GetGridString(z)
     for x = minX, maxX do
         for y = minY, maxY do
             local gridNode = self:GetGridNode(vector.new(x, y, z))
-            local c = "O"
+            local c = "[X]"
             if gridNode:IsEmpty() then
-                c = " "
+                c = "[ ]"
             end
             if gridNode:IsUnknown() then
-                c = "?"
+                c = "[?]"
+            end
+            if gridNode:IsTurtlePos() then
+                c = "[T]"
             end
             gridString = gridString .. c
         end
