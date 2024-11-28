@@ -98,6 +98,7 @@ function GNAV.GridMap:new(options)
     self.grid = {}
     -- initialize with currentPos (which is seen as empty)
     self:UpdateGridNode(self.gridNav.pos, nil)
+    self:UpdateSurroundings()
 end
 
 ---@param pos Vector
