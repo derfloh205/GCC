@@ -266,7 +266,11 @@ end
 ---@param dir GNAV.MOVE
 function GNAV.GridNav:GetHeadedPosition(pos, head, dir)
     local relVec = GNAV.M_VEC[head]
-    if dir == GNAV.MOVE.B or dir == GNAV.MOVE.D then
+    -- possible movement directions that cause coordination subtraction
+    if
+        dir == GNAV.MOVE.D or (head == GNAV.HEAD.W and dir == GNAV.MOVE.F) or
+            (head == GNAV.HEAD.E and dir == GNAV.MOVE.B)
+     then
         relVec = relVec * (-1)
     end
     return pos + relVec
