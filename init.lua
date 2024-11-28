@@ -31,14 +31,15 @@ function GTurtle.Base:new(options)
     self.minimumFuel = options.minimumFuel or 100
     ---@type GTurtle.TYPES
     self.type = GTurtle.TYPES.BASE
-    self.term = options.term or term.current()
+    self.term = options.term or term
     self.log = options.log or false
     if self.log then
         self.logTerm = options.logTerm or term
         self.logTerm:Clear()
     end
-
-    term:redirect(self.term)
+    if term ~= self.term then
+        term:redirect(self.term)
+    end
     self.term:Clear()
 
     self.nav = GNav.GridNav({gTurtle = self, initPos = vector.new(0, 0, 0)})
