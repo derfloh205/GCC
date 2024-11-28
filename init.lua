@@ -1,8 +1,6 @@
 local Object = require("GTurtle/classics")
-local TU = require("GTurtle/table_utils")
-local GNAV = require("GTurtle/gnav")
-local expect = require("cc.expect")
-local expect, field = expect.expect, expect.field
+local TUtils = require("GTurtle/tutils")
+local GNav = require("GTurtle/gnav")
 
 ---@class GTurtle
 local GTurtle = {}
@@ -13,19 +11,25 @@ GTurtle.TYPES = {
     RUBBER = "RUBBER"
 }
 
+---@class GTurtle.Base.Options
+---@field name string
+---@field fuelWhiteList? string[]
+---@field minimumFuel? number
+---@field term? table
+---@field logTerm? table
+---@field log? boolean
+
 ---@class GTurtle.Base : Object
+---@overload fun(options: GTurtle.Base.Options) : GTurtle.Base
 GTurtle.Base = Object:extend()
 
+---@param options GTurtle.Base.Options
 function GTurtle.Base:new(options)
-    expect(1, options, "table")
-    field(options, "name", "string")
-    field(options, "fuelWhiteList", "table", "nil")
-    field(options, "minimumFuel", "number", "nil")
-    field(options, "term", "table", "nil")
     options = options or {}
     self.name = options.name
     self.fuelWhiteList = options.fuelWhiteList
     self.minimumFuel = options.minimumFuel or 100
+    ---@type GTurtle.TYPES
     self.type = GTurtle.TYPES.BASE
     self.term = options.term or term
     self.log = options.log or false
@@ -37,12 +41,13 @@ function GTurtle.Base:new(options)
     term:redirect(self.term)
     self.term:Clear()
 
-    self.nav = GNAV.GridNav(self, vector.new(0, 0, 0))
+    self.nav = GNav.GridNav({gTurtle = self, initPos = vector.new(0, 0, 0)})
 
     os.setComputerLabel(self.name)
     self:Log("Initiating Turtle: " .. self.name)
 end
 
+---@param text string
 function GTurtle.Base:Log(text)
     if not self.log then
         return
@@ -52,6 +57,8 @@ function GTurtle.Base:Log(text)
     self.logTerm.setCursorPos(1, y + 1)
 end
 
+---@param i number slotIndex
+---@return boolean isFuel
 function GTurtle.Base:IsFuel(i)
     local isFuel = turtle.refuel(0)
 
@@ -69,17 +76,17 @@ function GTurtle.Base:IsFuel(i)
         return true
     end
 
-    return TU:tContains(self.fuelWhiteList, item.name)
+    return TUtils:tContains(self.fuelWhiteList, item.name)
 end
 
+---@return boolean refueled
 function GTurtle.Base:Refuel()
     local fuel = turtle.getFuelLevel()
     self:Log("Fuel Check: " .. fuel .. "/" .. self.minimumFuel)
     if fuel >= self.minimumFuel then
-        return
+        return true
     end
 
-    local selectionID = turtle.getSelectedSlot()
     -- search for fuel
     for i = 1, 16 do
         local isFuel = self:IsFuel(i)
@@ -88,7 +95,7 @@ function GTurtle.Base:Refuel()
             while true do
                 local ok = turtle.refuel(1)
                 if self.minimumFuel <= turtle.getFuelLevel() then
-                    return
+                    return true
                 end
                 if not ok then
                     break
@@ -98,18 +105,21 @@ function GTurtle.Base:Refuel()
     end
 
     self:Log("No Fuel Available")
+    return false
 end
 
+---@param dir GNAV.MOVE
+---@return boolean success
+---@return stringlib? errormsg
 function GTurtle.Base:Move(dir)
-    expect(1, dir, "string")
     local moved, err
-    if dir == GNAV.MOVE.F then
+    if dir == GNav.MOVE.F then
         moved, err = turtle.forward()
-    elseif dir == GNAV.MOVE.B then
+    elseif dir == GNav.MOVE.B then
         moved, err = turtle.back()
-    elseif dir == GNAV.MOVE.U then
+    elseif dir == GNav.MOVE.U then
         moved, err = turtle.up()
-    elseif dir == GNAV.MOVE.D then
+    elseif dir == GNav.MOVE.D then
         moved, err = turtle.down()
     end
 
@@ -122,6 +132,7 @@ function GTurtle.Base:Move(dir)
     end
 end
 
+---@param dir GNAV.MOVE
 function GTurtle.Base:MoveUntilBlocked(dir)
     local blocked
     repeat
@@ -129,13 +140,12 @@ function GTurtle.Base:MoveUntilBlocked(dir)
     until blocked
 end
 
+---@param path string e.g. "FBLRUD"
 function GTurtle.Base:ExecuteMovement(path)
-    expect(1, path, "string")
-
     path:gsub(
         ".",
         function(dir)
-            if dir == GNAV.TURN.L or dir == GNAV.TURN.R then
+            if dir == GNav.TURN.L or dir == GNav.TURN.R then
                 self:Turn(dir)
             else
                 self:Move(dir)
@@ -144,32 +154,36 @@ function GTurtle.Base:ExecuteMovement(path)
     )
 end
 
-function GTurtle.Base:Turn(dir)
-    expect(1, dir, "string")
-
+---@param turn GNAV.TURN
+---@return boolean success
+---@return string? errormsg
+function GTurtle.Base:Turn(turn)
     local turned, err
-    if dir == GNAV.TURN.L then
+    if turn == GNav.TURN.L then
         turned, err = turtle.turnLeft()
-    elseif dir == GNAV.TURN.R then
+    elseif turn == GNav.TURN.R then
         turned, err = turtle.turnRight()
     end
 
     if turned then
-        self.nav:OnTurn(dir)
+        self.nav:OnTurn(turn)
+        return true
     else
         self:Log("Turning Blocked: " .. tostring(err))
+        return false, err
     end
 end
 
+---@return table<GNAV.MOVE, table?>
 function GTurtle.Base:ScanBlocks()
     local isBlock, data
     local blockData = {}
     isBlock, data = turtle.inspect()
-    blockData[GNAV.MOVE.F] = isBlock and data
+    blockData[GNav.MOVE.F] = isBlock and data
     isBlock, data = turtle.inspectUp()
-    blockData[GNAV.MOVE.U] = isBlock and data
+    blockData[GNav.MOVE.U] = isBlock and data
     isBlock, data = turtle.inspectDown()
-    blockData[GNAV.MOVE.D] = isBlock and data
+    blockData[GNav.MOVE.D] = isBlock and data
     return blockData
 end
 
@@ -177,13 +191,19 @@ function GTurtle.Base:VisualizeGrid()
     -- visualize on redirected terminal (or current if there is none)
     term.clear()
     term.setCursorPos(1, 1)
-    print(self.nav.gridMap:GetGridString())
+    print(self.nav.gridMap:GetGridString(self.nav.pos.z))
 end
 
+---@class GTurtle.Rubber.Options : GTurtle.Base.Options
+
 ---@class GTurtle.Rubber : GTurtle.Base
+---@overload fun(options: GTurtle.Rubber.Options) : GTurtle.Rubber
 GTurtle.Rubber = GTurtle.Base:extend()
 
+---@param options GTurtle.Rubber.Options
 function GTurtle.Rubber:new(options)
+    options = options or {}
+    ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
     self.type = GTurtle.TYPES.RUBBER
 end
