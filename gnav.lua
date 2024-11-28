@@ -150,7 +150,7 @@ function GNAV.GridMap:UpdateSurroundings()
     local nav = self.gridNav
     local scanData = self.gridNav.gTurtle:ScanBlocks()
     self.gridNav.gTurtle:Log("Scanned Surroundings:")
-    self.gridNav.gTurtle:Log(pretty.render(pretty.pretty(scanData)))
+    pretty.print(pretty.pretty(scanData))
 
     for dir, data in pairs(scanData) do
         local pos = self.gridNav:GetHeadedPosition(nav.pos, nav.head, dir)
