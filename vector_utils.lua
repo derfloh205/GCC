@@ -7,5 +7,6 @@ function VU:Distance(v1, v2)
         (v1.z - v2.z)^2
     )
 end
+-- GIT TEST
 
 return VU
