@@ -168,10 +168,7 @@ function GNAV.GridMap:GetGridString(z)
     local maxX = boundaries.x.max
     local maxY = boundaries.y.max
     local gridString = ""
-    for _ = minX, maxX do
-        gridString = gridString .. "___"
-    end
-    gridString = "\n"
+
     for y = maxY, minY, -1 do
         for x = minX, maxX do
             local gridNode = self:GetGridNode(vector.new(x, y, z))
@@ -194,9 +191,6 @@ function GNAV.GridMap:GetGridString(z)
             gridString = gridString .. c
         end
         gridString = gridString .. "\n"
-    end
-    for _ = minX, maxX do
-        gridString = gridString .. "___"
     end
     return gridString
 end
