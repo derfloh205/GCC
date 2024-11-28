@@ -4,7 +4,6 @@ local files = {
     "classics", "gitpull", "gnav", "init", "pull", "table_utils", "vector_utils"
 }
 
-
 for _, f in ipairs(files) do
     local fileName = f .. ".lua"
     local url = baseUrl .. fileName
