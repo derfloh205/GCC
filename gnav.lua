@@ -3,22 +3,26 @@ local VU = require("GTurtle/vector_utils")
 local expect = require("cc.expect")
 local expect, field = expect.expect, expect.field
 
+---@class GNAV
 local GNAV = {}
 
--- Possible Look Directions (Relative)
+--- Possible Look Directions (Relative)
+---@enum GNAV.HEAD
 GNAV.HEAD = {
     N = "N", -- North
     S = "S", -- South
     W = "W", -- West
     E = "E", -- East
 }
--- Possible Turn Directions
+--- Possible Turn Directions
+---@enum GNAV.TURN
 GNAV.TURN = {
     L = "L", -- Left
     R = "R", -- Right
 }
 
--- Possible Movement Directions
+--- Possible Movement Directions
+---@enum GNAV.MOVE
 GNAV.MOVE = {
     F = "F", -- Forward
     B = "B", -- Back
@@ -36,6 +40,7 @@ GNAV.M_VEC = {
     [GNAV.MOVE.D] = vector.new(0, 0, 1),
 }
 
+---@class GNAV.GridNode : Object
 GNAV.GridNode = Object:extend()
 
 function GNAV.GridNode:new(pos, blockData)
@@ -53,6 +58,7 @@ function GNAV.GridNode:IsUnknown()
     return self.unknown
 end
 
+---@class GNAV.GridMap : Object
 GNAV.GridMap = Object:extend()
 
 function GNAV.GridMap:new(gridNav)
@@ -135,6 +141,7 @@ function GNAV.GridMap:GetGridString(z)
     return gridString
 end
 
+---@class GNAV.PathNode : Object
 GNAV.PathNode = Object:extend()
 
 function GNAV.PathNode:new(pos, lNode)
@@ -143,6 +150,7 @@ function GNAV.PathNode:new(pos, lNode)
     self.nNode = nil
 end
 
+---@class GNAV.GridNav : Object
 GNAV.GridNav = Object:extend()
 
 function GNAV.GridNav:new(gTurtle, initPos)

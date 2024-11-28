@@ -4,13 +4,16 @@ local GNAV = require("GTurtle/gnav")
 local expect = require("cc.expect")
 local expect, field = expect.expect, expect.field
 
+---@class GTurtle
 local GTurtle = {}
 
+---@enum GTurtle.TYPES
 GTurtle.TYPES = {
     BASE = "BASE",
     RUBBER = "RUBBER"
 }
 
+---@class GTurtle.Base : Object
 GTurtle.Base = Object:extend()
 
 function GTurtle.Base:new(options)
@@ -41,23 +44,30 @@ function GTurtle.Base:new(options)
 end
 
 function GTurtle.Base:Log(text)
-    if not self.log then return end
+    if not self.log then
+        return
+    end
     self.logTerm.write(text)
     local _, y = self.logTerm:getCursorPos()
-    self.logTerm.setCursorPos(1, y+1)
-
+    self.logTerm.setCursorPos(1, y + 1)
 end
 
 function GTurtle.Base:IsFuel(i)
     local isFuel = turtle.refuel(0)
 
-    if not isFuel then return false end
+    if not isFuel then
+        return false
+    end
 
     local item = turtle.getItemDetail(i)
 
-    if not item then return false end
+    if not item then
+        return false
+    end
 
-    if not self.fuelWhiteList then return true end
+    if not self.fuelWhiteList then
+        return true
+    end
 
     return TU:tContains(self.fuelWhiteList, item.name)
 end
@@ -122,13 +132,16 @@ end
 function GTurtle.Base:ExecuteMovement(path)
     expect(1, path, "string")
 
-    path:gsub(".", function(dir) 
-        if dir == GNAV.TURN.L or dir == GNAV.TURN.R then
-            self:Turn(dir)
-        else
-            self:Move(dir)
+    path:gsub(
+        ".",
+        function(dir)
+            if dir == GNAV.TURN.L or dir == GNAV.TURN.R then
+                self:Turn(dir)
+            else
+                self:Move(dir)
+            end
         end
-    end)
+    )
 end
 
 function GTurtle.Base:Turn(dir)
@@ -151,12 +164,12 @@ end
 function GTurtle.Base:ScanBlocks()
     local isBlock, data
     local blockData = {}
-        isBlock, data = turtle.inspect()
-        blockData[GNAV.MOVE.F] = isBlock and data
-        isBlock , data = turtle.inspectUp()
-        blockData[GNAV.MOVE.U] = isBlock and data
-        isBlock , data = turtle.inspectDown()
-        blockData[GNAV.MOVE.D] = isBlock and data
+    isBlock, data = turtle.inspect()
+    blockData[GNAV.MOVE.F] = isBlock and data
+    isBlock, data = turtle.inspectUp()
+    blockData[GNAV.MOVE.U] = isBlock and data
+    isBlock, data = turtle.inspectDown()
+    blockData[GNAV.MOVE.D] = isBlock and data
     return blockData
 end
 
@@ -167,6 +180,7 @@ function GTurtle.Base:VisualizeGrid()
     print(self.nav.gridMap:GetGridString())
 end
 
+---@class GTurtle.Rubber : GTurtle.Base
 GTurtle.Rubber = GTurtle.Base:extend()
 
 function GTurtle.Rubber:new(options)

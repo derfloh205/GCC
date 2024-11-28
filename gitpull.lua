@@ -11,9 +11,6 @@ for _, f in ipairs(files) do
     if response then
         print("Pulling " .. fileName .. " ..")
         local filePath = fs.combine(baseDir, fileName)
-        -- if fs.exists(filePath) then
-        --     fs.delete(filePath)
-        -- end
         local fileContent = response.readAll()
         local file = fs.open(filePath, "w")
         file.write(fileContent)
