@@ -25,10 +25,14 @@ function GTurtle.Base:new(options)
     self.minimumFuel = options.minimumFuel or 100
     self.type = GTurtle.TYPES.BASE
     self.term = options.term or term
-    self.logTerm = options.logTerm or term
+    self.log = options.log or false
+    if self.log then
+        self.logTerm = options.logTerm or term
+        self.logTerm:Clear()
+    end
 
+    term:redirect(self.term)
     self.term:Clear()
-    self.logTerm:Clear()
 
     self.nav = GNAV.GridNav(self, vector.new(0, 0, 0))
 
@@ -37,6 +41,7 @@ function GTurtle.Base:new(options)
 end
 
 function GTurtle.Base:Log(text)
+    if not self.log then return end
     self.logTerm.write(text)
     local _, y = self.logTerm:getCursorPos()
     self.logTerm.setCursorPos(1, y+1)
@@ -99,10 +104,19 @@ function GTurtle.Base:Move(dir)
     end
 
     if moved then
-        self.nav:Move(dir)
+        self.nav:OnMove(dir)
+        return true
     else
         self:Log("Movement Blocked: " .. tostring(err))
+        return false, err
     end
+end
+
+function GTurtle.Base:MoveUntilBlocked(dir)
+    local blocked
+    repeat
+        blocked = self:Move(dir)
+    until blocked
 end
 
 function GTurtle.Base:ExecuteMovement(path)
@@ -128,10 +142,29 @@ function GTurtle.Base:Turn(dir)
     end
 
     if turned then
-        self.nav:Turn(dir)
+        self.nav:OnTurn(dir)
     else
         self:Log("Turning Blocked: " .. tostring(err))
     end
+end
+
+function GTurtle.Base:ScanBlocks()
+    local isBlock, data
+    local blockData = {}
+        isBlock, data = turtle.inspect()
+        blockData[GNAV.MOVE.F] = isBlock and data
+        isBlock , data = turtle.inspectUp()
+        blockData[GNAV.MOVE.U] = isBlock and data
+        isBlock , data = turtle.inspectDown()
+        blockData[GNAV.MOVE.D] = isBlock and data
+    return blockData
+end
+
+function GTurtle.Base:VisualizeGrid()
+    -- visualize on redirected terminal (or current if there is none)
+    term.clear()
+    term.setCursorPos(1, 1)
+    print(self.nav.gridMap:GetGridString())
 end
 
 GTurtle.Rubber = GTurtle.Base:extend()
