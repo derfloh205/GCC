@@ -270,7 +270,9 @@ function GNAV.GridNav:GetHeadedPosition(pos, head, dir)
     -- possible movement directions that cause coordination subtraction
     if
         dir == GNAV.MOVE.D or (head == GNAV.HEAD.W and dir == GNAV.MOVE.F) or
-            (head == GNAV.HEAD.E and dir == GNAV.MOVE.B)
+            (head == GNAV.HEAD.E and dir == GNAV.MOVE.B) or
+            (head == GNAV.HEAD.N and dir == GNAV.MOVE.B) or
+            (head == GNAV.HEAD.S and dir == GNAV.MOVE.F)
      then
         relVec = relVec * (-1)
     end
