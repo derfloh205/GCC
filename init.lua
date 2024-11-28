@@ -31,7 +31,7 @@ function GTurtle.Base:new(options)
     self.minimumFuel = options.minimumFuel or 100
     ---@type GTurtle.TYPES
     self.type = GTurtle.TYPES.BASE
-    self.term = options.term or term
+    self.term = options.term or term.current()
     self.log = options.log or false
     if self.log then
         self.logTerm = options.logTerm or term
