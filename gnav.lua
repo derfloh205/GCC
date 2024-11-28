@@ -1,5 +1,6 @@
 local Object = require("GTurtle/classics")
 local VUtils = require("GTurtle/vutils")
+local pretty = require("cc.pretty")
 
 ---@class Vector
 ---@field x number
@@ -148,6 +149,8 @@ end
 function GNAV.GridMap:UpdateSurroundings()
     local nav = self.gridNav
     local scanData = self.gridNav.gTurtle:ScanBlocks()
+    self.gridNav.gTurtle:Log("Scanned Surroundings:")
+    self.gridNav.gTurtle:Log(pretty.pretty(scanData))
 
     for dir, data in pairs(scanData) do
         local pos = self.gridNav:GetHeadedPosition(nav.pos, nav.head, dir)
