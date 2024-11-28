@@ -35,12 +35,12 @@ function GTurtle.Base:new(options)
     self.log = options.log or false
     if self.log then
         self.logTerm = options.logTerm or term
-        self.logTerm:Clear()
+        self.logTerm:clear()
     end
     if term ~= self.term then
         term:redirect(self.term)
     end
-    self.term:Clear()
+    self.term:clear()
 
     self.nav = GNav.GridNav({gTurtle = self, initPos = vector.new(0, 0, 0)})
 
