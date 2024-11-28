@@ -250,6 +250,7 @@ end
 ---@param dir GNAV.MOVE
 function GNAV.GridNav:OnMove(dir)
     self.pos = self:GetHeadedPosition(self.pos, self.head, dir)
+    self.gTurtle:Log("Moving to Pos: " .. tostring(self.pos))
     self:UpdatePath()
     self.gridMap:UpdateSurroundings()
 end
