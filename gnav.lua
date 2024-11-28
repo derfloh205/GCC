@@ -175,11 +175,9 @@ function GNAV.GridMap:GetGridString(z)
             local c = " X "
             if gridNode:IsEmpty() then
                 c = "   "
-            end
-            if gridNode:IsUnknown() then
+            elseif gridNode:IsUnknown() then
                 c = " ? "
-            end
-            if gridNode:IsTurtlePos() then
+            elseif gridNode:IsTurtlePos() then
                 c = "[T]"
             end
             if x == minX then

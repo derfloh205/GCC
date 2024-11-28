@@ -179,15 +179,14 @@ end
 
 ---@return table<GNAV.MOVE, table?>
 function GTurtle.Base:ScanBlocks()
-    local isBlock, data
-    local blockData = {}
-    isBlock, data = turtle.inspect()
-    blockData[GNav.MOVE.F] = isBlock and data
-    isBlock, data = turtle.inspectUp()
-    blockData[GNav.MOVE.U] = isBlock and data
-    isBlock, data = turtle.inspectDown()
-    blockData[GNav.MOVE.D] = isBlock and data
-    return blockData
+    local scanData = {}
+    local isF, dataF = turtle.inspect()
+    local isU, dataU = turtle.inspectUp()
+    local isD, dataD = turtle.inspectDown()
+    scanData[GNav.MOVE.F] = (isF and dataF) or nil
+    scanData[GNav.MOVE.U] = (isU and dataU) or nil
+    scanData[GNav.MOVE.D] = (isD and dataD) or nil
+    return scanData
 end
 
 function GTurtle.Base:VisualizeGrid()
