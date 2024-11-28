@@ -9,6 +9,9 @@ for _, f in ipairs(files) do
     local response = http.get(url)
     if response then
         print("Pulling " .. fileName .. " ..")
+        if fs.exists(fileName) then
+            fs.delete(fileName)
+        end
         local fileContent = response.readAll()
         local file = fs.open(fileName, "w")
         file.write(fileContent)
