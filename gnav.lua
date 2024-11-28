@@ -62,10 +62,12 @@ function GNAV.GridNode:new(options)
     self.unknown = false
 end
 
+---@return boolean isEmpty
 function GNAV.GridNode:IsEmpty()
     return self.blockData == nil
 end
 
+---@return boolean isUnknown
 function GNAV.GridNode:IsUnknown()
     return self.unknown
 end
@@ -168,12 +170,12 @@ function GNAV.GridMap:GetGridString(z)
     for x = minX, maxX do
         for y = minY, maxY do
             local gridNode = self:GetGridNode(vector.new(x, y, z))
-            local c = "[X]"
+            local c = " X "
             if gridNode:IsEmpty() then
-                c = "[ ]"
+                c = "   "
             end
             if gridNode:IsUnknown() then
-                c = "[?]"
+                c = " ? "
             end
             if gridNode:IsTurtlePos() then
                 c = "[T]"
