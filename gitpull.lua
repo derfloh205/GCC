@@ -5,8 +5,8 @@ local files = {
     "gitpull",
     "gnav",
     "init",
-    "table_utils",
-    "vector_utils"
+    "tutils",
+    "vutils"
 }
 
 for _, f in ipairs(files) do
