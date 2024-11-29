@@ -210,7 +210,9 @@ function GTurtle.Base:VisualizeGrid()
     -- visualize on redirected terminal (or current if there is none)
     term.clear()
     term.setCursorPos(1, 1)
-    print(self.nav.gridMap:GetGridString(self.nav.pos.z))
+    local gridString = self.nav.gridMap:GetGridString(self.nav.pos.z)
+    print(gridString)
+    self.hostComm:SendReplace(gridString)
 end
 
 ---@class GTurtle.Rubber.Options : GTurtle.Base.Options
