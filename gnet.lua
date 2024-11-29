@@ -25,7 +25,7 @@ function GNet.TurtleHost:new(options)
     self.name = "TurtleHost_" .. self.id
     self.term = options.term or term
 
-    term.clear()
+    self.term.clear()
 
     peripheral.find("modem", rednet.open)
 
