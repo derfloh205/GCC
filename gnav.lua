@@ -6,6 +6,7 @@ local pretty = require("cc.pretty")
 ---@field x number
 ---@field y number
 ---@field z number
+---@field equals fun(v: Vector):boolean
 
 ---@class GNAV
 local GNAV = {}
@@ -75,7 +76,7 @@ end
 
 ---@return boolean isTurtlePos
 function GNAV.GridNode:IsTurtlePos()
-    return self.pos == self.gridMap.gridNav.pos
+    return self.pos.equals(self.gridMap.gridNav.pos)
 end
 
 ---@class GNAV.GridMap.Options
