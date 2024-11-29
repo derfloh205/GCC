@@ -147,13 +147,12 @@ function GNAV.GridMap:GetGridNode(pos)
 end
 
 function GNAV.GridMap:UpdateSurroundings()
-    local nav = self.gridNav
     local scanData = self.gridNav.gTurtle:ScanBlocks()
     self.gridNav.gTurtle:Log("Scanned Surroundings:")
     self.gridNav:LogPos()
 
     for dir, data in pairs(scanData) do
-        local pos = self.gridNav:GetHeadedPosition(nav.pos, nav.head, dir)
+        local pos = self.gridNav:GetHeadedPosition(self.gridNav.pos, self.gridNav.head, dir)
         self.gridNav.gTurtle:Log("Dir: " .. dir .. " -> " .. data.name)
         self.gridNav.gTurtle:Log("-> Pos: " .. tostring(pos))
         self:UpdateGridNode(pos, data)
@@ -290,7 +289,7 @@ end
 ---@param head GNAV.HEAD
 ---@param dir GNAV.MOVE
 function GNAV.GridNav:GetHeadedPosition(pos, head, dir)
-    local relVec = GNAV.M_VEC[head]
+    local relVec = GNAV.M_VEC[dir]
     -- possible movement directions that cause coordination subtraction
     if
         dir == GNAV.MOVE.D or (head == GNAV.HEAD.W and dir == GNAV.MOVE.F) or
@@ -298,7 +297,7 @@ function GNAV.GridNav:GetHeadedPosition(pos, head, dir)
             (head == GNAV.HEAD.N and dir == GNAV.MOVE.B) or
             (head == GNAV.HEAD.S and dir == GNAV.MOVE.F)
      then
-        relVec = relVec * (-1)
+        relVec = -relVec
     end
     return pos + relVec
 end
