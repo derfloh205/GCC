@@ -75,9 +75,6 @@ end
 
 ---@return boolean isTurtlePos
 function GNAV.GridNode:IsTurtlePos()
-    self.gridMap.gridNav.gTurtle:Log(
-        "IsTurtlePos? " .. tostring(self.pos) .. " / " .. tostring(self.gridMap.gridNav.pos)
-    )
     return self.pos == self.gridMap.gridNav.pos
 end
 
