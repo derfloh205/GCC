@@ -10,4 +10,4 @@ local RT =
 }
 
 RT:Refuel()
-RT:ExecuteMovement("FRFLFFLF")
+RT:ExecuteMovement("FRFLFFLFFLFFFLFL")
