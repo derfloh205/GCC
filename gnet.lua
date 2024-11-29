@@ -82,7 +82,7 @@ function GNet.TurtleHostComm:SearchTurtleHost()
     self.hostID = rednet.receive(GNet.PROTOCOL.TURTLE_HOST_SEARCH, 2)
 
     if self.hostID then
-        self.gTurtle:Log(string.format("Found Turtle Host (ID: %d)"))
+        self.gTurtle:Log(string.format("Found Turtle Host (ID: %d)", self.hostID))
         self:SendLog("Hello There!")
     else
         self.gTurtle:Log("No Turtle Host Found")
