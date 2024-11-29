@@ -160,7 +160,8 @@ function GNAV.GridMap:UpdateSurroundings()
 end
 
 function GNAV.GridMap:LogGrid()
-    self.gridNav.gTurtle:Log(textutils.serialise(self.grid))
+    self.gridNav.gTurtle:Log("Logging Grid at Z = " .. self.gridNav.pos.z)
+    self.gridNav.gTurtle:Log(self:GetGridString(self.gridNav.pos.z))
 end
 
 ---@param z number
