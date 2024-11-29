@@ -13,6 +13,4 @@ function VUtils:Equal(v1, v2)
     return v1.x == v2.x and v1.y == v2.y and v1.z == v2.z
 end
 
--- THIS IS A TEST
-
 return VUtils
