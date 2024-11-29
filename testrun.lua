@@ -12,4 +12,12 @@ local RT =
 RT:Refuel()
 RT:ExecuteMovement("FFF")
 
-RT.nav:CalculatePathToStart()
+local path = RT.nav:CalculatePathToStart()
+
+if path then
+    for i, node in ipairs(path) do
+        RT:Log(string.format("%d#: (%s)", i, tostring(node.pos)))
+    end
+else
+    RT:Log("No Path Found")
+end
