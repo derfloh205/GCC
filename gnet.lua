@@ -73,7 +73,7 @@ function GNet.TurtleHostComm:new(options)
     self.gTurtle = options.gTurtle
     -- open all rednet modems attached to turtle
     peripheral.find("modem", rednet.open)
-    self.hostID = self:SearchTurtleHost()
+    self:SearchTurtleHost()
 end
 
 function GNet.TurtleHostComm:SearchTurtleHost()
