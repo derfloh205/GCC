@@ -55,7 +55,7 @@ function GTurtle.Base:Log(text)
         return
     end
     local logFile = fs.open(self.logFile, "a")
-    logFile.write(text .. "\n")
+    logFile.write(string.format("[%s]: %s\n", os.date("%T"), text))
     logFile.close()
 end
 
