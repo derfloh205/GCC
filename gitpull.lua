@@ -1,9 +1,11 @@
+local p = require("cc.pretty")
 -- get sha of latest commit
 
 local commitApiUrl = "https://api.github.com/repos/derfloh205/GTurtle/commits"
 
 local cResponse = http.get(commitApiUrl)
 local commits = textutils.unserialiseJSON(cResponse.readAll())
+p.print(p.pretty(commits))
 local latestSha = commits[0].sha
 
 local baseUrl = string.format("https://raw.githubusercontent.com/derfloh205/GTurtle/%s/", latestSha)
