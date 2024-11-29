@@ -1,12 +1,8 @@
-local p = require("cc.pretty")
--- get sha of latest commit
-
 local commitApiUrl = "https://api.github.com/repos/derfloh205/GTurtle/commits"
 
 local cResponse = http.get(commitApiUrl)
 local commits = textutils.unserialiseJSON(cResponse.readAll())
-p.print(p.pretty(commits))
-local latestSha = commits[0].sha
+local latestSha = commits[1].sha
 
 local baseUrl = string.format("https://raw.githubusercontent.com/derfloh205/GTurtle/%s/", latestSha)
 local baseDir = shell.dir()
@@ -19,14 +15,10 @@ local files = {
     "vutils"
 }
 
-local headers = {
-    ["Cache-Control"] = "no-cache"
-}
-
 for _, f in ipairs(files) do
     local fileName = f .. ".lua"
     local url = baseUrl .. fileName
-    local response = http.get(url, headers)
+    local response = http.get(url)
     if response then
         print("Pulling " .. fileName .. " ..")
         local filePath = fs.combine(baseDir, fileName)
