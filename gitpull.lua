@@ -10,7 +10,7 @@ local files = {
 }
 
 local headers = {
-    ["Cache-Control"] = "no-store"
+    ["Cache-Control"] = "max-age=0"
 }
 
 for _, f in ipairs(files) do
