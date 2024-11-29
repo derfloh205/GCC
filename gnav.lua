@@ -1,5 +1,6 @@
 local Object = require("GTurtle/classics")
 local VUtils = require("GTurtle/vutils")
+local TUtils = require("GTurtle/tutils")
 local pretty = require("cc.pretty")
 
 ---@class Vector
@@ -283,7 +284,7 @@ end
 
 ---@return number
 function GNAV.GridNav:GetDistanceFromStart()
-    return VUtils:Distance(self.pos, self.initPos)
+    return VUtils:ManhattanDistance(self.pos, self.initPos)
 end
 
 --- get pos by current pos, current heading and direction to look at
@@ -309,5 +310,161 @@ end
 function GNAV.GridNav:LogPos()
     self.gTurtle:Log(string.format("Pos: {%s} Head: %s", tostring(self.pos), self.head))
 end
+
+--- A*
+
+-- Get valid neighbors in 3D space - Used in A*
+---@return GNAV.GridNode[]
+function GNAV.GridNav:GetNeighbors(node)
+    local boundaries = self.gridMap.boundaries
+    local minX = boundaries.x.min
+    local minY = boundaries.y.min
+    local minZ = boundaries.z.min
+    local maxX = boundaries.x.max
+    local maxY = boundaries.y.max
+    local maxZ = boundaries.z.max
+
+    ---@type GNAV.GridNode[]
+    local neighbors = {}
+    local directions = {
+        {x = 1, y = 0, z = 0}, -- Right
+        {x = -1, y = 0, z = 0}, -- Left
+        {x = 0, y = 1, z = 0}, -- Up
+        {x = 0, y = -1, z = 0}, -- Down
+        {x = 0, y = 0, z = 1}, -- Forward
+        {x = 0, y = 0, z = -1} -- Backward
+    }
+
+    for _, dir in ipairs(directions) do
+        local nx, ny, nz = node.x + dir.x, node.y + dir.y, node.z + dir.z
+        if nx >= minX and nx <= maxX and ny >= minY and ny <= maxY and nz >= minZ and nz <= maxZ then
+            local neighborGridNode = self.gridMap:GetGridNode(vector.new(nx, ny, nz))
+            if neighborGridNode and neighborGridNode:IsEmpty() and not neighborGridNode:IsUnknown() then
+                table.insert(neighbors, neighborGridNode)
+            end
+        end
+    end
+
+    return neighbors
+end
+
+--- Reconstruct the path from start to goal
+--- Yes it uses table refs as keys *_*
+---@param came_from table<GNAV.GridNode, GNAV.GridNode>
+---@param current GNAV.GridNode
+---@return GNAV.GridNode[] path
+function GNAV.GridNav:ReconstructPath(came_from, current)
+    local path = {}
+    while current do
+        table.insert(path, 1, current)
+        current = came_from[current]
+    end
+    return path
+end
+
+--- A* algorithm
+---@param startGN GNAV.GridNode
+---@param goalGN GNAV.GridNode
+function GNAV.GridNav:CalculatePath(startGN, goalGN)
+    local boundaries = self.gridMap.boundaries
+    local minX = boundaries.x.min
+    local minY = boundaries.y.min
+    local minZ = boundaries.z.min
+    local maxX = boundaries.x.max
+    local maxY = boundaries.y.max
+    local maxZ = boundaries.z.max
+
+    ---@type GNAV.GridNode[]
+    local openSet = {startGN}
+    local cameFromGN = {}
+
+    -- Initialize cost dictionaries
+    local gScore = {}
+    local fScore = {}
+    for x = minX, maxX do
+        gScore[x], fScore[x] = {}, {}
+        for y = minY, maxY do
+            gScore[x][y], fScore[x][y] = {}, {}
+            for z = minZ, maxZ do
+                gScore[x][y][z] = math.huge
+                fScore[x][y][z] = math.huge
+            end
+        end
+    end
+
+    gScore[startGN.pos.x][startGN.pos.y][startGN.pos.z] = 0
+    fScore[startGN.pos.x][startGN.pos.y][startGN.pos.z] = VUtils:ManhattanDistance(startGN.pos, goalGN.pos)
+
+    while #openSet > 0 do
+        -- Find node in open_set with the lowest f_score
+        table.sort(
+            openSet,
+            function(aGN, bGN)
+                return fScore[aGN.pos.x][aGN.pos.y][aGN.pos.z] < fScore[bGN.pos.x][bGN.pos.y][bGN.pos.z]
+            end
+        )
+        ---@type GNAV.GridNode
+        local currentGN = table.remove(openSet, 1)
+
+        -- If goal is reached
+        if VUtils:Equal(currentGN.pos, goalGN.pos) then
+            return self:ReconstructPath(cameFromGN, currentGN)
+        end
+
+        -- Process neighbors
+        for _, neighborGN in ipairs(self:GetNeighbors(currentGN)) do
+            local tentativeGScore = gScore[currentGN.pos.x][currentGN.pos.y][currentGN.pos.z] + 1
+            if tentativeGScore < gScore[neighborGN.pos.x][neighborGN.pos.y][neighborGN.pos.z] then
+                cameFromGN[neighborGN] = currentGN
+                gScore[neighborGN.pos.x][neighborGN.pos.y][neighborGN.pos.z] = tentativeGScore
+                fScore[neighborGN.pos.x][neighborGN.pos.y][neighborGN.pos.z] =
+                    tentativeGScore + VUtils:ManhattanDistance(neighborGN.pos, goalGN.pos)
+                if not TUtils:tContains(openSet, neighborGN) then
+                    table.insert(openSet, neighborGN)
+                end
+            end
+        end
+    end
+
+    return nil -- No path found
+end
+
+function GNAV.GridNav:CalculatePathToStart()
+    local startGN = self.gridMap:GetGridNode(self.pos)
+    local goalGN = self.gridMap:GetGridNode(self.initPos)
+    return self:CalculatePath(startGN, goalGN)
+end
+
+-- Example usage
+-- local max_x, max_y, max_z = 5, 5, 5
+-- local grid = {}
+-- for x = 1, max_x do
+--     grid[x] = {}
+--     for y = 1, max_y do
+--         grid[x][y] = {}
+--         for z = 1, max_z do
+--             grid[x][y][z] = {x = x, y = y, z = z, is_obstacle = false}
+--         end
+--     end
+-- end
+
+-- -- Define obstacles
+-- grid[3][3][3].is_obstacle = true
+
+-- -- Start and goal nodes
+-- local start = grid[1][1][1]
+-- local goal = grid[5][5][5]
+
+-- -- Find the path
+-- local path = astar(grid, start, goal, max_x, max_y, max_z)
+-- if path then
+--     for _, p in ipairs(path) do
+--         print("Step: x=" .. p.x .. ", y=" .. p.y .. ", z=" .. p.z)
+--     end
+-- else
+--     print("No path found.")
+-- end
+
+---
 
 return GNAV
