@@ -41,6 +41,9 @@ function GTurtle.Base:new(options)
             fs.delete(self.logFile)
         end
     end
+
+    self:Log("Initiating Turtle: " .. self.name)
+
     if term ~= self.term then
         term:redirect(self.term)
     end
@@ -50,7 +53,6 @@ function GTurtle.Base:new(options)
     self.nav = GNav.GridNav({gTurtle = self, initPos = vector.new(0, 0, 0)})
 
     os.setComputerLabel(self.name)
-    self:Log("Initiating Turtle: " .. self.name)
 end
 
 ---@param text string
