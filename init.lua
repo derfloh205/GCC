@@ -17,6 +17,7 @@ GTurtle.TYPES = {
 ---@field minimumFuel? number
 ---@field term? table
 ---@field log? boolean
+---@field clearLog? boolean
 ---@field visualizeGridOnMove? boolean
 
 ---@class GTurtle.Base : Object
@@ -34,8 +35,11 @@ function GTurtle.Base:new(options)
     self.type = GTurtle.TYPES.BASE
     self.term = options.term or term
     self.log = options.log or false
-    if self.log then
-        self.logFile = self.name .. "_log.txt"
+    self.logFile = self.name .. "_log.txt"
+    if options.clearLog then
+        if fs.exists(self.logFile) then
+            fs.delete(self.logFile)
+        end
     end
     if term ~= self.term then
         term:redirect(self.term)

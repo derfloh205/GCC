@@ -5,6 +5,7 @@ local RT =
     name = "Rubber#1",
     minimumFuel = 100,
     log = true,
+    clearLog = true,
     visualizeGridOnMove = true
 }
 
