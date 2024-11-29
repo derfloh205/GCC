@@ -289,7 +289,9 @@ end
 ---@param head GNAV.HEAD
 ---@param dir GNAV.MOVE
 function GNAV.GridNav:GetHeadedPosition(pos, head, dir)
-    local relVec = GNAV.M_VEC[dir]
+    -- use the z diff vector if dir is up or down else use the x/y vector
+    local relVec = GNAV.M_VEC[dir] or GNAV.M_VEC[head]
+
     -- possible movement directions that cause coordination subtraction
     if
         dir == GNAV.MOVE.D or (head == GNAV.HEAD.W and dir == GNAV.MOVE.F) or
