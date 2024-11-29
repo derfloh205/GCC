@@ -180,12 +180,12 @@ function GNAV.GridMap:GetGridString(z)
         for x = minX, maxX do
             local gridNode = self:GetGridNode(vector.new(x, y, z))
             local c = " X "
-            if gridNode:IsEmpty() then
+            if gridNode:IsTurtlePos() then
+                c = "[T]"
+            elseif gridNode:IsEmpty() then
                 c = "   "
             elseif gridNode:IsUnknown() then
                 c = " ? "
-            elseif gridNode:IsTurtlePos() then
-                c = "[T]"
             end
             if x == minX then
                 c = "|" .. c
