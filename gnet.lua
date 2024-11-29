@@ -1,3 +1,5 @@
+local Object = require("GTurtle.classics")
+
 ---@class GNet
 local GNet = {}
 

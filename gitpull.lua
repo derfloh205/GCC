@@ -8,6 +8,7 @@ local baseUrl = string.format("https://raw.githubusercontent.com/derfloh205/GTur
 local baseDir = shell.dir()
 local files = {
     "classics",
+    "start_turtlehost",
     "gitpull",
     "gnav",
     "init",
