@@ -8,5 +8,15 @@ local RT =
 }
 
 RT:Refuel()
-RT:ExecuteMovement("RFLFFRFFLLUFFDBB")
 RT:VisualizeGrid()
+RT:Move("F")
+RT:VisualizeGrid()
+RT:Turn("R")
+RT:VisualizeGrid()
+RT:Move("F")
+RT:VisualizeGrid()
+RT:Turn("L")
+RT:VisualizeGrid()
+RT:Move("F")
+RT:VisualizeGrid()
+RT:Move("F")
