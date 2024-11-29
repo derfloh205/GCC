@@ -9,14 +9,10 @@ local files = {
     "vutils"
 }
 
-local headers = {
-    ["Cache-Control"] = "max-age=0"
-}
-
 for _, f in ipairs(files) do
     local fileName = f .. ".lua"
     local url = baseUrl .. fileName
-    local response = http.get(url, headers)
+    local response = http.get(url)
     if response then
         print("Pulling " .. fileName .. " ..")
         local filePath = fs.combine(baseDir, fileName)
