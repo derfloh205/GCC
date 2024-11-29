@@ -1,4 +1,4 @@
-local baseUrl = "https://raw.githubusercontent.com/derfloh205/GTurtle/refs/heads/main/"
+local baseUrl = "https://github.com/derfloh205/GTurtle/raw/refs/heads/main/"
 local baseDir = shell.dir()
 local files = {
     "classics",
