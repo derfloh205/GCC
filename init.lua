@@ -1,9 +1,13 @@
 local Object = require("GTurtle/classics")
 local TUtils = require("GTurtle/tutils")
 local GNav = require("GTurtle/gnav")
+local GNet = require("GTurtle/gnet")
 
 ---@class GTurtle
 local GTurtle = {}
+
+GTurtle.GNav = GNav
+GTurtle.GNet = GNet
 
 ---@enum GTurtle.TYPES
 GTurtle.TYPES = {
@@ -13,6 +17,7 @@ GTurtle.TYPES = {
 
 ---@class GTurtle.Base.Options
 ---@field name string
+---@field turtleHostID number
 ---@field fuelWhiteList? string[]
 ---@field minimumFuel? number
 ---@field term? table
@@ -28,6 +33,7 @@ GTurtle.Base = Object:extend()
 function GTurtle.Base:new(options)
     options = options or {}
     self.name = options.name
+    self.id = os.getComputerID()
     self.fuelWhiteList = options.fuelWhiteList
     self.visualizeGridOnMove = options.visualizeGridOnMove
     self.minimumFuel = options.minimumFuel or 100
@@ -47,11 +53,11 @@ function GTurtle.Base:new(options)
     if term ~= self.term then
         term:redirect(self.term)
     end
-    self.term:clear()
+    self.term.clear()
     self.term.setCursorPos(1, 1)
 
     self.nav = GNav.GridNav({gTurtle = self, initPos = vector.new(0, 0, 0)})
-
+    self.hostComm = GNet.TurtleHostComm {gTurtle = self}
     os.setComputerLabel(self.name)
 end
 

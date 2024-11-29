@@ -2,7 +2,7 @@ local GTurtle = require("GTurtle")
 
 local RT =
     GTurtle.Rubber {
-    name = "Rubber#1",
+    name = "Rubber_1",
     minimumFuel = 100,
     log = true,
     clearLog = true,
