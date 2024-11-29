@@ -152,8 +152,8 @@ function GNAV.GridMap:UpdateSurroundings()
     self.gridNav:LogPos()
 
     for dir, data in pairs(scanData) do
-        local pos = self.gridNav:GetHeadedPosition(self.gridNav.pos, self.gridNav.head, dir)
         self.gridNav.gTurtle:Log("Dir: " .. dir .. " -> " .. data.name)
+        local pos = self.gridNav:GetHeadedPosition(self.gridNav.pos, self.gridNav.head, dir)
         self.gridNav.gTurtle:Log("-> Pos: " .. tostring(pos))
         self:UpdateGridNode(pos, data)
     end
