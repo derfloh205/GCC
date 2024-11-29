@@ -10,4 +10,6 @@ local RT =
 }
 
 RT:Refuel()
-RT:ExecuteMovement("FRFLFFLFFLFFFLFL")
+RT:ExecuteMovement("FFF")
+
+RT.nav:CalculatePathToStart()
