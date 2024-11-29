@@ -161,7 +161,7 @@ end
 
 function GNAV.GridMap:LogGrid()
     self.gridNav.gTurtle:Log("Logging Grid at Z = " .. self.gridNav.pos.z)
-    self.gridNav.gTurtle:Log(self:GetGridString(self.gridNav.pos.z))
+    self.gridNav.gTurtle:Log("\n" .. self:GetGridString(self.gridNav.pos.z))
 end
 
 ---@param z number
