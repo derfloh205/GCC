@@ -118,7 +118,7 @@ end
 ---@param blockData table?
 function GNAV.GridMap:UpdateGridNode(pos, blockData)
     local gridNode = self:GetGridNode(pos)
-    gridNode.blockData = blockData
+    gridNode.blockData = blockData or nil
     gridNode.unknown = false
 
     self:UpdateBoundaries(pos)
@@ -152,7 +152,7 @@ function GNAV.GridMap:UpdateSurroundings()
     self.gridNav:LogPos()
 
     for dir, data in pairs(scanData) do
-        self.gridNav.gTurtle:Log("Dir: " .. dir .. " -> " .. data.name)
+        self.gridNav.gTurtle:Log("Dir: " .. dir .. " -> " .. (data and data.name or "Empty"))
         local pos = self.gridNav:GetHeadedPosition(self.gridNav.pos, self.gridNav.head, dir)
         self.gridNav.gTurtle:Log("-> Pos: " .. tostring(pos))
         self:UpdateGridNode(pos, data)

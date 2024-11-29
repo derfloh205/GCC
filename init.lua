@@ -194,15 +194,9 @@ function GTurtle.Base:ScanBlocks()
     local isF, dataF = turtle.inspect()
     local isU, dataU = turtle.inspectUp()
     local isD, dataD = turtle.inspectDown()
-    if isF then
-        scanData[GNav.MOVE.F] = dataF
-    end
-    if isU then
-        scanData[GNav.MOVE.U] = dataU
-    end
-    if isD then
-        scanData[GNav.MOVE.D] = dataD
-    end
+    scanData[GNav.MOVE.F] = isF and dataF
+    scanData[GNav.MOVE.U] = isU and dataU
+    scanData[GNav.MOVE.D] = isD and dataD
     return scanData
 end
 
