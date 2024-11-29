@@ -33,6 +33,7 @@ end
 function GNet.TurtleHost:StartServer()
     local function OnTurtleHostSearch()
         while true do
+            term.native().write("Waiting for HostSearch...")
             local id, _ = rednet.receive(GNet.PROTOCOL.TURTLE_HOST_SEARCH)
             table.insert(self.registeredTurtles, id)
             rednet.send(id, "Hello There!", GNet.PROTOCOL.TURTLE_HOST_SEARCH)
@@ -41,6 +42,7 @@ function GNet.TurtleHost:StartServer()
 
     local function OnLog()
         while true do
+            term.native().write("Waiting for Log...")
             local id, msg = rednet.receive(GNet.PROTOCOL.LOG)
             print(string.format("[T%d]: %s", id, msg))
         end
@@ -48,6 +50,7 @@ function GNet.TurtleHost:StartServer()
 
     local function OnReplace()
         while true do
+            term.native().write("Waiting for Replace...")
             local id, msg = rednet.receive(GNet.PROTOCOL.REPLACE)
             term.clear()
             term.setCursorPos(1, 1)
