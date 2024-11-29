@@ -3,7 +3,7 @@ if #args == 0 then
     print("Requires commit hash as first argument")
     return
 end
-
+-- bust?
 local lastCommit = args[1]
 local baseUrl = string.format("https://raw.githubusercontent.com/derfloh205/GTurtle/%s/", lastCommit)
 local baseDir = shell.dir()
