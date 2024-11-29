@@ -1,4 +1,10 @@
-local baseUrl = "https://github.com/derfloh205/GTurtle/raw/refs/heads/main/"
+local args = {...}
+if #args == 0 then
+    print("Requires commit hash as first argument")
+    return
+end
+local lastCommit = args[1]
+local baseUrl = string.format("https://raw.githubusercontent.com/derfloh205/GTurtle/%s/", lastCommit)
 local baseDir = shell.dir()
 local files = {
     "classics",
@@ -8,8 +14,6 @@ local files = {
     "tutils",
     "vutils"
 }
-
--- tag test: h
 
 local headers = {
     ["Cache-Control"] = "no-cache"
