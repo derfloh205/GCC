@@ -12,7 +12,8 @@ local files = {
     "gnav",
     "init",
     "tutils",
-    "vutils"
+    "vutils",
+    "testrun"
 }
 
 for _, f in ipairs(files) do
