@@ -54,7 +54,7 @@ function GTurtle.Base:Log(text)
     if not self.log then
         return
     end
-    local logFile = fs.open(self.logFile, "w")
+    local logFile = fs.open(self.logFile, "a")
     logFile.write(text .. "\n")
     logFile.close()
 end
