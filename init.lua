@@ -18,6 +18,7 @@ GTurtle.TYPES = {
 ---@field term? table
 ---@field logTerm? table
 ---@field log? boolean
+---@field visualizeGridOnMove? boolean
 
 ---@class GTurtle.Base : Object
 ---@overload fun(options: GTurtle.Base.Options) : GTurtle.Base
@@ -28,6 +29,7 @@ function GTurtle.Base:new(options)
     options = options or {}
     self.name = options.name
     self.fuelWhiteList = options.fuelWhiteList
+    self.visualizeGridOnMove = options.visualizeGridOnMove
     self.minimumFuel = options.minimumFuel or 100
     ---@type GTurtle.TYPES
     self.type = GTurtle.TYPES.BASE
@@ -128,6 +130,9 @@ function GTurtle.Base:Move(dir)
 
     if moved then
         self.nav:OnMove(dir)
+        if self.visualizeGridOnMove then
+            self:VisualizeGrid()
+        end
         return true
     else
         self:Log("Movement Blocked: " .. tostring(err))
@@ -170,6 +175,9 @@ function GTurtle.Base:Turn(turn)
 
     if turned then
         self.nav:OnTurn(turn)
+        if self.visualizeGridOnMove then
+            self:VisualizeGrid()
+        end
         return true
     else
         self:Log("Turning Blocked: " .. tostring(err))
