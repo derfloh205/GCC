@@ -23,10 +23,7 @@ GNet.TurtleHost = Object:extend()
 function GNet.TurtleHost:new(options)
     self.id = os.getComputerID()
     self.name = "TurtleHost_" .. self.id
-    self.term = options.term or term
-
-    self.term.clear()
-
+    term:clear()
     peripheral.find("modem", rednet.open)
 
     ---@type TurtleID[]
@@ -45,18 +42,16 @@ function GNet.TurtleHost:StartServer()
     local function OnLog()
         while true do
             local id, msg = rednet.receive(GNet.PROTOCOL.LOG)
-            local _, y = self.term.getCursorPos()
-            self.term.write(string.format("[T%d]: %s", id, msg))
-            self.term.setCursorPos(1, y + 1)
+            print(string.format("[T%d]: %s", id, msg))
         end
     end
 
     local function OnReplace()
         while true do
             local id, msg = rednet.receive(GNet.PROTOCOL.REPLACE)
-            self.term.clear()
-            self.term.setCursorPos(1, 1)
-            self.term.write(msg)
+            term.clear()
+            term.setCursorPos(1, 1)
+            print(msg)
         end
     end
 
