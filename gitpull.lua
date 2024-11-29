@@ -1,5 +1,4 @@
---local baseUrl = "https://raw.githubusercontent.com/derfloh205/GTurtle/refs/heads/main/"
-local baseUrl = "https://github.com/derfloh205/GTurtle/raw/refs/heads/main/"
+local baseUrl = "https://raw.githubusercontent.com/derfloh205/GTurtle/refs/heads/main/"
 local baseDir = shell.dir()
 local files = {
     "classics",
@@ -10,10 +9,14 @@ local files = {
     "vutils"
 }
 
+local headers = {
+    ["Cache-Control"] = "no-cache"
+}
+
 for _, f in ipairs(files) do
     local fileName = f .. ".lua"
     local url = baseUrl .. fileName
-    local response = http.get(url)
+    local response = http.get(url, headers)
     if response then
         print("Pulling " .. fileName .. " ..")
         local filePath = fs.combine(baseDir, fileName)
