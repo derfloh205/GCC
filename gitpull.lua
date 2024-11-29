@@ -1,11 +1,12 @@
-local args = {...}
-if #args == 0 then
-    print("Requires commit hash as first argument")
-    return
-end
--- bust?
-local lastCommit = args[1]
-local baseUrl = string.format("https://raw.githubusercontent.com/derfloh205/GTurtle/%s/", lastCommit)
+-- get sha of latest commit
+
+local commitApiUrl = "https://api.github.com/repos/derfloh205/GTurtle/commits"
+
+local cResponse = http.get(commitApiUrl)
+local commits = textutils.unserialiseJSON(cResponse.readAll())
+local latestSha = commits[0].sha
+
+local baseUrl = string.format("https://raw.githubusercontent.com/derfloh205/GTurtle/%s/", latestSha)
 local baseDir = shell.dir()
 local files = {
     "classics",
