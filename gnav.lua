@@ -314,6 +314,7 @@ end
 --- A*
 
 -- Get valid neighbors in 3D space - Used in A*
+---@param node GNAV.GridNode
 ---@return GNAV.GridNode[]
 function GNAV.GridNav:GetNeighbors(node)
     local boundaries = self.gridMap.boundaries
@@ -336,7 +337,7 @@ function GNAV.GridNav:GetNeighbors(node)
     }
 
     for _, dir in ipairs(directions) do
-        local nx, ny, nz = node.x + dir.x, node.y + dir.y, node.z + dir.z
+        local nx, ny, nz = node.pos.x + dir.x, node.pos.y + dir.y, node.pos.z + dir.z
         if nx >= minX and nx <= maxX and ny >= minY and ny <= maxY and nz >= minZ and nz <= maxZ then
             local neighborGridNode = self.gridMap:GetGridNode(vector.new(nx, ny, nz))
             if neighborGridNode and neighborGridNode:IsEmpty() and not neighborGridNode:IsUnknown() then
