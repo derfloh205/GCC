@@ -16,7 +16,6 @@ GTurtle.TYPES = {
 ---@field fuelWhiteList? string[]
 ---@field minimumFuel? number
 ---@field term? table
----@field logTerm? table
 ---@field log? boolean
 ---@field visualizeGridOnMove? boolean
 
@@ -36,9 +35,7 @@ function GTurtle.Base:new(options)
     self.term = options.term or term
     self.log = options.log or false
     if self.log then
-        self.logTerm = options.logTerm or term
-        self.logTerm:clear()
-        self.logTerm.setCursorPos(1, 1)
+        self.logFile = self.name .. "_log.txt"
     end
     if term ~= self.term then
         term:redirect(self.term)
@@ -57,9 +54,9 @@ function GTurtle.Base:Log(text)
     if not self.log then
         return
     end
-    self.logTerm.write(text)
-    local _, y = self.logTerm:getCursorPos()
-    self.logTerm.setCursorPos(1, y + 1)
+    local logFile = fs.open(self.logFile, "w")
+    logFile.write(text .. "\n")
+    logFile.close()
 end
 
 ---@param i number slotIndex
