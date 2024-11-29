@@ -9,17 +9,14 @@ local files = {
     "vutils"
 }
 
--- for _, f in ipairs(files) do
---     local fileName = f .. ".lua"
---     local url = baseUrl .. fileName
---     shell.run("rm", fileName)
---     shell.run("wget", url, fileName)
--- end
+local headers = {
+    ["Cache-Control"] = "no-store"
+}
 
 for _, f in ipairs(files) do
     local fileName = f .. ".lua"
     local url = baseUrl .. fileName
-    local response = http.get(url, {["Cache-Control"] = "no-cache"})
+    local response = http.get(url, headers)
     if response then
         print("Pulling " .. fileName .. " ..")
         local filePath = fs.combine(baseDir, fileName)
