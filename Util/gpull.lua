@@ -8,7 +8,7 @@ function GPull:UpdateBlob(commitSha, user, repo, path, fileName)
     local response = http.get(fileUrl)
     if response then
         fs.makeDir(path)
-        local filePath = fs.combine(path, fileName)
+        local filePath = fs.combine(repo, path, fileName)
         local fileContent = response.readAll()
         local file = fs.open(filePath, "w")
         file.write(fileContent)
@@ -42,7 +42,7 @@ function GPull:PullRepository(user, repo)
     local commitResponseJSON = textutils.unserialiseJSON(commitResponse.readAll())
     local commitSha = commitResponseJSON[1].sha
 
-    self:UpdateTree(commitSha, user, repo, repo, commitResponseJSON[1].commit.tree)
+    self:UpdateTree(commitSha, user, repo, "", commitResponseJSON[1].commit.tree)
 end
 
 local args = {...}
