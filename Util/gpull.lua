@@ -1,44 +1,48 @@
 ---@class GCC.Util.GPull
 local GPull = {}
 
-function GPull:PullRepository(user, repository)
-end
-
-local commitApiUrl = "https://api.github.com/repos/derfloh205/GCC/commits"
-
-local cResponse = http.get(commitApiUrl)
-local commits = textutils.unserialiseJSON(cResponse.readAll())
-local latestSha = commits[1].sha
-
-local baseUrl = string.format("https://raw.githubusercontent.com/derfloh205/GCC/%s/", latestSha)
-local baseDir = shell.dir()
-local files = {
-    "classics",
-    "start_turtlehost",
-    "gitpull",
-    "gnav",
-    "init",
-    "tutils",
-    "vutils",
-    "testrun",
-    "gnet"
-}
-
-for _, f in ipairs(files) do
-    local fileName = f .. ".lua"
-    local url = baseUrl .. fileName
-    local response = http.get(url)
+function GPull:UpdateBlob(commitSha, user, repo, path, blob)
+    local fileName = string.format("%s.lua", blob)
+    local fileUrl =
+        string.format("https://raw.githubusercontent.com/%s/%s/%s/%s/%s", user, repo, commitSha, path, fileName)
+    local response = http.get(fileUrl)
     if response then
         print("Pulling " .. fileName .. " ..")
-        local filePath = fs.combine(baseDir, fileName)
-        if fs.exists(filePath) then
-            fs.delete(filePath)
-        end
+        local filePath = fs.combine(path, fileName)
+        -- if fs.exists(filePath) then
+        --     fs.delete(filePath)
+        -- end
         local fileContent = response.readAll()
         local file = fs.open(filePath, "w")
         file.write(fileContent)
         file.close()
     else
-        print("Failed to Pull: " .. fileName)
+        print("Failed to Pull: " .. fileUrl)
     end
+end
+
+function GPull:UpdateTree(commitSha, user, repo, path, treeData)
+    local sha = treeData.sha
+    -- compare to cache, only update if different
+
+    for _, subTreeData in ipairs(treeData.tree) do
+        if subTreeData.type == "tree" then
+            self:UpdateTree(commitSha, user, repo, fs.combine(path, subTreeData.path), subTreeData)
+        elseif subTreeData.type == "blob" then
+            self:UpdateBlob(commitSha, user, repo, path, subTreeData.path, subTreeData.url)
+        end
+    end
+end
+
+function GPull:PullRepository(user, repo)
+    local commitApiUrl = string.format("https://api.github.com/repos/%s/%s/commits", user, repo)
+    local commitResponse = http.get(commitApiUrl)
+    local commitResponseJSON = textutils.unserialiseJSON(commitResponse.readAll())
+    local commitSha = commitResponseJSON[1].sha
+    -- use latest commit sha to check for newer commit
+    local latestTreeUrl = commitResponseJSON[1].tree.url
+    local latestTreeResponse = http.get(latestTreeUrl)
+    local latestTreeResponseJSON = textutils.unserialseJSON(latestTreeResponse.readAll())
+
+    self:UpdateTree(commitSha, user, repo, repo, latestTreeResponseJSON.tree)
 end
