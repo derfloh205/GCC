@@ -8,20 +8,32 @@ local GNet = require("GCC/GNet/gnet")
 ---@overload fun(options: TurtleHost.Options) : TurtleHost
 local TurtleHost = GNet.Server:extend()
 
+---@enum TurtleHost.PROTOCOL
+TurtleHost.PROTOCOL = {
+    TURTLE_HOST_SEARCH = "TURTLE_HOST_SEARCH",
+    LOG = "LOG",
+    REPLACE = "REPLACE"
+}
+
 ---@alias TurtleID number
 
 ---@param options TurtleHost.Options
 function TurtleHost:new(options)
-    TurtleHost.super.new(self, options)
-
-    self.id = os.getComputerID()
-    self.name = "TurtleHost_" .. self.id
-    ---@enum TurtleHost.PROTOCOL
-    self.PROTOCOL = {
-        TURTLE_HOST_SEARCH = "TURTLE_HOST_SEARCH",
-        LOG = "LOG",
-        REPLACE = "REPLACE"
+    options = options or {}
+    ---@type GNet.Server.Options
+    local serverOptions = {
+        endpointConfigs = {
+            [self.PROTOCOL.TURTLE_HOST_SEARCH] = self.OnTurtleHostSearch,
+            [self.PROTOCOL.LOG] = self.OnLog,
+            [self.PROTOCOL.REPLACE] = self.OnReplace
+        }
     }
+    ---@diagnostic disable-next-line: redundant-parameter
+    TurtleHost.super.new(self, serverOptions)
+
+    self.name = "TurtleHost_" .. self.id
+
+    os.setComputerLabel(self.name)
     term:clear()
     peripheral.find("modem", rednet.open)
 
@@ -29,35 +41,24 @@ function TurtleHost:new(options)
     self.registeredTurtles = {}
 end
 
-function TurtleHost:StartServer()
-    local function OnTurtleHostSearch()
-        while true do
-            term.native().write("Waiting for HostSearch...")
-            local id, _ = rednet.receive(TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
-            table.insert(self.registeredTurtles, id)
-            rednet.send(id, "Hello There!", TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
-        end
-    end
-
-    local function OnLog()
-        while true do
-            term.native().write("Waiting for Log...")
-            local id, msg = rednet.receive(TurtleHost.PROTOCOL.LOG)
-            print(string.format("[T%d]: %s", id, msg))
-        end
-    end
-
-    local function OnReplace()
-        while true do
-            term.native().write("Waiting for Replace...")
-            local id, msg = rednet.receive(TurtleHost.PROTOCOL.REPLACE)
-            term.clear()
-            term.setCursorPos(1, 1)
-            print(msg)
-        end
-    end
-
-    parallel.waitForAll(OnTurtleHostSearch, OnLog, OnReplace)
+---@param id number
+---@param msg string
+function TurtleHost:OnTurtleHostSearch(id, msg)
+    term.native().write("Waiting for HostSearch...")
+    table.insert(self.registeredTurtles, id)
+    rednet.send(id, "Hello There!", TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
+end
+---@param id number
+---@param msg string
+function TurtleHost:OnLog(id, msg)
+    print(string.format("[T%d]: %s", id, msg))
+end
+---@param id number
+---@param msg string
+function TurtleHost:OnReplace(id, msg)
+    term.clear()
+    term.setCursorPos(1, 1)
+    print(msg)
 end
 
 ---@class TurtleHostClient.Options
