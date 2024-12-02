@@ -1,5 +1,5 @@
 local Object = require("GTurtle/classics")
-local VUtils = require("GTurtle/vutils")
+local VUtils = require("Util.vutils")
 local TUtils = require("GTurtle/tutils")
 local pretty = require("cc.pretty")
 

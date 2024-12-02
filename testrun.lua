@@ -1,4 +1,4 @@
-local GTurtle = require("GTurtle")
+local GTurtle = require("GTurtle.gturtle")
 
 local RT =
     GTurtle.Rubber {

@@ -1,3 +1,9 @@
+---@class GCC.Util.GPull
+local GPull = {}
+
+function GPull:PullRepository(user, repository)
+end
+
 local commitApiUrl = "https://api.github.com/repos/derfloh205/GCC/commits"
 
 local cResponse = http.get(commitApiUrl)
