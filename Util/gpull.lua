@@ -45,7 +45,7 @@ function GPull:PullRepository(user, repo)
     local latestTreeResponse = http.get(latestTreeUrl)
     local latestTreeResponseJSON = textutils.unserialiseJSON(latestTreeResponse.readAll())
 
-    self:UpdateTree(commitSha, user, repo, repo, latestTreeResponseJSON.tree)
+    self:UpdateTree(commitSha, user, repo, repo, latestTreeResponseJSON)
 end
 
 local args = {...}
