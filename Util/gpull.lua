@@ -1,17 +1,14 @@
 ---@class GCC.Util.GPull
 local GPull = {}
 
-function GPull:UpdateBlob(commitSha, user, repo, path, blob)
-    local fileName = string.format("%s.lua", blob)
+function GPull:UpdateBlob(commitSha, user, repo, path, fileName)
+    print("Pulling " .. fileName .. " ..")
     local fileUrl =
         string.format("https://raw.githubusercontent.com/%s/%s/%s/%s/%s", user, repo, commitSha, path, fileName)
     local response = http.get(fileUrl)
     if response then
-        print("Pulling " .. fileName .. " ..")
+        fs.makeDir(path)
         local filePath = fs.combine(path, fileName)
-        -- if fs.exists(filePath) then
-        --     fs.delete(filePath)
-        -- end
         local fileContent = response.readAll()
         local file = fs.open(filePath, "w")
         file.write(fileContent)
@@ -33,7 +30,7 @@ function GPull:UpdateTree(commitSha, user, repo, path, treeData)
         if subTreeData.type == "tree" then
             self:UpdateTree(commitSha, user, repo, fs.combine(path, subTreeData.path), subTreeData)
         elseif subTreeData.type == "blob" then
-            self:UpdateBlob(commitSha, user, repo, path, subTreeData.path, subTreeData.url)
+            self:UpdateBlob(commitSha, user, repo, path, subTreeData.path)
         end
     end
 end
