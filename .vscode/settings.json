@@ -4,6 +4,8 @@
         "term",
         "peripheral",
         "rednet",
-        "parallel"
+        "parallel",
+        "http",
+        "textutils"
     ]
 }

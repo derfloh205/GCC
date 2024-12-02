@@ -24,8 +24,12 @@ end
 function GPull:UpdateTree(commitSha, user, repo, path, treeData)
     local sha = treeData.sha
     -- compare to cache, only update if different
+    local url = treeData.url
+    local treeResponse = http.get(url)
+    local treeJson = textutils.unserialiseJSON(treeResponse.readAll())
+    local subTreeList = treeJson.tree
 
-    for _, subTreeData in ipairs(treeData.tree) do
+    for _, subTreeData in ipairs(subTreeList) do
         if subTreeData.type == "tree" then
             self:UpdateTree(commitSha, user, repo, fs.combine(path, subTreeData.path), subTreeData)
         elseif subTreeData.type == "blob" then
@@ -40,12 +44,8 @@ function GPull:PullRepository(user, repo)
     local commitResponse = http.get(commitApiUrl)
     local commitResponseJSON = textutils.unserialiseJSON(commitResponse.readAll())
     local commitSha = commitResponseJSON[1].sha
-    -- use latest commit sha to check for newer commit
-    local latestTreeUrl = commitResponseJSON[1].commit.tree.url
-    local latestTreeResponse = http.get(latestTreeUrl)
-    local latestTreeResponseJSON = textutils.unserialiseJSON(latestTreeResponse.readAll())
 
-    self:UpdateTree(commitSha, user, repo, repo, latestTreeResponseJSON)
+    self:UpdateTree(commitSha, user, repo, repo, commitResponseJSON[1].commit.tree)
 end
 
 local args = {...}
