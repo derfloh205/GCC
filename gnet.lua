@@ -3,6 +3,13 @@ local Object = require("GTurtle.classics")
 ---@class GNet
 local GNet = {}
 
+---@class GNet.TurtleHost.Options
+---@field term table?
+
+---@class GNet.Server : Object
+---@overload fun(options: GNet.Server.Options) : GNet.Server
+GNet.Server = Object:extend()
+
 ---@enum GNet.PROTOCOL
 GNet.PROTOCOL = {
     TURTLE_HOST_SEARCH = "TURTLE_HOST_SEARCH",
