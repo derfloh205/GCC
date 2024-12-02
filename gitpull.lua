@@ -1,10 +1,10 @@
-local commitApiUrl = "https://api.github.com/repos/derfloh205/GTurtle/commits"
+local commitApiUrl = "https://api.github.com/repos/derfloh205/GCC/commits"
 
 local cResponse = http.get(commitApiUrl)
 local commits = textutils.unserialiseJSON(cResponse.readAll())
 local latestSha = commits[1].sha
 
-local baseUrl = string.format("https://raw.githubusercontent.com/derfloh205/GTurtle/%s/", latestSha)
+local baseUrl = string.format("https://raw.githubusercontent.com/derfloh205/GCC/%s/", latestSha)
 local baseDir = shell.dir()
 local files = {
     "classics",
