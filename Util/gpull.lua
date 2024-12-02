@@ -35,6 +35,7 @@ function GPull:UpdateTree(commitSha, user, repo, path, treeData)
 end
 
 function GPull:PullRepository(user, repo)
+    print(string.format("Pulling from github.com/%s/%s", user, repo))
     local commitApiUrl = string.format("https://api.github.com/repos/%s/%s/commits", user, repo)
     local commitResponse = http.get(commitApiUrl)
     local commitResponseJSON = textutils.unserialiseJSON(commitResponse.readAll())
@@ -46,3 +47,12 @@ function GPull:PullRepository(user, repo)
 
     self:UpdateTree(commitSha, user, repo, repo, latestTreeResponseJSON.tree)
 end
+
+local args = {...}
+
+if #args < 2 then
+    print("Usage: gpull user repo")
+    return
+end
+
+GPull:PullRepository(args[1], args[2])
