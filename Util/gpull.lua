@@ -41,7 +41,7 @@ function GPull:PullRepository(user, repo)
     local commitResponseJSON = textutils.unserialiseJSON(commitResponse.readAll())
     local commitSha = commitResponseJSON[1].sha
     -- use latest commit sha to check for newer commit
-    local latestTreeUrl = commitResponseJSON[1].tree.url
+    local latestTreeUrl = commitResponseJSON[1].commit.tree.url
     local latestTreeResponse = http.get(latestTreeUrl)
     local latestTreeResponseJSON = textutils.unserialseJSON(latestTreeResponse.readAll())
 
