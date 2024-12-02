@@ -1,15 +1,18 @@
 local Object = require("GCC/Util/classics")
 local GNet = require("GCC/GNet/gnet")
 
----@class TurtleHost.Options
+---@class GTurtle.TurtleNet
+local TurtleNet = {}
+
+---@class TurtleNet.TurtleHost.Options
 ---@field term table?
 
----@class TurtleHost : GNet.Server
----@overload fun(options: TurtleHost.Options) : TurtleHost
-local TurtleHost = GNet.Server:extend()
+---@class TurtleNet.TurtleHost : GNet.Server
+---@overload fun(options: TurtleNet.TurtleHost.Options) : TurtleNet.TurtleHost
+TurtleNet.TurtleHost = GNet.Server:extend()
 
----@enum TurtleHost.PROTOCOL
-TurtleHost.PROTOCOL = {
+---@enum TurtleNet.TurtleHost.PROTOCOL
+TurtleNet.TurtleHost.PROTOCOL = {
     TURTLE_HOST_SEARCH = "TURTLE_HOST_SEARCH",
     LOG = "LOG",
     REPLACE = "REPLACE"
@@ -17,8 +20,8 @@ TurtleHost.PROTOCOL = {
 
 ---@alias TurtleID number
 
----@param options TurtleHost.Options
-function TurtleHost:new(options)
+---@param options TurtleNet.TurtleHost.Options
+function TurtleNet.TurtleHost:new(options)
     options = options or {}
     ---@type GNet.Server.Options
     local serverOptions = {
@@ -29,7 +32,7 @@ function TurtleHost:new(options)
         }
     }
     ---@diagnostic disable-next-line: redundant-parameter
-    TurtleHost.super.new(self, serverOptions)
+    TurtleNet.TurtleHost.super.new(self, serverOptions)
 
     self.name = "TurtleHost_" .. self.id
 
@@ -43,43 +46,43 @@ end
 
 ---@param id number
 ---@param msg string
-function TurtleHost:OnTurtleHostSearch(id, msg)
+function TurtleNet.TurtleHost:OnTurtleHostSearch(id, msg)
     term.native().write("Waiting for HostSearch...")
     table.insert(self.registeredTurtles, id)
-    rednet.send(id, "Hello There!", TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
+    rednet.send(id, "Hello There!", TurtleNet.TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
 end
 ---@param id number
 ---@param msg string
-function TurtleHost:OnLog(id, msg)
+function TurtleNet.TurtleHost:OnLog(id, msg)
     print(string.format("[T%d]: %s", id, msg))
 end
 ---@param id number
 ---@param msg string
-function TurtleHost:OnReplace(id, msg)
+function TurtleNet.TurtleHost:OnReplace(id, msg)
     term.clear()
     term.setCursorPos(1, 1)
     print(msg)
 end
 
----@class TurtleHostClient.Options
+---@class TurtleNet.TurtleHostClient.Options
 ---@field gTurtle GTurtle.Base
 
----@class TurtleHostClient : Object
----@overload fun(options: TurtleHostClient.Options) : TurtleHostClient
-TurtleHostClient = Object:extend()
+---@class TurtleNet.TurtleHostClient : Object
+---@overload fun(options: TurtleNet.TurtleHostClient.Options) : TurtleNet.TurtleHostClient
+TurtleNet.TurtleHostClient = Object:extend()
 
----@param options TurtleHostClient
-function TurtleHostClient:new(options)
+---@param options TurtleNet.TurtleHostClient
+function TurtleNet.TurtleHostClient:new(options)
     self.gTurtle = options.gTurtle
     -- open all rednet modems attached to turtle
     peripheral.find("modem", rednet.open)
     self:SearchTurtleHost()
 end
 
-function TurtleHostClient:SearchTurtleHost()
-    rednet.broadcast("Searching For Turtle Host..", TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
+function TurtleNet.TurtleHostClient:SearchTurtleHost()
+    rednet.broadcast("Searching For Turtle Host..", TurtleNet.TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
 
-    self.hostID = rednet.receive(TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH, 2)
+    self.hostID = rednet.receive(TurtleNet.TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH, 2)
 
     if self.hostID then
         self.gTurtle:Log(string.format("Found Turtle Host (ID: %d)", self.hostID))
@@ -89,18 +92,18 @@ function TurtleHostClient:SearchTurtleHost()
     end
 end
 
-function TurtleHostClient:SendLog(msg)
+function TurtleNet.TurtleHostClient:SendLog(msg)
     if not self.hostID then
         return
     end
-    rednet.send(self.hostID, msg, TurtleHost.PROTOCOL.LOG)
+    rednet.send(self.hostID, msg, TurtleNet.TurtleHost.PROTOCOL.LOG)
 end
 
-function TurtleHostClient:SendReplace(msg)
+function TurtleNet.TurtleHostClient:SendReplace(msg)
     if not self.hostID then
         return
     end
-    rednet.send(self.hostID, msg, TurtleHost.PROTOCOL.REPLACE)
+    rednet.send(self.hostID, msg, TurtleNet.TurtleHost.PROTOCOL.REPLACE)
 end
 
-return TurtleHost
+return TurtleNet

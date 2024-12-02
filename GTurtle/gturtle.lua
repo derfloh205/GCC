@@ -1,13 +1,10 @@
-local Object = require("GTurtle/classics")
-local TUtils = require("GTurtle/tutils")
-local GNav = require("GTurtle/gnav")
-local GNet = require("GTurtle/gnet")
+local Object = require("GCC/Util/classics")
+local TUtils = require("GCC/Util/tutils")
+local TNav = require("GCC/GTurtle/turtlenavigation")
+local TNet = require("GCC/GTurtle/turtlenet")
 
 ---@class GTurtle
 local GTurtle = {}
-
-GTurtle.GNav = GNav
-GTurtle.GNet = GNet
 
 ---@enum GTurtle.TYPES
 GTurtle.TYPES = {
@@ -56,8 +53,8 @@ function GTurtle.Base:new(options)
     self.term.clear()
     self.term.setCursorPos(1, 1)
 
-    self.nav = GNav.GridNav({gTurtle = self, initPos = vector.new(0, 0, 0)})
-    self.hostComm = GNet.TurtleHostComm {gTurtle = self}
+    self.nav = TNav.GridNav({gTurtle = self, initPos = vector.new(0, 0, 0)})
+    self.tNetClient = TNet.TurtleHostClient {gTurtle = self}
     os.setComputerLabel(self.name)
 end
 
@@ -122,18 +119,18 @@ function GTurtle.Base:Refuel()
     return false
 end
 
----@param dir GNAV.MOVE
+---@param dir GTurtle.TNAV.MOVE
 ---@return boolean success
 ---@return stringlib? errormsg
 function GTurtle.Base:Move(dir)
     local moved, err
-    if dir == GNav.MOVE.F then
+    if dir == TNav.MOVE.F then
         moved, err = turtle.forward()
-    elseif dir == GNav.MOVE.B then
+    elseif dir == TNav.MOVE.B then
         moved, err = turtle.back()
-    elseif dir == GNav.MOVE.U then
+    elseif dir == TNav.MOVE.U then
         moved, err = turtle.up()
-    elseif dir == GNav.MOVE.D then
+    elseif dir == TNav.MOVE.D then
         moved, err = turtle.down()
     end
 
@@ -149,7 +146,7 @@ function GTurtle.Base:Move(dir)
     end
 end
 
----@param dir GNAV.MOVE
+---@param dir GTurtle.TNAV.MOVE
 function GTurtle.Base:MoveUntilBlocked(dir)
     local blocked
     repeat
@@ -162,7 +159,7 @@ function GTurtle.Base:ExecuteMovement(path)
     path:gsub(
         ".",
         function(dir)
-            if dir == GNav.TURN.L or dir == GNav.TURN.R then
+            if dir == TNav.TURN.L or dir == TNav.TURN.R then
                 self:Turn(dir)
             else
                 self:Move(dir)
@@ -171,14 +168,14 @@ function GTurtle.Base:ExecuteMovement(path)
     )
 end
 
----@param turn GNAV.TURN
+---@param turn GTurtle.TNAV.TURN
 ---@return boolean success
 ---@return string? errormsg
 function GTurtle.Base:Turn(turn)
     local turned, err
-    if turn == GNav.TURN.L then
+    if turn == TNav.TURN.L then
         turned, err = turtle.turnLeft()
-    elseif turn == GNav.TURN.R then
+    elseif turn == TNav.TURN.R then
         turned, err = turtle.turnRight()
     end
 
@@ -194,15 +191,15 @@ function GTurtle.Base:Turn(turn)
     end
 end
 
----@return table<GNAV.MOVE, table?>
+---@return table<GTurtle.TNAV.MOVE, table?>
 function GTurtle.Base:ScanBlocks()
     local scanData = {}
     local isF, dataF = turtle.inspect()
     local isU, dataU = turtle.inspectUp()
     local isD, dataD = turtle.inspectDown()
-    scanData[GNav.MOVE.F] = isF and dataF
-    scanData[GNav.MOVE.U] = isU and dataU
-    scanData[GNav.MOVE.D] = isD and dataD
+    scanData[TNav.MOVE.F] = isF and dataF
+    scanData[TNav.MOVE.U] = isU and dataU
+    scanData[TNav.MOVE.D] = isD and dataD
     return scanData
 end
 
@@ -212,7 +209,7 @@ function GTurtle.Base:VisualizeGrid()
     term.setCursorPos(1, 1)
     local gridString = self.nav.gridMap:GetGridString(self.nav.pos.z)
     print(gridString)
-    self.hostComm:SendReplace(gridString)
+    self.tNetClient:SendReplace(gridString)
 end
 
 ---@class GTurtle.Rubber.Options : GTurtle.Base.Options
