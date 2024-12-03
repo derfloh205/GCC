@@ -54,6 +54,14 @@ local headers = {
 ---@type table<string, boolean>
 GPull.commitPaths = {}
 
+function GPull:SplitPath(pathString)
+    local elements = {}
+    for p in pathString:gmatch("([^/]*)") do
+        table.insert(elements, p)
+    end
+    return elements
+end
+
 function GPull:GetConfig()
     if not fs.exists(GPull.CONFIG_FILE) then
         local file = fs.open(GPull.CONFIG_FILE, "w")
@@ -149,9 +157,18 @@ end
 function GPull:RemoveDeletedFiles()
     local config = self:GetConfig()
     for path, _ in pairs(config.shaMap) do
-        print("CheckPath: " .. tostring(path))
-        if not self.commitPaths[path] then
+        local pathParts = self:SplitPath(path)
+        local pathCommited = false
+        for _, part in ipairs(pathParts) do
+            if self.commitPaths[part] then
+                pathCommited = true
+                break
+            end
+        end
+        if not pathCommited then
             print("Deleting: " .. path)
+        else
+            print("No Changes: " .. path)
         end
     end
 end
