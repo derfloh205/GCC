@@ -1,5 +1,5 @@
 local Object = require("GCC/Util/classics")
-local TUtils = require("GCC/Util/tutils")
+local TUtil = require("GCC/Util/tutil")
 local TNav = require("GCC/GTurtle/turtlenavigation")
 local TNet = require("GCC/GTurtle/turtlenet")
 
@@ -87,7 +87,7 @@ function GTurtle.Base:IsFuel(i)
         return true
     end
 
-    return TUtils:tContains(self.fuelWhiteList, item.name)
+    return TUtil:tContains(self.fuelWhiteList, item.name)
 end
 
 ---@return boolean refueled
