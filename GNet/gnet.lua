@@ -33,6 +33,7 @@ function GNet.Server:Run()
     local endpointCallbacks = {}
 
     for _, endpoint in ipairs(self.endpoints) do
+        print(f("Registering Endpoint: %s -> %s"), endpoint.protocol, tostring(endpoint.callback))
         table.insert(
             endpointCallbacks,
             function()
@@ -44,23 +45,6 @@ function GNet.Server:Run()
             end
         )
     end
-
-    -- debug
-    local funcs = {
-        function()
-            sleep(1)
-            print("hello1")
-        end,
-        function()
-            sleep(2)
-            print("hello2")
-        end,
-        function()
-            sleep(3)
-            print("hello3")
-        end
-    }
-    parallel.waitForAll(table.unpack(funcs))
 
     --parallel.waitForAll(table.unpack(endpointCallbacks))
 end
