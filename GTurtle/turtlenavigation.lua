@@ -1,6 +1,7 @@
 local Object = require("GCC/Util/classics")
 local VUtil = require("GCC/Util/vutil")
 local TUtil = require("GCC/Util/tutil")
+local f = string.format
 local pretty = require("cc.pretty")
 
 ---@class GTurtle.TNAV
@@ -144,13 +145,11 @@ end
 
 function TNAV.GridMap:UpdateSurroundings()
     local scanData = self.gridNav.gTurtle:ScanBlocks()
-    self.gridNav.gTurtle:Log("Scanned Surroundings:")
-    self.gridNav:LogPos()
+    self.gridNav.gTurtle:Log("Scanning Surroundings..")
 
     for dir, data in pairs(scanData) do
-        self.gridNav.gTurtle:Log("Dir: " .. dir .. " -> " .. (data and data.name or "Empty"))
+        self.gridNav.gTurtle:Log(f("%s -> %s", dir, (data and data.name or "Empty")))
         local pos = self.gridNav:GetHeadedPosition(self.gridNav.pos, self.gridNav.head, dir)
-        self.gridNav.gTurtle:Log("-> Pos: " .. tostring(pos))
         self:UpdateGridNode(pos, data)
     end
 end
@@ -270,9 +269,7 @@ end
 
 ---@param dir GTurtle.TNAV.MOVE
 function TNAV.GridNav:OnMove(dir)
-    self.gTurtle:Log(string.format("Record Movement - @{%s}: %s -> %s", tostring(self.pos), self.head, dir))
     self.pos = self:GetHeadedPosition(self.pos, self.head, dir)
-    self.gTurtle:Log("-> " .. tostring(self.pos))
     self:UpdatePath()
     self.gridMap:UpdateSurroundings()
 end
