@@ -1,4 +1,5 @@
 local GLogAble = require("GCC/Util/glog")
+local f = string.format
 
 ---@class GNet
 local GNet = {}
@@ -35,6 +36,7 @@ function GNet.Server:Run()
         table.insert(
             endpointCallbacks,
             function()
+                self:Log(f("Listening for: [%s]", endpoint))
                 while true do
                     local id, msg = rednet.receive(endpoint.protocol)
                     endpoint.callback(self, id, msg)
