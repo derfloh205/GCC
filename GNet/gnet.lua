@@ -45,7 +45,12 @@ function GNet.Server:Run()
         )
     end
 
-    parallel.waitForAll(table.unpack(endpointCallbacks))
+    parallel.waitForAny(
+        table.unpack(endpointCallbacks),
+        function()
+            sleep(3)
+        end
+    )
 end
 
 return GNet
