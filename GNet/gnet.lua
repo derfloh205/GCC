@@ -46,7 +46,15 @@ function GNet.Server:Run()
         )
     end
 
-    --parallel.waitForAll(table.unpack(endpointCallbacks))
+    -- prevent dead locks
+    if #endpointCallbacks == 0 then
+        endpointCallbacks = {
+            function()
+            end
+        }
+    end
+
+    parallel.waitForAll(table.unpack(endpointCallbacks))
 end
 
 return GNet
