@@ -149,6 +149,7 @@ end
 function GPull:RemoveDeletedFiles()
     local config = self:GetConfig()
     for path, _ in pairs(config.shaMap) do
+        print("CheckPath: " .. tostring(path))
         if not self.commitPaths[path] then
             print("Deleting: " .. path)
         end
