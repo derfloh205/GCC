@@ -49,6 +49,7 @@ function GNet.Server:Run()
         table.unpack(endpointCallbacks),
         function()
             sleep(3)
+            self:Log("Exiting..")
         end
     )
 end
