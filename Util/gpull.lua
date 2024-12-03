@@ -87,7 +87,7 @@ end
 function GPull:IsShaCached(sha, id)
     self.allPaths[id] = true
     local config = self:GetConfig()
-    return config[id] == sha
+    return sha == config.shaMap[id]
 end
 
 function GPull:Get(url)
