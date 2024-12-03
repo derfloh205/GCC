@@ -175,9 +175,7 @@ end
 function GPull:RemoveDeletedFiles()
     local config = self:GetConfig()
     for path, _ in pairs(config.shaMap) do
-        if self.commitPaths[path] then
-            print("Keep Changes: " .. path)
-        else
+        if not self.commitPaths[path] and path ~= "COMMIT" then
             -- check if myself or parent path was cached
             local parentPaths = GPull:GetParentPaths(path)
             local pathCached = false
@@ -187,13 +185,16 @@ function GPull:RemoveDeletedFiles()
                     break
                 end
             end
-            if pathCached then
-                print("No Changes: " .. path)
-            else
+            if not pathCached then
                 print("Delete: " .. path)
+                config.shaMap[path] = nil
+                if fs.exists(path) then
+                    fs.delete(path)
+                end
             end
         end
     end
+    self:WriteConfig(config)
 end
 
 function GPull:PullRepository()
@@ -203,10 +204,11 @@ function GPull:PullRepository()
     ---@type GHAPI.CommitAPIData[]
     local commitResponseData = textutils.unserialiseJSON(commitResponse.readAll())
     local commitSha = commitResponseData[1].sha
-    local config = self:GetConfig()
-    if commitSha == config.shaMap["COMMIT"] then
-        print("No Changes")
+    if self:IsShaCached(commitSha, "COMMIT") then
+        print("Up to Date.")
         return
+    else
+        self:UpdateSha(commitSha, "COMMIT")
     end
     self:UpdateTree(commitSha, "", commitResponseData[1].commit.tree)
     self:RemoveDeletedFiles()
