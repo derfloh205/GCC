@@ -28,10 +28,11 @@ GTurtle.Base = GLogAble:extend()
 ---@param options GTurtle.Base.Options
 function GTurtle.Base:new(options)
     options = options or {}
-    ---@diagnostic disable-next-line: redundant-parameter
-    GTurtle.Base.super.new(self, options)
     self.id = os.getComputerID()
     self.name = f("%s[%d]", options.name, self.id)
+    options.logFile = f("GTurtle[%d].log", self.id)
+    ---@diagnostic disable-next-line: redundant-parameter
+    GTurtle.Base.super.new(self, options)
     os.setComputerLabel(self.name)
     self.fuelWhiteList = options.fuelWhiteList
     self.visualizeGridOnMove = options.visualizeGridOnMove
@@ -40,7 +41,6 @@ function GTurtle.Base:new(options)
     self.type = GTurtle.TYPES.BASE
     self.term = options.term or term
 
-    self:SetLogFile(f("GTurtle[%d].log", self.id))
     self:Log(f("Initiating Turtle: %s", self.name))
 
     if term ~= self.term then
