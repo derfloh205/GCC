@@ -62,20 +62,20 @@ end
 ---@param id number
 ---@param msg string
 function TurtleNet.TurtleHost:OnTurtleHostSearch(id, msg)
-    self:Log(f("Received Host Search Broadcast from %d", id))
+    self:Log(f("Received Host Search Broadcast from [%d]", id))
     table.insert(self.registeredTurtles, id)
     rednet.send(id, "Host Search Response", TurtleNet.TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
 end
 ---@param id number
 ---@param msg string
 function TurtleNet.TurtleHost:OnLog(id, msg)
-    self:Log(f("Received LOG from %d\nMessage: %s", id, msg))
+    self:Log(f("Received LOG from [%d]", id))
     print(string.format("[T%d]: %s", id, msg))
 end
 ---@param id number
 ---@param msg string
 function TurtleNet.TurtleHost:OnReplace(id, msg)
-    self:Log(f("Received REPLACE from %d\nMessage: %s", id, msg))
+    self:Log(f("Received REPLACE from [%d]", id))
     term.clear()
     term.setCursorPos(1, 1)
     print(msg)
