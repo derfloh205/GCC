@@ -15,26 +15,25 @@ function GLogAble:new(options)
     options = options or {}
     self.log = false
     self.logFile = ""
-    self.clearLog = options.clearLog
     self:SetLogFile(options.logFile)
     self:SetLog(options.log)
+    if options.clearLog then
+        self:ClearLog()
+    end
+end
+
+function GLogAble:ClearLog()
+    if self.logFile ~= "" and fs.exists(self.logFile) then
+        fs.delete(self.logFile)
+    end
 end
 
 ---@param log boolean
 function GLogAble:SetLog(log)
     self.log = log or false
-    if self.clearLog then
-        if self.logFile ~= "" and fs.exists(self.logFile) then
-            fs.delete(self.logFile)
-        end
-    end
 end
 
 function GLogAble:SetLogFile(logFile)
-    -- delete old logfile
-    if self.logFile ~= "" and fs.exists(self.logFile) then
-        fs.delete(self.logFile)
-    end
     self.logFile = logFile or f("PC_%d.log", os.getComputerID())
 end
 
