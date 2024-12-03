@@ -33,11 +33,10 @@ function GNet.Server:Run()
     local endpointCallbacks = {}
 
     for _, endpointConfig in ipairs(self.endpointConfigs) do
-        print(f("Registering Endpoint: %s -> %s", endpointConfig.protocol, tostring(endpointConfig.callback)))
         table.insert(
             endpointCallbacks,
             function()
-                self:Log(f("Listening for: [%s]", endpointConfig))
+                self:Log(f("Listening for: [%s]", endpointConfig.protocol))
                 while true do
                     local id, msg = rednet.receive(endpointConfig.protocol)
                     endpointConfig.callback(self, id, msg)
