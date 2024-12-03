@@ -1,5 +1,6 @@
-local Object = require("GCC/Util/classics")
+local GLogAble = require("GCC/Util/glog")
 local GNet = require("GCC/GNet/gnet")
+local f = string.format
 
 ---@class GTurtle.TurtleNet
 local TurtleNet = {}
@@ -34,45 +35,52 @@ function TurtleNet.TurtleHost:new(options)
     ---@diagnostic disable-next-line: redundant-parameter
     TurtleNet.TurtleHost.super.new(self, serverOptions)
 
-    self.name = "TurtleHost_" .. self.id
-
+    self.name = f("TurtleHost[%d]", self.id)
     os.setComputerLabel(self.name)
+    self:SetLogFile(f("%s.log", self.name))
     term:clear()
     peripheral.find("modem", rednet.open)
 
     ---@type TurtleID[]
     self.registeredTurtles = {}
+
+    self:Log(f("Initializing %s", self.name))
 end
 
 ---@param id number
 ---@param msg string
 function TurtleNet.TurtleHost:OnTurtleHostSearch(id, msg)
-    term.native().write("Waiting for HostSearch...")
+    self:Log(f("Received Host Search Broadcast from %d", id))
     table.insert(self.registeredTurtles, id)
-    rednet.send(id, "Hello There!", TurtleNet.TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
+    rednet.send(id, "Host Search Response", TurtleNet.TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
 end
 ---@param id number
 ---@param msg string
 function TurtleNet.TurtleHost:OnLog(id, msg)
+    self:Log(f("Received LOG from %d\nMessage: %s", id, msg))
     print(string.format("[T%d]: %s", id, msg))
 end
 ---@param id number
 ---@param msg string
 function TurtleNet.TurtleHost:OnReplace(id, msg)
+    self:Log(f("Received REPLACE from %d\nMessage: %s", id, msg))
     term.clear()
     term.setCursorPos(1, 1)
     print(msg)
 end
 
----@class TurtleNet.TurtleHostClient.Options
+---@class TurtleNet.TurtleHostClient.Options : GLogAble.Options
 ---@field gTurtle GTurtle.Base
 
----@class TurtleNet.TurtleHostClient : Object
+---@class TurtleNet.TurtleHostClient : GLogAble
 ---@overload fun(options: TurtleNet.TurtleHostClient.Options) : TurtleNet.TurtleHostClient
-TurtleNet.TurtleHostClient = Object:extend()
+TurtleNet.TurtleHostClient = GLogAble:extend()
 
 ---@param options TurtleNet.TurtleHostClient
 function TurtleNet.TurtleHostClient:new(options)
+    options = options or {}
+    ---@diagnostic disable-next-line: redundant-parameter
+    TurtleNet.TurtleHostClient.super.new(self, options)
     self.gTurtle = options.gTurtle
     -- open all rednet modems attached to turtle
     peripheral.find("modem", rednet.open)

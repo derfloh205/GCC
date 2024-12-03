@@ -1,7 +1,8 @@
-local Object = require("GCC/Util/classics")
 local TUtil = require("GCC/Util/tutil")
 local TNav = require("GCC/GTurtle/turtlenavigation")
 local TNet = require("GCC/GTurtle/turtlenet")
+local GLogAble = require("GCC/Util/glog")
+local f = string.format
 
 ---@class GTurtle
 local GTurtle = {}
@@ -12,40 +13,35 @@ GTurtle.TYPES = {
     RUBBER = "RUBBER"
 }
 
----@class GTurtle.Base.Options
+---@class GTurtle.Base.Options : GLogAble.Options
 ---@field name string
 ---@field turtleHostID number
 ---@field fuelWhiteList? string[]
 ---@field minimumFuel? number
 ---@field term? table
----@field log? boolean
----@field clearLog? boolean
 ---@field visualizeGridOnMove? boolean
 
----@class GTurtle.Base : Object
+---@class GTurtle.Base : GLogAble
 ---@overload fun(options: GTurtle.Base.Options) : GTurtle.Base
-GTurtle.Base = Object:extend()
+GTurtle.Base = GLogAble:extend()
 
 ---@param options GTurtle.Base.Options
 function GTurtle.Base:new(options)
     options = options or {}
-    self.name = options.name
+    ---@diagnostic disable-next-line: redundant-parameter
+    GTurtle.Base.super.new(self, options)
     self.id = os.getComputerID()
+    self.name = f("%s[%d]", options.name, self.id)
+    os.setComputerLabel(self.name)
     self.fuelWhiteList = options.fuelWhiteList
     self.visualizeGridOnMove = options.visualizeGridOnMove
     self.minimumFuel = options.minimumFuel or 100
     ---@type GTurtle.TYPES
     self.type = GTurtle.TYPES.BASE
     self.term = options.term or term
-    self.log = options.log or false
-    self.logFile = self.name .. "_log.txt"
-    if options.clearLog then
-        if fs.exists(self.logFile) then
-            fs.delete(self.logFile)
-        end
-    end
 
-    self:Log("Initiating Turtle: " .. self.name)
+    self:SetLogFile(f("GTurtle[%d].log", self.id))
+    self:Log(f("Initiating Turtle: %s", self.name))
 
     if term ~= self.term then
         term:redirect(self.term)
@@ -54,18 +50,13 @@ function GTurtle.Base:new(options)
     self.term.setCursorPos(1, 1)
 
     self.nav = TNav.GridNav({gTurtle = self, initPos = vector.new(0, 0, 0)})
-    self.tNetClient = TNet.TurtleHostClient {gTurtle = self}
-    os.setComputerLabel(self.name)
-end
-
----@param text string
-function GTurtle.Base:Log(text)
-    if not self.log then
-        return
-    end
-    local logFile = fs.open(self.logFile, "a")
-    logFile.write(string.format("[%s]: %s\n", os.date("%T"), text))
-    logFile.close()
+    self.tNetClient =
+        TNet.TurtleHostClient {
+        gTurtle = self,
+        log = options.log,
+        clearLog = options.clearLog,
+        logFile = f("TurtleHost[%d].log", self.id)
+    }
 end
 
 ---@param i number slotIndex
@@ -93,7 +84,7 @@ end
 ---@return boolean refueled
 function GTurtle.Base:Refuel()
     local fuel = turtle.getFuelLevel()
-    self:Log("Fuel Check: " .. fuel .. "/" .. self.minimumFuel)
+    self:Log(f("Fuel Check: %d/%d", fuel, self.minimumFuel))
     if fuel >= self.minimumFuel then
         return true
     end
@@ -141,7 +132,7 @@ function GTurtle.Base:Move(dir)
         end
         return true
     else
-        self:Log("Movement Blocked: " .. tostring(err))
+        self:Log(f("Movement Blocked: %s", tostring(err)))
         return false, err
     end
 end
@@ -186,7 +177,7 @@ function GTurtle.Base:Turn(turn)
         end
         return true
     else
-        self:Log("Turning Blocked: " .. tostring(err))
+        self:Log(f("Turning Blocked: %s", tostring(err)))
         return false, err
     end
 end

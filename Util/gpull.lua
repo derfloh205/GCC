@@ -36,8 +36,8 @@ GPull.CONFIG_FILE = ".gpull"
 
 local args = {...}
 
-if #args < 3 then
-    print("Usage: gpull <user> <repo> <access-token>")
+if #args < 2 then
+    print("Usage: gpull <user> <repo> (<access-token>)")
     return
 end
 
@@ -113,7 +113,11 @@ function GPull:IsShaCached(sha, id)
 end
 
 function GPull:Get(url)
-    return http.get(url, headers)
+    if token then
+        return http.get(url, headers)
+    else
+        return http.get(url)
+    end
 end
 
 ---@param commitSha string

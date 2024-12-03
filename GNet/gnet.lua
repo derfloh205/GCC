@@ -1,4 +1,4 @@
-local Object = require("GCC/Util/classics")
+local GLogAble = require("GCC/Util/glog")
 
 ---@class GNet
 local GNet = {}
@@ -7,19 +7,24 @@ local GNet = {}
 ---@field protocol? string
 ---@field callback fun(server: GNet.Server, id: number, msg: string)
 
----@class GNet.Server.Options
+---@class GNet.Server.Options : GLogAble.Options
 ---@field endpointConfigs GNet.Server.EndpointConfig[]
 
----@class GNet.Server : Object
+---@class GNet.Server : GLogAble
 ---@overload fun(options: GNet.Server.Options) : GNet.Server
-GNet.Server = Object:extend()
+GNet.Server = GLogAble:extend()
 
 ---@param options GNet.Server.Options
 function GNet.Server:new(options)
     options = options or {}
+
+    ---@diagnostic disable-next-line: redundant-parameter
+    GNet.Server.super.new(self, options)
+    self.id = os.getComputerID()
+
     ---@type GNet.Server.EndpointConfig[]
     self.endpoints = options.endpointConfigs or {}
-    self.id = os.getComputerID()
+
     peripheral.find("modem", rednet.open)
 end
 
