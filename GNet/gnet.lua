@@ -24,7 +24,7 @@ function GNet.Server:new(options)
     self.id = os.getComputerID()
 
     ---@type GNet.Server.EndpointConfig[]
-    self.endpoints = options.endpointConfigs or {}
+    self.endpointConfigs = options.endpointConfigs or {}
 
     peripheral.find("modem", rednet.open)
 end
@@ -32,15 +32,15 @@ end
 function GNet.Server:Run()
     local endpointCallbacks = {}
 
-    for _, endpoint in ipairs(self.endpoints) do
-        print(f("Registering Endpoint: %s -> %s"), endpoint.protocol, tostring(endpoint.callback))
+    for _, endpointConfig in ipairs(self.endpointConfigs) do
+        print(f("Registering Endpoint: %s -> %s"), endpointConfig.protocol, tostring(endpointConfig.callback))
         table.insert(
             endpointCallbacks,
             function()
-                self:Log(f("Listening for: [%s]", endpoint))
+                self:Log(f("Listening for: [%s]", endpointConfig))
                 while true do
-                    local id, msg = rednet.receive(endpoint.protocol)
-                    endpoint.callback(self, id, msg)
+                    local id, msg = rednet.receive(endpointConfig.protocol)
+                    endpointConfig.callback(self, id, msg)
                 end
             end
         )

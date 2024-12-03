@@ -27,10 +27,10 @@ end
 function TUtil:Concat(tableA, tableB)
     local concatTable = {}
 
-    for i in ipairs(tableA) do
+    for _, i in ipairs(tableA) do
         table.insert(concatTable, i)
     end
-    for i in ipairs(tableB) do
+    for _, i in ipairs(tableB) do
         table.insert(concatTable, i)
     end
 
