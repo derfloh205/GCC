@@ -1,4 +1,4 @@
-local Object = require("GCC/Util/classic")
+local Object = require("GCC/Util/classics")
 local p = require("cc.pretty")
 local f = string.format
 
