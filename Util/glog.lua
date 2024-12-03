@@ -16,8 +16,8 @@ function GLogAble:new(options)
     self.log = false
     self.logFile = ""
     self.clearLog = options.clearLog
-    self:SetLog(options.log)
     self:SetLogFile(options.logFile)
+    self:SetLog(options.log)
 end
 
 ---@param log boolean
