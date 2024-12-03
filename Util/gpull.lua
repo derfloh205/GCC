@@ -155,10 +155,11 @@ function GPull:UpdateTree(commitSha, path, treeBaseData)
     local treeAPIData = textutils.unserialiseJSON(treeResponse.readAll())
     -- base path is always not cached cause a commit needs changes
     if path ~= "" then
-        if self:IsShaCached(treeBaseData.sha, path) then
+        local treePath = fs.combine(repo, path)
+        if self:IsShaCached(treeBaseData.sha, treePath) then
             return
         else
-            self:UpdateSha(treeBaseData.sha, path)
+            self:UpdateSha(treeBaseData.sha, treePath)
         end
     end
 
