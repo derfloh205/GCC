@@ -53,6 +53,8 @@ local headers = {
 
 ---@type table<string, boolean>
 GPull.commitPaths = {}
+---@type table<string, boolean>
+GPull.cachedPaths = {}
 
 function GPull:SplitPath(pathString)
     local elements = {}
@@ -60,6 +62,17 @@ function GPull:SplitPath(pathString)
         table.insert(elements, p)
     end
     return elements
+end
+
+function GPull:GetParentPaths(pathString)
+    local splitPath = self:SplitPath(pathString)
+    local parentPaths = {}
+    local cPath = ""
+    for _, part in ipairs(splitPath) do
+        cPath = fs.combine(cPath, part)
+        table.insert(parentPaths, cPath)
+    end
+    return parentPaths
 end
 
 function GPull:GetConfig()
@@ -92,7 +105,11 @@ end
 function GPull:IsShaCached(sha, id)
     self.commitPaths[id] = true
     local config = self:GetConfig()
-    return sha == config.shaMap[id]
+    local cached = sha == config.shaMap[id]
+    if cached then
+        self.cachedPaths[id] = true
+    end
+    return cached
 end
 
 function GPull:Get(url)
@@ -157,18 +174,23 @@ end
 function GPull:RemoveDeletedFiles()
     local config = self:GetConfig()
     for path, _ in pairs(config.shaMap) do
-        local pathParts = self:SplitPath(path)
-        local pathCommited = false
-        for _, part in ipairs(pathParts) do
-            if self.commitPaths[part] then
-                pathCommited = true
-                break
-            end
-        end
-        if not pathCommited then
-            print("Deleting: " .. path)
+        if self.commitPaths[path] then
+            print("Keep Changes: " .. path)
         else
-            print("No Changes: " .. path)
+            -- check if myself or parent path was cached
+            local parentPaths = GPull:GetParentPaths(path)
+            local pathCached = false
+            for _, path in ipairs(parentPaths) do
+                if self.cachedPaths[path] then
+                    pathCached = true
+                    break
+                end
+            end
+            if pathCached then
+                print("No Changes: " .. path)
+            else
+                print("Delete: " .. path)
+            end
         end
     end
 end
@@ -180,6 +202,11 @@ function GPull:PullRepository()
     ---@type GHAPI.CommitAPIData[]
     local commitResponseData = textutils.unserialiseJSON(commitResponse.readAll())
     local commitSha = commitResponseData[1].sha
+    local config = self:GetConfig()
+    if commitSha == config.shaMap["COMMIT"] then
+        print("No Changes")
+        return
+    end
     self:UpdateTree(commitSha, "", commitResponseData[1].commit.tree)
     self:RemoveDeletedFiles()
 end
