@@ -52,9 +52,7 @@ local headers = {
 }
 
 ---@type table<string, boolean>
-GPull.updatedPaths = {}
----@type table<string, boolean>
-GPull.allPaths = {}
+GPull.commitPaths = {}
 
 function GPull:GetConfig()
     if not fs.exists(GPull.CONFIG_FILE) then
@@ -76,7 +74,6 @@ function GPull:WriteConfig(config)
 end
 
 function GPull:UpdateSha(sha, id)
-    self.updatedPaths[id] = true
     local config = self:GetConfig()
     config.shaMap[id] = sha
     self:WriteConfig(config)
@@ -85,7 +82,7 @@ end
 ---@param sha string
 ---@param id string | "COMMIT"
 function GPull:IsShaCached(sha, id)
-    self.allPaths[id] = true
+    self.commitPaths[id] = true
     local config = self:GetConfig()
     return sha == config.shaMap[id]
 end
@@ -150,8 +147,9 @@ function GPull:UpdateTree(commitSha, path, treeBaseData)
 end
 
 function GPull:RemoveDeletedFiles()
-    for path, _ in pairs(self.allPaths) do
-        if not self.updatedPaths[path] then
+    local config = self:GetConfig()
+    for path, _ in pairs(config.shaMap) do
+        if not self.commitPaths[path] then
             print("Deleting: " .. path)
         end
     end
