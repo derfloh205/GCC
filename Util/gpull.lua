@@ -180,8 +180,8 @@ function GPull:RemoveDeletedFiles()
             -- check if myself or parent path was cached
             local parentPaths = GPull:GetParentPaths(path)
             local pathCached = false
-            for _, path in ipairs(parentPaths) do
-                if self.cachedPaths[path] then
+            for _, parentPath in ipairs(parentPaths) do
+                if self.cachedPaths[parentPath] then
                     pathCached = true
                     break
                 end
