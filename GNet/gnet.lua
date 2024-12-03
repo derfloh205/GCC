@@ -33,7 +33,7 @@ function GNet.Server:Run()
     local endpointCallbacks = {}
 
     for _, endpointConfig in ipairs(self.endpointConfigs) do
-        print(f("Registering Endpoint: %s -> %s"), endpointConfig.protocol, tostring(endpointConfig.callback))
+        print(f("Registering Endpoint: %s -> %s", endpointConfig.protocol, tostring(endpointConfig.callback)))
         table.insert(
             endpointCallbacks,
             function()
