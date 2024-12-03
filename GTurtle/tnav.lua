@@ -194,21 +194,6 @@ function TNAV.GridMap:GetGridString(z)
     return gridString
 end
 
----@class GTurtle.TNAV.PathNode.Options
----@field pos Vector
----@field lNode GTurtle.TNAV.PathNode?
-
----@class GTurtle.TNAV.PathNode : Object
----@overload fun(options: GTurtle.TNAV.PathNode.Options) : GTurtle.TNAV.PathNode
-TNAV.PathNode = Object:extend()
-
-function TNAV.PathNode:new(options)
-    options = options or {}
-    self.pos = options.pos
-    self.lNode = options.lNode
-    self.nNode = nil
-end
-
 ---@class GTurtle.TNAV.GridNav.Options
 ---@field gTurtle GTurtle.Base
 ---@field initPos Vector
@@ -225,18 +210,9 @@ function TNAV.GridNav:new(options)
     self.head = TNAV.HEAD.N
     self.initPos = options.initPos
     self.pos = self.initPos
-    self.path = {}
+    ---@type GTurtle.TNAV.GridNode[]
+    self.activePath = {}
     self.gridMap = TNAV.GridMap({gridNav = self})
-    self:UpdatePath()
-end
-
-function TNAV.GridNav:UpdatePath()
-    local lastNode = self.path[#self.path]
-
-    local newNode = TNAV.PathNode({pos = self.pos, lNode = lastNode})
-    if lastNode then
-        lastNode.nNode = newNode
-    end
 end
 
 ---@param turn GTurtle.TNAV.TURN
@@ -270,7 +246,6 @@ end
 ---@param dir GTurtle.TNAV.MOVE
 function TNAV.GridNav:OnMove(dir)
     self.pos = self:GetHeadedPosition(self.pos, self.head, dir)
-    self:UpdatePath()
     self.gridMap:UpdateSurroundings()
 end
 
@@ -422,42 +397,38 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN)
     return nil -- No path found
 end
 
-function TNAV.GridNav:CalculatePathToStart()
+---@return GTurtle.TNAV.GridNode[] path?
+function TNAV.GridNav:CalculatePathToInitialPosition()
     local startGN = self.gridMap:GetGridNode(self.pos)
     local goalGN = self.gridMap:GetGridNode(self.initPos)
     return self:CalculatePath(startGN, goalGN)
 end
 
--- Example usage
--- local max_x, max_y, max_z = 5, 5, 5
--- local grid = {}
--- for x = 1, max_x do
---     grid[x] = {}
---     for y = 1, max_y do
---         grid[x][y] = {}
---         for z = 1, max_z do
---             grid[x][y][z] = {x = x, y = y, z = z, is_obstacle = false}
---         end
---     end
--- end
+---@param path GTurtle.TNAV.GridNode[]
+function TNAV.GridNav:SetActivePath(path)
+    self.activePath = path
+end
 
--- -- Define obstacles
--- grid[3][3][3].is_obstacle = true
+---@return boolean
+function TNAV.GridNav:IsInitialPosition()
+    return VUtil:Equal(self.pos, self.initPos)
+end
 
--- -- Start and goal nodes
--- local start = grid[1][1][1]
--- local goal = grid[5][5][5]
+---@return GTurtle.TNAV.MOVE | GTurtle.TNAV.TURN
+function TNAV.GridNav:GetNextMoveAlongPath()
+    local move
+    for i, gridNode in ipairs(self.activePath) do
+        if VUtil:Equal(gridNode.pos, self.pos) then
+            -- @ gridnode for current path
+            local nextGN = self.activePath[i + 1]
+            if nextGN then
+                local nextPos = nextGN.pos
+            --TODO: Determine vector diff and needed turn or move to advance towards next gn
+            end
+        end
+    end
 
--- -- Find the path
--- local path = astar(grid, start, goal, max_x, max_y, max_z)
--- if path then
---     for _, p in ipairs(path) do
---         print("Step: x=" .. p.x .. ", y=" .. p.y .. ", z=" .. p.z)
---     end
--- else
---     print("No path found.")
--- end
-
----
+    return move
+end
 
 return TNAV

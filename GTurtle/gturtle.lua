@@ -2,6 +2,7 @@ local TUtil = require("GCC/Util/tutil")
 local TNav = require("GCC/GTurtle/tnav")
 local TNet = require("GCC/GTurtle/tnet")
 local GLogAble = require("GCC/Util/glog")
+local VUtil = require("GCC/Util/vutil")
 local f = string.format
 
 ---@class GTurtle
@@ -49,7 +50,7 @@ function GTurtle.Base:new(options)
     self.term.clear()
     self.term.setCursorPos(1, 1)
 
-    self.nav = TNav.GridNav({gTurtle = self, initPos = vector.new(0, 0, 0)})
+    self.tnav = TNav.GridNav({gTurtle = self, initPos = vector.new(0, 0, 0)})
     self.tNetClient =
         TNet.TurtleHostClient {
         gTurtle = self,
@@ -126,7 +127,7 @@ function GTurtle.Base:Move(dir)
     end
 
     if moved then
-        self.nav:OnMove(dir)
+        self.tnav:OnMove(dir)
         if self.visualizeGridOnMove then
             self:VisualizeGrid()
         end
@@ -171,7 +172,7 @@ function GTurtle.Base:Turn(turn)
     end
 
     if turned then
-        self.nav:OnTurn(turn)
+        self.tnav:OnTurn(turn)
         if self.visualizeGridOnMove then
             self:VisualizeGrid()
         end
@@ -198,9 +199,21 @@ function GTurtle.Base:VisualizeGrid()
     -- visualize on redirected terminal (or current if there is none)
     term.clear()
     term.setCursorPos(1, 1)
-    local gridString = self.nav.gridMap:GetGridString(self.nav.pos.z)
+    local gridString = self.tnav.gridMap:GetGridString(self.tnav.pos.z)
     print(gridString)
     self.tNetClient:SendReplace(gridString)
+end
+
+function GTurtle.Base:NavigateToInitialPosition()
+    local path = self.tnav:CalculatePathToInitialPosition()
+    if path then
+        self.tnav:SetActivePath(path)
+        while not self.tnav:IsInitialPosition() do
+            local nextMove = self.tnav:GetNextMoveAlongPath()
+        end
+    else
+        self:Log("NavigateToInitialPosition: No Path Found")
+    end
 end
 
 ---@class GTurtle.Rubber.Options : GTurtle.Base.Options
