@@ -26,14 +26,23 @@ function TurtleNet.TurtleHost:new(options)
     options = options or {}
     ---@type GNet.Server.EndpointConfig[]
     local defaultEndpointConfigs = {
-        [self.PROTOCOL.TURTLE_HOST_SEARCH] = self.OnTurtleHostSearch,
-        [self.PROTOCOL.LOG] = self.OnLog,
-        [self.PROTOCOL.REPLACE] = self.OnReplace
+        {
+            protocol = self.PROTOCOL.TURTLE_HOST_SEARCH,
+            callback = self.OnTurtleHostSearch
+        },
+        {
+            protocol = self.PROTOCOL.LOG,
+            callback = self.OnLog
+        },
+        {
+            protocol = self.PROTOCOL.REPLACE,
+            callback = self.OnReplace
+        }
     }
 
     options.endpointConfigs = options.endpointConfigs or {}
 
-    TUtil:Inject(options.endpointConfigs, defaultEndpointConfigs)
+    options.endpointConfigs = TUtil:Concat(options.endpointConfigs or {}, defaultEndpointConfigs)
 
     ---@diagnostic disable-next-line: redundant-parameter
     TurtleNet.TurtleHost.super.new(self, options)

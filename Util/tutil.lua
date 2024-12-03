@@ -21,4 +21,20 @@ function TUtil:Inject(tableA, tableB)
     end
 end
 
+---@param tableA table list
+---@param tableB table list
+---@return table
+function TUtil:Concat(tableA, tableB)
+    local concatTable = {}
+
+    for i in ipairs(tableA) do
+        table.insert(concatTable, i)
+    end
+    for i in ipairs(tableB) do
+        table.insert(concatTable, i)
+    end
+
+    return concatTable
+end
+
 return TUtil
