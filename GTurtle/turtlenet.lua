@@ -106,7 +106,6 @@ function TurtleNet.TurtleHostClient:SearchTurtleHost()
 
     if self.hostID then
         self.gTurtle:Log(string.format("Found Turtle Host (ID: %d)", self.hostID))
-        self:SendLog("Hello There!")
     else
         self.gTurtle:Log("No Turtle Host Found")
     end
