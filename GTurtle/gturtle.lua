@@ -1,6 +1,6 @@
 local TUtil = require("GCC/Util/tutil")
-local TNav = require("GCC/GTurtle/turtlenavigation")
-local TNet = require("GCC/GTurtle/turtlenet")
+local TNav = require("GCC/GTurtle/tnav")
+local TNet = require("GCC/GTurtle/tnet")
 local GLogAble = require("GCC/Util/glog")
 local f = string.format
 

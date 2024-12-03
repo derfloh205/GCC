@@ -2,7 +2,7 @@ local GTurtle = require("GCC/GTurtle/gturtle")
 
 local RT =
     GTurtle.Rubber {
-    name = "Rubber_1",
+    name = "Rubby",
     minimumFuel = 100,
     log = true,
     clearLog = true,
@@ -10,7 +10,7 @@ local RT =
 }
 
 RT:Refuel()
-RT:ExecuteMovement("FFF")
+RT:ExecuteMovement("FRFLFFLFFRFLFFRFFR")
 
 local path = RT.nav:CalculatePathToStart()
 
