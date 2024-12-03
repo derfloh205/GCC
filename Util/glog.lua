@@ -31,6 +31,10 @@ function GLogAble:SetLog(log)
 end
 
 function GLogAble:SetLogFile(logFile)
+    -- delete old logfile
+    if fs.exists(self.logFile) then
+        fs.delete(self.logFile)
+    end
     self.logFile = logFile or f("PC_%d.log", os.getComputerID())
 end
 
