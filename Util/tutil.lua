@@ -12,4 +12,13 @@ function TUtil:tContains(table, element)
     return false
 end
 
+--- Inject tableB into tableA
+---@param tableA table
+---@param tableB table
+function TUtil:Inject(tableA, tableB)
+    for k, v in pairs(tableB) do
+        tableA[k] = v
+    end
+end
+
 return TUtil

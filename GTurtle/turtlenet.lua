@@ -1,12 +1,12 @@
 local GLogAble = require("GCC/Util/glog")
 local GNet = require("GCC/GNet/gnet")
+local TUtil = require("GCC/Util/tutil")
 local f = string.format
 
 ---@class GTurtle.TurtleNet
 local TurtleNet = {}
 
----@class TurtleNet.TurtleHost.Options
----@field term table?
+---@class TurtleNet.TurtleHost.Options : GNet.Server.Options
 
 ---@class TurtleNet.TurtleHost : GNet.Server
 ---@overload fun(options: TurtleNet.TurtleHost.Options) : TurtleNet.TurtleHost
@@ -24,16 +24,19 @@ TurtleNet.TurtleHost.PROTOCOL = {
 ---@param options TurtleNet.TurtleHost.Options
 function TurtleNet.TurtleHost:new(options)
     options = options or {}
-    ---@type GNet.Server.Options
-    local serverOptions = {
-        endpointConfigs = {
-            [self.PROTOCOL.TURTLE_HOST_SEARCH] = self.OnTurtleHostSearch,
-            [self.PROTOCOL.LOG] = self.OnLog,
-            [self.PROTOCOL.REPLACE] = self.OnReplace
-        }
+    ---@type GNet.Server.EndpointConfig[]
+    local defaultEndpointConfigs = {
+        [self.PROTOCOL.TURTLE_HOST_SEARCH] = self.OnTurtleHostSearch,
+        [self.PROTOCOL.LOG] = self.OnLog,
+        [self.PROTOCOL.REPLACE] = self.OnReplace
     }
+
+    options.endpointConfigs = options.endpointConfigs or {}
+
+    TUtil:Inject(options.endpointConfigs, defaultEndpointConfigs)
+
     ---@diagnostic disable-next-line: redundant-parameter
-    TurtleNet.TurtleHost.super.new(self, serverOptions)
+    TurtleNet.TurtleHost.super.new(self, options)
 
     self.name = f("TurtleHost[%d]", self.id)
     os.setComputerLabel(self.name)
