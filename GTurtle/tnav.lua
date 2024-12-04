@@ -195,7 +195,7 @@ function TNAV.GridMap:GetGridString(z)
     local gridString = ""
 
     for y = maxY, minY, -1 do
-        for x = minX, maxX do
+        for x = maxX, minX, -1 do
             local gridNode = self:GetGridNode(vector.new(x, y, z))
             local c = " X "
             if gridNode:IsTurtlePos() then
@@ -327,7 +327,7 @@ function TNAV.GridNav:GetHeadedPosition(pos, head, dir)
 
     -- possible movement directions that cause coordination subtraction
     if
-        dir == TNAV.MOVE.D or (head == TNAV.HEAD.W and dir == TNAV.MOVE.F) or
+        dir == TNAV.MOVE.D or (head == TNAV.HEAD.E and dir == TNAV.MOVE.F) or
             (head == TNAV.HEAD.E and dir == TNAV.MOVE.B) or
             (head == TNAV.HEAD.N and dir == TNAV.MOVE.B) or
             (head == TNAV.HEAD.S and dir == TNAV.MOVE.F)
