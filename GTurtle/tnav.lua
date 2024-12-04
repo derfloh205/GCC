@@ -41,6 +41,28 @@ TNAV.M_VEC = {
     [TNAV.MOVE.D] = vector.new(0, 0, 1)
 }
 
+-- Required Heading by Vector Diff between adjacent positions
+TNAV.M_HEAD = {
+    [0] = {
+        [0] = {
+            [-1] = TNAV.MOVE.U,
+            [1] = TNAV.MOVE.D
+        },
+        [-1] = {[0] = TNAV.HEAD.N},
+        [1] = {[0] = TNAV.HEAD.S}
+    },
+    [1] = {
+        [0] = {
+            [0] = TNAV.HEAD.E
+        }
+    },
+    [-1] = {
+        [0] = {
+            [0] = TNAV.HEAD.W
+        }
+    }
+}
+
 ---@class GTurtle.TNAV.GridNode.Options
 ---@field gridMap GTurtle.TNAV.GridMap
 ---@field pos Vector
@@ -414,19 +436,84 @@ function TNAV.GridNav:IsInitialPosition()
     return VUtil:Equal(self.pos, self.initPos)
 end
 
----@return GTurtle.TNAV.MOVE | GTurtle.TNAV.TURN
+---@return (GTurtle.TNAV.MOVE | GTurtle.TNAV.TURN | nil) move?
 function TNAV.GridNav:GetNextMoveAlongPath()
+    if self:IsInitialPosition() or #self.activePath == 0 then
+        return
+    end
+
     local move
+
     for i, gridNode in ipairs(self.activePath) do
         if VUtil:Equal(gridNode.pos, self.pos) then
             -- @ gridnode for current path
             local nextGN = self.activePath[i + 1]
             if nextGN then
                 local nextPos = nextGN.pos
-            --TODO: Determine vector diff and needed turn or move to advance towards next gn
+                --TODO: Determine vector diff and needed turn or move to advance towards next gridNode
+                local vecDiff = VUtil:Sub(nextPos, self.pos) -- e.g: [1, 1, 1] - [1, 2, 1] = [0, -1,  0]
+                local requiredHead = TNAV.M_VEC[vecDiff.x][vecDiff.y][vecDiff.z]
+
+                if not requiredHead then
+                    self.gTurtle:Log("Could not determine next move!")
+                    self.gTurtle:Log(f("- VecDiff: %s)", tostring(vecDiff)))
+                    self.gTurtle:Log(f("- Pos: %s)", tostring(self.pos)))
+                    self.gTurtle:Log(f("- NextPos: %s)", tostring(nextPos)))
+                    return
+                end
+                -- if the next pos is up or below directly return it as next move (no heading required)
+                if requiredHead == TNAV.MOVE.U or requiredHead == TNAV.MOVE.D then
+                    return requiredHead
+                end
+                -- determine available move to reach the next position based on current heading and required heading
+                -- e.g. if I need to move nord, and I am looking south, I can also just move back
+                -- but if I need to look at north and I am looking east, I need to turn right
+                if requiredHead == TNAV.HEAD.N then
+                    if self.head == TNAV.HEAD.N then
+                        return TNAV.MOVE.F
+                    elseif self.head == TNAV.HEAD.S then
+                        return TNAV.MOVE.B
+                    elseif self.head == TNAV.HEAD.E then
+                        return TNAV.TURN.R
+                    elseif self.head == TNAV.HEAD.W then
+                        return TNAV.TURN.L
+                    end
+                elseif requiredHead == TNAV.HEAD.S then
+                    if self.head == TNAV.HEAD.N then
+                        return TNAV.MOVE.B
+                    elseif self.head == TNAV.HEAD.S then
+                        return TNAV.MOVE.F
+                    elseif self.head == TNAV.HEAD.E then
+                        return TNAV.TURN.L
+                    elseif self.head == TNAV.HEAD.W then
+                        return TNAV.TURN.R
+                    end
+                elseif requiredHead == TNAV.HEAD.E then
+                    if self.head == TNAV.HEAD.N then
+                        return TNAV.TURN.L
+                    elseif self.head == TNAV.HEAD.S then
+                        return TNAV.TURN.R
+                    elseif self.head == TNAV.HEAD.E then
+                        return TNAV.MOVE.F
+                    elseif self.head == TNAV.HEAD.W then
+                        return TNAV.MOVE.B
+                    end
+                elseif requiredHead == TNAV.HEAD.W then
+                    if self.head == TNAV.HEAD.N then
+                        return TNAV.TURN.R
+                    elseif self.head == TNAV.HEAD.S then
+                        return TNAV.TURN.L
+                    elseif self.head == TNAV.HEAD.E then
+                        return TNAV.MOVE.B
+                    elseif self.head == TNAV.HEAD.W then
+                        return TNAV.MOVE.F
+                    end
+                end
             end
         end
     end
+
+    self.gTurtle:Log("Could not determine next move on active path!")
 
     return move
 end

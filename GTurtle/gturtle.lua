@@ -208,9 +208,14 @@ function GTurtle.Base:NavigateToInitialPosition()
     local path = self.tnav:CalculatePathToInitialPosition()
     if path then
         self.tnav:SetActivePath(path)
-        while not self.tnav:IsInitialPosition() do
+        repeat
             local nextMove = self.tnav:GetNextMoveAlongPath()
-        end
+            if nextMove then
+                self:Log(f("Navigating: %s", tostring(nextMove)))
+                self:ExecuteMovement(nextMove)
+            end
+        until not nextMove
+        self:Log(f("Arrived on Initial Position"))
     else
         self:Log("NavigateToInitialPosition: No Path Found")
     end
