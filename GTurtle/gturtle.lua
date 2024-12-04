@@ -204,8 +204,9 @@ function GTurtle.Base:VisualizeGrid()
     self.tNetClient:SendReplace(gridString)
 end
 
-function GTurtle.Base:NavigateToInitialPosition()
-    local path = self.tnav:CalculatePathToInitialPosition()
+---@param goalPos Vector
+function GTurtle.Base:NavigateToPosition(goalPos)
+    local path = self.tnav:CalculatePathToPosition(goalPos)
     if path then
         self.tnav:SetActivePath(path)
         repeat
@@ -217,8 +218,12 @@ function GTurtle.Base:NavigateToInitialPosition()
         until not nextMove
         self:Log(f("Arrived on Initial Position"))
     else
-        self:Log("NavigateToInitialPosition: No Path Found")
+        self:Log("Navigation: No Path Available")
     end
+end
+
+function GTurtle.Base:NavigateToInitialPosition()
+    self:NavigateToPosition(self.tnav.initPos)
 end
 
 ---@class GTurtle.Rubber.Options : GTurtle.Base.Options

@@ -4,6 +4,8 @@ local TUtil = require("GCC/Util/tutil")
 local f = string.format
 local pretty = require("cc.pretty")
 
+---@alias GTurtle.TNAV.Path GTurtle.TNAV.GridNode[]
+
 ---@class GTurtle.TNAV
 local TNAV = {}
 
@@ -342,7 +344,7 @@ end
 --- Yes it uses table refs as keys *_*
 ---@param came_from table<GTurtle.TNAV.GridNode, GTurtle.TNAV.GridNode>
 ---@param current GTurtle.TNAV.GridNode
----@return GTurtle.TNAV.GridNode[] path
+---@return GTurtle.TNAV.Path path
 function TNAV.GridNav:ReconstructPath(came_from, current)
     local path = {}
     while current do
@@ -419,14 +421,25 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN)
     return nil -- No path found
 end
 
----@return GTurtle.TNAV.GridNode[] path?
+---@return GTurtle.TNAV.Path path?
 function TNAV.GridNav:CalculatePathToInitialPosition()
+    return self:CalculatePathToPosition(self.initPos)
+end
+
+---@param goalPos Vector
+---@return GTurtle.TNAV.Path? path
+function TNAV.GridNav:CalculatePathToPosition(goalPos)
     local startGN = self.gridMap:GetGridNode(self.pos)
-    local goalGN = self.gridMap:GetGridNode(self.initPos)
+    local goalGN = self.gridMap:GetGridNode(goalPos)
+
+    if not goalGN or not startGN then
+        return
+    end
+
     return self:CalculatePath(startGN, goalGN)
 end
 
----@param path GTurtle.TNAV.GridNode[]
+---@param path GTurtle.TNAV.Path
 function TNAV.GridNav:SetActivePath(path)
     self.activePath = path
 end
