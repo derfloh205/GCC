@@ -220,7 +220,6 @@ end
 
 ---@class GTurtle.TNAV.GridNav.Options
 ---@field gTurtle GTurtle.Base
----@field initPos Vector
 
 ---@class GTurtle.TNAV.GridNav : Object
 ---@overload fun(options: GTurtle.TNAV.GridNav.Options) : GTurtle.TNAV.GridNav
@@ -232,11 +231,22 @@ function TNAV.GridNav:new(options)
     self.gTurtle = options.gTurtle
     ---@type GTurtle.TNAV.HEAD
     self.head = TNAV.HEAD.N
-    self.initPos = options.initPos
+    -- try to locate initial pos via gps
+    local gpsPos = self:GetGPSPos()
+    self.gpsEnabled = gpsPos ~= nil
+    self.initPos = gpsPos or vector.new(0, 0, 0)
     self.pos = self.initPos
     ---@type GTurtle.TNAV.GridNode[]
     self.activePath = {}
     self.gridMap = TNAV.GridMap({gridNav = self})
+end
+
+---@return Vector? pos
+function TNAV.GridNav:GetGPSPos()
+    local gpsPos = {gps.locate()}
+    if gpsPos and #gpsPos == 3 then
+        return vector.new(gpsPos[1], gpsPos[2], gpsPos[3])
+    end
 end
 
 ---@param turn GTurtle.TNAV.TURN

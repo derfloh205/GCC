@@ -50,7 +50,10 @@ function GTurtle.Base:new(options)
     self.term.clear()
     self.term.setCursorPos(1, 1)
 
-    self.tnav = TNav.GridNav({gTurtle = self, initPos = vector.new(0, 0, 0)})
+    self.tnav = TNav.GridNav({gTurtle = self})
+    if self.tnav.gpsEnabled then
+        self:Log(f("Using GPS Position: %s", self.tnav.pos))
+    end
     self.tNetClient =
         TNet.TurtleHostClient {
         gTurtle = self,
