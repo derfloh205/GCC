@@ -111,9 +111,9 @@ function TNAV.GridMap:new(options)
     options = options or {}
     self.gridNav = options.gridNav
     self.boundaries = {
-        x = {max = 0, min = 0},
-        y = {max = 0, min = 0},
-        z = {max = 0, min = 0}
+        x = {max = self.gridNav.pos.x, min = self.gridNav.pos.x},
+        y = {max = self.gridNav.pos.y, min = self.gridNav.pos.y},
+        z = {max = self.gridNav.pos.z, min = self.gridNav.pos.z}
     }
     -- 3D Array
     ---@type table<number, table<number, table<number, GTurtle.TNAV.GridNode>>>
