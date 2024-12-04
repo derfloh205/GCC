@@ -506,7 +506,7 @@ function TNAV.GridNav:GetNextMoveAlongPath()
             local nextGN = self.activePath[i + 1]
             if nextGN then
                 local nextPos = nextGN.pos
-                --TODO: Determine vector diff and needed turn or move to advance towards next gridNode
+                -- Determine vector diff and needed turn or move to advance towards next gridNode
                 local vecDiff = VUtil:Sub(self.pos, nextPos) -- e.g: [1, 1, 1] - [1, 2, 1] = [0, -1,  0]
                 local requiredHead = TNAV.M_HEAD[vecDiff.x][vecDiff.y][vecDiff.z]
 
