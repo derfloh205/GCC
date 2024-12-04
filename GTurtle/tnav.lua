@@ -194,6 +194,17 @@ function TNAV.GridMap:GetGridString(z)
     local maxY = boundaries.y.max
     local gridString = ""
 
+    -- N Label
+    for i = maxX, maxX, -1 do
+        if i % math.floor(maxX / 2) == 0 then
+            gridString = gridString .. "N"
+        else
+            gridString = gridString .. " "
+        end
+    end
+
+    gridString = gridString .. "\n"
+
     for y = maxY, minY, -1 do
         for x = maxX, minX, -1 do
             local gridNode = self:GetGridNode(vector.new(x, y, z))
