@@ -55,12 +55,12 @@ TNAV.M_HEAD = {
     },
     [1] = {
         [0] = {
-            [0] = TNAV.HEAD.E
+            [0] = TNAV.HEAD.W
         }
     },
     [-1] = {
         [0] = {
-            [0] = TNAV.HEAD.W
+            [0] = TNAV.HEAD.E
         }
     }
 }
@@ -507,7 +507,7 @@ function TNAV.GridNav:GetNextMoveAlongPath()
             if nextGN then
                 local nextPos = nextGN.pos
                 --TODO: Determine vector diff and needed turn or move to advance towards next gridNode
-                local vecDiff = VUtil:Sub(nextPos, self.pos) -- e.g: [1, 1, 1] - [1, 2, 1] = [0, -1,  0]
+                local vecDiff = VUtil:Sub(self.pos, nextPos) -- e.g: [1, 1, 1] - [1, 2, 1] = [0, -1,  0]
                 local requiredHead = TNAV.M_HEAD[vecDiff.x][vecDiff.y][vecDiff.z]
 
                 if not requiredHead then
