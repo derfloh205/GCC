@@ -55,12 +55,12 @@ TNAV.M_HEAD = {
     },
     [1] = {
         [0] = {
-            [0] = TNAV.HEAD.E
+            [0] = TNAV.HEAD.W
         }
     },
     [-1] = {
         [0] = {
-            [0] = TNAV.HEAD.W
+            [0] = TNAV.HEAD.E
         }
     }
 }
