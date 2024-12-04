@@ -517,7 +517,8 @@ function TNAV.GridNav:GetNextMoveAlongPath()
                 if requiredHead == TNAV.MOVE.U or requiredHead == TNAV.MOVE.D then
                     return requiredHead
                 end
-                self.gTurtle:Log(f("Head: %s | RequiredHead: %s", self.head, requiredHead))
+                self.gTurtle:Log(f("(%s) -> (%s) / (%s)", self.pos, nextPos, vecDiff))
+                self.gTurtle:Log(f("H: %s | R: %s", self.head, requiredHead))
                 -- determine available move to reach the next position based on current heading and required heading
                 -- e.g. if I need to move nord, and I am looking south, I can also just move back
                 -- but if I need to look at north and I am looking east, I need to turn right
