@@ -525,13 +525,11 @@ function TNAV.GridNav:GetNextMoveAlongPath()
                 end
 
                 -- determine available move to reach the next position based on current heading and required heading
-                -- e.g. if I need to move nord, and I am looking south, I can also just move back
-                -- but if I need to look at north and I am looking east, I need to turn right
                 if requiredHead == TNAV.HEAD.N then
                     if self.head == TNAV.HEAD.N then
                         return TNAV.MOVE.F
                     elseif self.head == TNAV.HEAD.S then
-                        return TNAV.MOVE.B
+                        return TNAV.TURN.R
                     elseif self.head == TNAV.HEAD.E then
                         return TNAV.TURN.R
                     elseif self.head == TNAV.HEAD.W then
@@ -539,7 +537,7 @@ function TNAV.GridNav:GetNextMoveAlongPath()
                     end
                 elseif requiredHead == TNAV.HEAD.S then
                     if self.head == TNAV.HEAD.N then
-                        return TNAV.MOVE.B
+                        return TNAV.TURN.R
                     elseif self.head == TNAV.HEAD.S then
                         return TNAV.MOVE.F
                     elseif self.head == TNAV.HEAD.E then
@@ -555,7 +553,7 @@ function TNAV.GridNav:GetNextMoveAlongPath()
                     elseif self.head == TNAV.HEAD.E then
                         return TNAV.MOVE.F
                     elseif self.head == TNAV.HEAD.W then
-                        return TNAV.MOVE.B
+                        return TNAV.TURN.R
                     end
                 elseif requiredHead == TNAV.HEAD.W then
                     if self.head == TNAV.HEAD.N then
@@ -563,7 +561,7 @@ function TNAV.GridNav:GetNextMoveAlongPath()
                     elseif self.head == TNAV.HEAD.S then
                         return TNAV.TURN.L
                     elseif self.head == TNAV.HEAD.E then
-                        return TNAV.MOVE.B
+                        return TNAV.TURN.R
                     elseif self.head == TNAV.HEAD.W then
                         return TNAV.MOVE.F
                     end
