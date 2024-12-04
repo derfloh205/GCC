@@ -50,8 +50,8 @@ TNAV.M_HEAD = {
             [-1] = TNAV.MOVE.U,
             [1] = TNAV.MOVE.D
         },
-        [-1] = {[0] = TNAV.HEAD.N},
-        [1] = {[0] = TNAV.HEAD.S}
+        [-1] = {[0] = TNAV.HEAD.S},
+        [1] = {[0] = TNAV.HEAD.N}
     },
     [1] = {
         [0] = {
@@ -329,8 +329,8 @@ function TNAV.GridNav:GetHeadedPosition(pos, head, dir)
     if
         dir == TNAV.MOVE.D or (head == TNAV.HEAD.W and dir == TNAV.MOVE.F) or
             (head == TNAV.HEAD.E and dir == TNAV.MOVE.B) or
-            (head == TNAV.HEAD.N and dir == TNAV.MOVE.B) or
-            (head == TNAV.HEAD.S and dir == TNAV.MOVE.F)
+            (head == TNAV.HEAD.N and dir == TNAV.MOVE.F) or
+            (head == TNAV.HEAD.S and dir == TNAV.MOVE.B)
      then
         relVec = -relVec
     end
