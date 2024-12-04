@@ -37,4 +37,18 @@ function TUtil:Concat(tableA, tableB)
     return concatTable
 end
 
+---@generic T
+---@generic K
+---@param t table<K, T>
+---@param findFunc fun(element: T, key: K):boolean
+---@return T | nil
+function TUtil:Find(t, findFunc)
+    for k, v in pairs(t) do
+        if findFunc(v, k) then
+            return v
+        end
+    end
+    return nil
+end
+
 return TUtil

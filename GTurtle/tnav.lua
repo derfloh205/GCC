@@ -89,6 +89,17 @@ function TNAV.GridNode:IsEmpty()
     return self.blockData == nil
 end
 
+---@return boolean isOnPath
+function TNAV.GridNode:IsOnPath()
+    local path = self.gridMap.gridNav.activePath
+    return TUtil:Find(
+        path,
+        function(gridNode)
+            return VUtil:Equal(self.pos, gridNode.pos)
+        end
+    ) ~= nil
+end
+
 ---@return boolean isUnknown
 function TNAV.GridNode:IsUnknown()
     return self.unknown
@@ -201,7 +212,11 @@ function TNAV.GridMap:GetGridString(z)
             if gridNode:IsTurtlePos() then
                 c = "[T]"
             elseif gridNode:IsEmpty() then
-                c = "   "
+                if gridNode:IsOnPath() then
+                    c = " . "
+                else
+                    c = "   "
+                end
             elseif gridNode:IsUnknown() then
                 c = " ? "
             end
