@@ -195,7 +195,7 @@ function TNAV.GridMap:GetGridString(z)
     local gridString = ""
 
     for y = maxY, minY, -1 do
-        for x = maxX, minX, -1 do
+        for x = minX, maxX do
             local gridNode = self:GetGridNode(vector.new(x, y, z))
             local c = " X "
             if gridNode:IsTurtlePos() then
@@ -205,10 +205,10 @@ function TNAV.GridMap:GetGridString(z)
             elseif gridNode:IsUnknown() then
                 c = " ? "
             end
-            if x == maxX then
+            if x == minX then
                 c = "|" .. c
             end
-            if x == minX then
+            if x == maxX then
                 c = c .. "|"
             end
             gridString = gridString .. c
