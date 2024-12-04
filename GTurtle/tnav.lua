@@ -220,6 +220,7 @@ end
 
 ---@class GTurtle.TNAV.GridNav.Options
 ---@field gTurtle GTurtle.Base
+---@field initialHead? GTurtle.TNAV.HEAD
 
 ---@class GTurtle.TNAV.GridNav : Object
 ---@overload fun(options: GTurtle.TNAV.GridNav.Options) : GTurtle.TNAV.GridNav
@@ -239,6 +240,34 @@ function TNAV.GridNav:new(options)
     ---@type GTurtle.TNAV.GridNode[]
     self.activePath = {}
     self.gridMap = TNAV.GridMap({gridNav = self})
+
+    if not options.initialHead and self.gpsEnabled then
+        self.gTurtle:Log("Determine initial Heading..")
+        -- try to move forward and back to determine initial heading via gps
+        local moved = turtle.forward()
+        local vecDiff
+        if moved then
+            local newPos = self:GetGPSPos()
+            vecDiff = VUtil:Sub(self.pos, newPos)
+            turtle.back()
+        else
+            moved = turtle.back()
+            if moved then
+                local newPos = self:GetGPSPos()
+                vecDiff = VUtil:Sub(self.pos, newPos)
+                turtle.forward()
+            end
+        end
+        local head = TNAV.M_HEAD[vecDiff.x][vecDiff.y][vecDiff.z]
+        if not head then
+            self.gTurtle:Log("Could not determine heading..")
+        else
+            self.gTurtle:Log(f("Initial Heading: %s", head))
+            self.head = head
+        end
+    else
+        self.head = options.initialHead
+    end
 end
 
 ---@return Vector? pos

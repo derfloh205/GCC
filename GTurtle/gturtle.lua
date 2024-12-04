@@ -21,6 +21,7 @@ GTurtle.TYPES = {
 ---@field minimumFuel? number
 ---@field term? table
 ---@field visualizeGridOnMove? boolean
+---@field initialHead? GTurtle.TNAV.HEAD
 
 ---@class GTurtle.Base : GLogAble
 ---@overload fun(options: GTurtle.Base.Options) : GTurtle.Base
@@ -61,6 +62,10 @@ function GTurtle.Base:new(options)
     self.tnav = TNav.GridNav({gTurtle = self})
     if self.tnav.gpsEnabled then
         self:Log(f("Using GPS Position: %s", tostring(self.tnav.pos)))
+    end
+
+    if not self.tnav.head then
+        error("Turtle not able to determine initial heading")
     end
 end
 
