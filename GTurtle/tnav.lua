@@ -169,10 +169,10 @@ end
 
 function TNAV.GridMap:UpdateSurroundings()
     local scanData = self.gridNav.gTurtle:ScanBlocks()
-    self.gridNav.gTurtle:Log("Scanning Surroundings..")
+    --self.gridNav.gTurtle:Log("Scanning Surroundings..")
 
     for dir, data in pairs(scanData) do
-        self.gridNav.gTurtle:Log(f("%s -> %s", dir, (data and data.name or "Empty")))
+        --self.gridNav.gTurtle:Log(f("%s -> %s", dir, (data and data.name or "Empty")))
         local pos = self.gridNav:GetHeadedPosition(self.gridNav.pos, self.gridNav.head, dir)
         self:UpdateGridNode(pos, data)
     end
