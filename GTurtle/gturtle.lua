@@ -60,7 +60,7 @@ function GTurtle.Base:new(options)
 
     self.tnav = TNav.GridNav({gTurtle = self})
     if self.tnav.gpsEnabled then
-        self:Log(f("Using GPS Position: %s", self.tnav.pos))
+        self:Log(f("Using GPS Position: %s", tostring(self.tnav.pos)))
     end
 end
 
