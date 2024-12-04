@@ -50,10 +50,6 @@ function GTurtle.Base:new(options)
     self.term.clear()
     self.term.setCursorPos(1, 1)
 
-    self.tnav = TNav.GridNav({gTurtle = self})
-    if self.tnav.gpsEnabled then
-        self:Log(f("Using GPS Position: %s", self.tnav.pos))
-    end
     self.tNetClient =
         TNet.TurtleHostClient {
         gTurtle = self,
@@ -61,6 +57,11 @@ function GTurtle.Base:new(options)
         clearLog = options.clearLog,
         logFile = f("TurtleHost[%d].log", self.id)
     }
+
+    self.tnav = TNav.GridNav({gTurtle = self})
+    if self.tnav.gpsEnabled then
+        self:Log(f("Using GPS Position: %s", self.tnav.pos))
+    end
 end
 
 ---@param i number slotIndex
