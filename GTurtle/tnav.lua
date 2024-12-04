@@ -218,32 +218,6 @@ function TNAV.GridMap:GetGridString(z)
     return gridString
 end
 
-function TNAV.GridNav:InitializeHeading()
-    self.gTurtle:Log("Determine initial Heading..")
-    -- try to move forward and back to determine initial heading via gps
-    local moved = turtle.forward()
-    local vecDiff
-    if moved then
-        local newPos = self:GetGPSPos()
-        vecDiff = VUtil:Sub(self.pos, newPos)
-        turtle.back()
-    else
-        moved = turtle.back()
-        if moved then
-            local newPos = self:GetGPSPos()
-            vecDiff = VUtil:Sub(self.pos, newPos)
-            turtle.forward()
-        end
-    end
-    local head = TNAV.M_HEAD[vecDiff.x][vecDiff.y][vecDiff.z]
-    if not head then
-        self.gTurtle:Log("Could not determine heading..")
-    else
-        self.gTurtle:Log(f("Initial Heading: %s", head))
-        self.head = head
-    end
-end
-
 ---@class GTurtle.TNAV.GridNav.Options
 ---@field gTurtle GTurtle.Base
 ---@field initialHead? GTurtle.TNAV.HEAD
@@ -271,6 +245,32 @@ function TNAV.GridNav:new(options)
         self:InitializeHeading()
     else
         self.head = options.initialHead
+    end
+end
+
+function TNAV.GridNav:InitializeHeading()
+    self.gTurtle:Log("Determine initial Heading..")
+    -- try to move forward and back to determine initial heading via gps
+    local moved = turtle.forward()
+    local vecDiff
+    if moved then
+        local newPos = self:GetGPSPos()
+        vecDiff = VUtil:Sub(self.pos, newPos)
+        turtle.back()
+    else
+        moved = turtle.back()
+        if moved then
+            local newPos = self:GetGPSPos()
+            vecDiff = VUtil:Sub(self.pos, newPos)
+            turtle.forward()
+        end
+    end
+    local head = TNAV.M_HEAD[vecDiff.x][vecDiff.y][vecDiff.z]
+    if not head then
+        self.gTurtle:Log("Could not determine heading..")
+    else
+        self.gTurtle:Log(f("Initial Heading: %s", head))
+        self.head = head
     end
 end
 
