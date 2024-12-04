@@ -205,10 +205,10 @@ function TNAV.GridMap:GetGridString(z)
             elseif gridNode:IsUnknown() then
                 c = " ? "
             end
-            if x == minX then
+            if x == maxX then
                 c = "|" .. c
             end
-            if x == maxX then
+            if x == minX then
                 c = c .. "|"
             end
             gridString = gridString .. c
