@@ -211,7 +211,7 @@ function TNAV.GridNode:__tostring()
 end
 
 ---@class GTurtle.TNAV.GridMap.Options
----@field gridNav GTurtle.TNAV.GridNav
+---@field logger GLogAble
 
 ---@class GTurtle.TNAV.GridMap : Object
 ---@overload fun(options: GTurtle.TNAV.GridMap.Options) : GTurtle.TNAV.GridMap
@@ -220,7 +220,7 @@ TNAV.GridMap = Object:extend()
 ---@param options GTurtle.TNAV.GridMap.Options
 function TNAV.GridMap:new(options)
     options = options or {}
-    self.gridNav = options.gridNav
+    self.logger = options.logger
     self.boundaries = nil
     -- 3D Array
     ---@type table<number, table<number, table<number, GTurtle.TNAV.GridNode>>>
@@ -278,29 +278,6 @@ function TNAV.GridMap:GetGridNode(pos)
     return gridNode
 end
 
-function TNAV.GridMap:UpdateSurroundings()
-    local scanLog = ""
-    local scanData = self.gridNav.gTurtle:ScanBlocks()
-
-    for dir, data in pairs(scanData) do
-        scanLog = f("%s %s[%s]", scanLog, dir, (data and "X" or " "))
-        local relativeNode = self.gridNav.currentGN:GetRelativeNode(self.gridNav.head, dir)
-        if data then
-            relativeNode:SetBlockData(data)
-        else
-            relativeNode:SetEmpty()
-        end
-    end
-
-    self.gridNav.gTurtle:FLog("ScanLog: %s", scanLog)
-end
-
-function TNAV.GridMap:LogGrid()
-    local z = self.gridNav.currentGN.pos.z
-    local gridString = self:GetFullGridString(z)
-    self.gridNav.gTurtle:Log(f("Logging Grid at Z = %d:\n%s", z, gridString))
-end
-
 ---@param z number
 ---@param boundaries table
 ---@return string gridString
@@ -345,24 +322,34 @@ function TNAV.GridMap:GetFullGridString(z)
     return self:GetGridStringByBoundary(z, self.boundaries)
 end
 
----@param z number
+---@param centerPos Vector
 ---@param sizeX number
 ---@param sizeY? number
 ---@return string gridString
-function TNAV.GridMap:GetTurtleCenteredGridString(z, sizeX, sizeY)
+function TNAV.GridMap:GetCenteredGridString(centerPos, sizeX, sizeY)
     sizeY = sizeY or sizeX
-    local turtlePos = self.gridNav.currentGN.pos
     local boundaries = {
         x = {
-            min = turtlePos.x - math.floor(sizeX / 2),
-            max = turtlePos.x + math.ceil(sizeX / 2)
+            min = centerPos.x - math.floor(sizeX / 2),
+            max = centerPos.x + math.ceil(sizeX / 2)
         },
         y = {
-            min = turtlePos.y - math.floor(sizeY / 2),
-            max = turtlePos.y + math.ceil(sizeY / 2)
+            min = centerPos.y - math.floor(sizeY / 2),
+            max = centerPos.y + math.ceil(sizeY / 2)
         }
     }
-    return self:GetGridStringByBoundary(z, boundaries)
+    return self:GetGridStringByBoundary(centerPos.z, boundaries)
+end
+
+function TNAV.GridMap:Log(txt)
+    if self.logger then
+        self.logger:Log(txt)
+    end
+end
+function TNAV.GridMap:FLog(...)
+    if self.logger then
+        self.logger:FLog(...)
+    end
 end
 
 ---@class GTurtle.TNAV.Path.Options
@@ -447,7 +434,7 @@ function TNAV.GridNav:new(options)
     local gpsPos = self:GetGPSPos()
     self.gpsEnabled = gpsPos ~= nil
 
-    self.gridMap = TNAV.GridMap({gridNav = self})
+    self.gridMap = TNAV.GridMap({logger = self.gTurtle})
 
     self.initGN = self.gridMap:GetGridNode(gpsPos or vector:new(0, 0, 0))
     self.initGN:SetEmpty()
@@ -474,7 +461,7 @@ function TNAV.GridNav:new(options)
 
     self.gTurtle:Log(f("Initial Heading: %s", self.head))
 
-    self.gridMap:UpdateSurroundings()
+    self:UpdateSurroundings()
 end
 
 ---@return boolean success
@@ -558,13 +545,13 @@ function TNAV.GridNav:OnTurn(turn)
         end
     end
 
-    self.gridMap:UpdateSurroundings()
+    self:UpdateSurroundings()
 end
 
 ---@param dir GTurtle.TNAV.MOVE
 function TNAV.GridNav:OnMove(dir)
     self.currentGN = self.currentGN:GetRelativeNode(self.head, dir)
-    self.gridMap:UpdateSurroundings()
+    self:UpdateSurroundings()
 end
 
 ---@return number
@@ -574,6 +561,23 @@ end
 
 function TNAV.GridNav:LogPos()
     self.gTurtle:Log(string.format("Pos: {%s} Head: %s", tostring(self.currentGN.pos), self.head))
+end
+
+function TNAV.GridNav:UpdateSurroundings()
+    local scanLog = ""
+    local scanData = self.gTurtle:ScanBlocks()
+
+    for dir, data in pairs(scanData) do
+        scanLog = f("%s %s[%s]", scanLog, dir, (data and "X" or " "))
+        local relativeNode = self.currentGN:GetRelativeNode(self.head, dir)
+        if data then
+            relativeNode:SetBlockData(data)
+        else
+            relativeNode:SetEmpty()
+        end
+    end
+
+    self.gTurtle:FLog("ScanLog: %s", scanLog)
 end
 
 --- A*

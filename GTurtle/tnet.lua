@@ -1,6 +1,7 @@
 local GLogAble = require("GCC/Util/glog")
 local GNet = require("GCC/GNet/gnet")
 local TUtil = require("GCC/Util/tutil")
+local TNav = require("GCC/GTurtle/tnav")
 local f = string.format
 
 ---@class GTurtle.TurtleNet
@@ -16,7 +17,8 @@ TurtleNet.TurtleHost = GNet.Server:extend()
 TurtleNet.TurtleHost.PROTOCOL = {
     TURTLE_HOST_SEARCH = "TURTLE_HOST_SEARCH",
     LOG = "LOG",
-    REPLACE = "REPLACE"
+    REPLACE = "REPLACE",
+    MAP_UPDATE = "MAP_UPDATE"
 }
 
 ---@alias TurtleID number
@@ -37,6 +39,10 @@ function TurtleNet.TurtleHost:new(options)
         {
             protocol = self.PROTOCOL.REPLACE,
             callback = self.OnReplace
+        },
+        {
+            protocol = self.PROTOCOL.MAP_UPDATE,
+            callback = self.OnMapUpdate
         }
     }
 
@@ -55,6 +61,10 @@ function TurtleNet.TurtleHost:new(options)
 
     ---@type TurtleID[]
     self.registeredTurtles = {}
+    self.gridMap =
+        TNav.GridMap {
+        logger = self
+    }
 
     self:Log(f("Initializing %s", self.name))
 end
@@ -81,6 +91,14 @@ function TurtleNet.TurtleHost:OnReplace(id, msg)
     print(msg)
 end
 
+---@param id number
+---@param msg string
+function TurtleNet.TurtleHost:OnMapUpdate(id, msg)
+    self:FLog("Received MAP_UPDATE from [%d]", id)
+    local serializedGridMap = msg --[[@as GTurtle.TNAV.GridMap]]
+    self:FLog("Boundary Test: X %d / %d", serializedGridMap.boundaries.x.min, serializedGridMap.boundaries.x.max)
+end
+
 ---@class TurtleNet.TurtleHostClient.Options : GLogAble.Options
 ---@field gTurtle GTurtle.Base
 
@@ -88,7 +106,7 @@ end
 ---@overload fun(options: TurtleNet.TurtleHostClient.Options) : TurtleNet.TurtleHostClient
 TurtleNet.TurtleHostClient = GLogAble:extend()
 
----@param options TurtleNet.TurtleHostClient
+---@param options TurtleNet.TurtleHostClient.Options
 function TurtleNet.TurtleHostClient:new(options)
     options = options or {}
     ---@diagnostic disable-next-line: redundant-parameter
@@ -123,6 +141,13 @@ function TurtleNet.TurtleHostClient:SendReplace(msg)
         return
     end
     rednet.send(self.hostID, msg, TurtleNet.TurtleHost.PROTOCOL.REPLACE)
+end
+
+function TurtleNet.TurtleHostClient:SendGridMap()
+    if not self.hostID then
+        return
+    end
+    rednet.send(self.hostID, self.gTurtle.tnav.gridMap)
 end
 
 return TurtleNet
