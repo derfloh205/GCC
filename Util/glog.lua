@@ -58,7 +58,7 @@ function GLogAble:FLog(...)
     local varArgs = {...}
     local fString = varArgs[1]
     local strings = {}
-    for i, arg in varArgs do
+    for i, arg in ipairs(varArgs) do
         if i > 1 then
             table.insert(strings, tostring(arg))
         end
