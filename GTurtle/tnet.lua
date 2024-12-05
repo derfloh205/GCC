@@ -1,6 +1,7 @@
 local GLogAble = require("GCC/Util/glog")
 local GNet = require("GCC/GNet/gnet")
 local TUtil = require("GCC/Util/tutil")
+local VUtil = require("GCC/Util/vutil")
 local TNav = require("GCC/GTurtle/tnav")
 local f = string.format
 
@@ -75,10 +76,17 @@ function TurtleNet.TurtleHost:new(options)
     self.turtleData = {}
     self.gridMap =
         TNav.GridMap {
-        logger = self
+        logger = self,
+        gridNodeMapFunc = function(gridNode)
+            for id, turtleData in pairs(self.turtleData) do
+                if VUtil:Equal(turtleData.pos, gridNode.pos) then
+                    return f("[%d]", id)
+                end
+            end
+        end
     }
 
-    self:Log(f("Initializing %s", self.name))
+    self:FLog("Initializing %s", self.name)
 end
 
 ---@param id number
@@ -95,20 +103,20 @@ end
 ---@param id number
 ---@param msg string
 function TurtleNet.TurtleHost:OnLog(id, msg)
-    self:Log(f("Received LOG from [%d]", id))
+    self:FLog("Received LOG from [%d]", id)
     print(string.format("[T%d]: %s", id, msg))
 end
 ---@param id number
 ---@param msg string
 function TurtleNet.TurtleHost:OnReplace(id, msg)
-    self:Log(f("Received REPLACE from [%d]", id))
+    self:FLog("Received REPLACE from [%d]", id)
     term.clear()
     term.setCursorPos(1, 1)
     print(msg)
 end
 
 function TurtleNet.TurtleHost:OnTurtlePosUpdate(id, serializedPos)
-    self:Log(f("Received TURTLE_POS_UPDATE from [%d]", id))
+    self:FLog("Received TURTLE_POS_UPDATE from [%d]", id)
     local turtleData = self.turtleData[id]
     if not turtleData then
         return
