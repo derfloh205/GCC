@@ -249,6 +249,7 @@ function GTurtle.Base:NavigateToPosition(goalPos)
                 self:ExecuteMovement(nextMove)
             elseif not isGoal then
                 -- Recalculate Path Based on new Grid Info
+                self:Log("Recalculating Path..")
                 path = self.tnav:CalculatePathToPosition(goalPos)
                 if path then
                     self.tnav:SetActivePath(path)
