@@ -63,7 +63,7 @@ function GTurtle.Base:new(options)
 
     self.tnav = TNav.GridNav({gTurtle = self, avoidUnknown = options.avoidUnknown})
     if self.tnav.gpsEnabled then
-        self:Log(f("Using GPS Position: %s", tostring(self.tnav.pos)))
+        self:Log(f("Using GPS Position: %s", tostring(self.tnav.currentGN.pos)))
     end
 
     if not self.tnav.head then
@@ -210,7 +210,7 @@ function GTurtle.Base:VisualizeGrid()
     -- visualize on redirected terminal (or current if there is none)
     term.clear()
     term.setCursorPos(1, 1)
-    local gridString = self.tnav.gridMap:GetGridString(self.tnav.pos.z)
+    local gridString = self.tnav.gridMap:GetGridString(self.tnav.currentGN.pos.z)
     print(gridString)
     self.tNetClient:SendReplace(gridString)
 end
@@ -234,7 +234,7 @@ function GTurtle.Base:NavigateToPosition(goalPos)
 end
 
 function GTurtle.Base:NavigateToInitialPosition()
-    self:NavigateToPosition(self.tnav.initPos)
+    self:NavigateToPosition(self.tnav.initGN.pos)
 end
 
 ---@class GTurtle.Rubber.Options : GTurtle.Base.Options

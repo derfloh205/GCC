@@ -12,7 +12,7 @@ local RT =
 RT:Refuel()
 RT:ExecuteMovement("FRFLFFLFFRFLFFRFFR")
 
-local path = RT.nav:CalculatePathToStart()
+local path = RT.tnav:CalculatePathToStart()
 
 if path then
     for i, node in ipairs(path) do

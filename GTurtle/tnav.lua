@@ -67,6 +67,7 @@ TNAV.M_HEAD = {
 ---@field gridMap GTurtle.TNAV.GridMap
 ---@field pos Vector
 ---@field blockData table?
+---@field unknown? boolean
 
 ---@class GTurtle.TNAV.GridNode : Object
 ---@overload fun(options: GTurtle.TNAV.GridNode.Options) : GTurtle.TNAV.GridNode
@@ -77,9 +78,17 @@ function TNAV.GridNode:new(options)
     options = options or {}
     self.gridMap = options.gridMap
     self.pos = options.pos
-    self.blockData = options.blockData
-    -- wether the position ever was scannend
+    self:SetBlockData(options.blockData)
+    self.unknown = options.unknown or false
+end
+
+function TNAV.GridNode:SetBlockData(blockData)
+    self.blockData = blockData
     self.unknown = false
+end
+
+function TNAV.GridNode:SetEmpty()
+    self:SetBlockData(nil)
 end
 
 ---@return boolean isEmpty
@@ -105,7 +114,7 @@ end
 
 ---@return boolean isTurtlePos
 function TNAV.GridNode:IsTurtlePos()
-    return VUtil:Equal(self.pos, self.gridMap.gridNav.pos)
+    return self:EqualPos(self.gridMap.gridNav.currentGN)
 end
 
 -- Get valid neighbors in 3D space - Used in A*
@@ -160,6 +169,34 @@ function TNAV.GridNode:EqualPos(gridNode)
     return VUtil:Equal(self.pos, gridNode.pos)
 end
 
+---@param gridNode GTurtle.TNAV.GridNode
+---@return GTurtle.TNAV.HEAD
+function TNAV.GridNode:GetRelativeHeading(gridNode)
+    local vecDiff = VUtil:Sub(self.pos, gridNode.pos)
+
+    return TNAV.M_HEAD[vecDiff.x][vecDiff.y][vecDiff.z]
+end
+
+--- get relative pos by given heading and direction to look at
+---@param head GTurtle.TNAV.HEAD
+---@param dir GTurtle.TNAV.MOVE
+function TNAV.GridNode:GetRelativeNode(head, dir)
+    -- use the z diff vector if dir is up or down else use the x/y vector
+    local relVec = TNAV.M_VEC[dir] or TNAV.M_VEC[head]
+
+    -- possible movement directions that cause coordination subtraction
+    if
+        dir == TNAV.MOVE.D or (head == TNAV.HEAD.W and dir == TNAV.MOVE.F) or
+            (head == TNAV.HEAD.E and dir == TNAV.MOVE.B) or
+            (head == TNAV.HEAD.N and dir == TNAV.MOVE.F) or
+            (head == TNAV.HEAD.S and dir == TNAV.MOVE.B)
+     then
+        relVec = -relVec
+    end
+
+    return self.gridMap:GetGridNode(self.pos + relVec)
+end
+
 ---@class GTurtle.TNAV.GridMap.Options
 ---@field gridNav GTurtle.TNAV.GridNav
 
@@ -172,27 +209,24 @@ function TNAV.GridMap:new(options)
     options = options or {}
     self.gridNav = options.gridNav
     self.boundaries = {
-        x = {max = self.gridNav.pos.x, min = self.gridNav.pos.x},
-        y = {max = self.gridNav.pos.y, min = self.gridNav.pos.y},
-        z = {max = self.gridNav.pos.z, min = self.gridNav.pos.z}
+        x = {max = 0, min = 0},
+        y = {max = 0, min = 0},
+        z = {max = 0, min = 0}
     }
     -- 3D Array
     ---@type table<number, table<number, table<number, GTurtle.TNAV.GridNode>>>
     self.grid = {}
-    -- initialize with currentPos (which is seen as empty)
-    self:UpdateGridNode(self.gridNav.pos, nil)
-    self:UpdateSurroundings()
 end
 
----@param pos Vector
-function TNAV.GridMap:UpdateBoundaries(pos)
-    self.boundaries.x.min = math.min(self.boundaries.x.min, pos.x)
-    self.boundaries.y.min = math.min(self.boundaries.y.min, pos.y)
-    self.boundaries.z.min = math.min(self.boundaries.z.min, pos.z)
+---@param gridNode GTurtle.TNAV.GridNode
+function TNAV.GridMap:UpdateBoundaries(gridNode)
+    self.boundaries.x.min = math.min(self.boundaries.x.min, gridNode.pos.x)
+    self.boundaries.y.min = math.min(self.boundaries.y.min, gridNode.pos.y)
+    self.boundaries.z.min = math.min(self.boundaries.z.min, gridNode.pos.z)
 
-    self.boundaries.x.max = math.max(self.boundaries.x.max, pos.x)
-    self.boundaries.y.max = math.max(self.boundaries.y.max, pos.y)
-    self.boundaries.z.max = math.max(self.boundaries.z.max, pos.z)
+    self.boundaries.x.max = math.max(self.boundaries.x.max, gridNode.pos.x)
+    self.boundaries.y.max = math.max(self.boundaries.y.max, gridNode.pos.y)
+    self.boundaries.z.max = math.max(self.boundaries.z.max, gridNode.pos.z)
 end
 
 --- initializes or updates a scanned grid node
@@ -202,8 +236,6 @@ function TNAV.GridMap:UpdateGridNode(pos, blockData)
     local gridNode = self:GetGridNode(pos)
     gridNode.blockData = blockData or nil
     gridNode.unknown = false
-
-    self:UpdateBoundaries(pos)
 end
 
 -- creates a new gridnode at pos or returns an existing one
@@ -225,6 +257,7 @@ function TNAV.GridMap:GetGridNode(pos)
         gridNode.unknown = true
         self.grid[x][y][z] = gridNode
     end
+    self:UpdateBoundaries(gridNode)
     return gridNode
 end
 
@@ -234,15 +267,15 @@ function TNAV.GridMap:UpdateSurroundings()
 
     for dir, data in pairs(scanData) do
         --self.gridNav.gTurtle:Log(f("%s -> %s", dir, (data and data.name or "Empty")))
-        local pos = self.gridNav:GetHeadedPosition(self.gridNav.pos, self.gridNav.head, dir)
-        self:UpdateGridNode(pos, data)
+        local gridNode = self.gridNav.currentGN:GetRelativeNode(self.gridNav.head, dir)
+        gridNode:SetBlockData(data)
     end
 end
 
 function TNAV.GridMap:LogGrid()
-    self.gridNav.gTurtle:Log(
-        "Logging Grid at Z = " .. self.gridNav.pos.z .. "\n" .. self:GetGridString(self.gridNav.pos.z)
-    )
+    local z = self.gridNav.currentGN.pos.z
+    local gridString = self:GetGridString(z)
+    self.gridNav.gTurtle:Log(f("Logging Grid at Z = %d:\n%s", z, gridString))
 end
 
 ---@param z number
@@ -333,46 +366,75 @@ function TNAV.GridNav:new(options)
     self.gTurtle = options.gTurtle
     ---@type GTurtle.TNAV.HEAD
     self.head = TNAV.HEAD.N
+    self.gridMap = TNAV.GridMap({gridNav = self})
     -- try to locate initial pos via gps
     local gpsPos = self:GetGPSPos()
     self.gpsEnabled = gpsPos ~= nil
-    self.initPos = gpsPos or vector.new(0, 0, 0)
-    self.pos = self.initPos
+    if self.gpsEnabled then
+        self.initGN = self.gridMap:GetGridNode(gpsPos or vector:new(0, 0, 0))
+        self.initGN:SetEmpty()
+    end
+
+    self.currentGN = self.initGN
+
     self.avoidUnknown = options.avoidUnknown or false
     ---@type GTurtle.TNAV.Path?
     self.activePath = nil
-    self.gridMap = TNAV.GridMap({gridNav = self})
 
     if not options.initialHead and self.gpsEnabled then
-        self:InitializeHeading()
+        local success = self:InitializeHeading()
+        if not success then
+            self.gTurtle:Log(f("Could not initialize Turtle Heading"))
+            return false
+        end
     else
         self.head = options.initialHead
     end
+
+    self.gTurtle:Log(f("Initial Heading: %s", self.head))
+
+    self.gridMap:UpdateSurroundings()
 end
 
+---@return boolean success
 function TNAV.GridNav:InitializeHeading()
+    self.initializationAttempts = self.initializationAttempts or 0
+
+    self.initializationAttempts = self.initializationAttempts + 1
+
+    if self.initializationAttempts >= 2 then
+        return false
+    end
+
     self.gTurtle:Log("Determine initial Heading..")
     -- try to move forward and back to determine initial heading via gps
-    local moved = turtle.forward()
-    local vecDiff
-    if moved then
-        local newPos = self:GetGPSPos()
-        vecDiff = VUtil:Sub(self.pos, newPos)
-        turtle.back()
-    else
-        moved = turtle.back()
-        if moved then
-            local newPos = self:GetGPSPos()
-            vecDiff = VUtil:Sub(self.pos, newPos)
-            turtle.forward()
-        end
+    local movedF = turtle.forward()
+    local movedB = false
+    if not movedF then
+        movedB = turtle.back()
     end
-    local head = TNAV.M_HEAD[vecDiff.x][vecDiff.y][vecDiff.z]
+    if not movedF and not movedB then
+        self.gTurtle:Log("- Turning and trying again")
+        turtle.left()
+        return self:InitializeHeading() -- try again
+    end
+
+    if movedF then
+        turtle.back()
+    elseif movedB then
+        turtle.forward()
+    end
+
+    local newGridNode = self.gridMap:GetGridNode(self:GetGPSPos())
+    newGridNode:SetEmpty()
+
+    local head = self.currentGN:GetRelativeHeading(newGridNode)
+
     if not head then
-        self.gTurtle:Log("Could not determine heading..")
+        return false
     else
-        self.gTurtle:Log(f("Initial Heading: %s", head))
         self.head = head
+        return true
     end
 end
 
@@ -414,37 +476,17 @@ end
 
 ---@param dir GTurtle.TNAV.MOVE
 function TNAV.GridNav:OnMove(dir)
-    self.pos = self:GetHeadedPosition(self.pos, self.head, dir)
+    self.currentGN = self.currentGN:GetRelativeNode(self.head, dir)
     self.gridMap:UpdateSurroundings()
 end
 
 ---@return number
 function TNAV.GridNav:GetDistanceFromStart()
-    return VUtil:ManhattanDistance(self.pos, self.initPos)
-end
-
---- get pos by current pos, current heading and direction to look at
----@param pos Vector
----@param head GTurtle.TNAV.HEAD
----@param dir GTurtle.TNAV.MOVE
-function TNAV.GridNav:GetHeadedPosition(pos, head, dir)
-    -- use the z diff vector if dir is up or down else use the x/y vector
-    local relVec = TNAV.M_VEC[dir] or TNAV.M_VEC[head]
-
-    -- possible movement directions that cause coordination subtraction
-    if
-        dir == TNAV.MOVE.D or (head == TNAV.HEAD.W and dir == TNAV.MOVE.F) or
-            (head == TNAV.HEAD.E and dir == TNAV.MOVE.B) or
-            (head == TNAV.HEAD.N and dir == TNAV.MOVE.F) or
-            (head == TNAV.HEAD.S and dir == TNAV.MOVE.B)
-     then
-        relVec = -relVec
-    end
-    return pos + relVec
+    return self.currentGN:GetDistance(self.initGN)
 end
 
 function TNAV.GridNav:LogPos()
-    self.gTurtle:Log(string.format("Pos: {%s} Head: %s", tostring(self.pos), self.head))
+    self.gTurtle:Log(string.format("Pos: {%s} Head: %s", tostring(self.currentGN.pos), self.head))
 end
 
 --- A*
@@ -535,22 +577,16 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN)
     return nil -- No path found
 end
 
----@return GTurtle.TNAV.Path path?
-function TNAV.GridNav:CalculatePathToInitialPosition()
-    return self:CalculatePathToPosition(self.initPos)
-end
-
 ---@param goalPos Vector
 ---@return GTurtle.TNAV.Path? path
 function TNAV.GridNav:CalculatePathToPosition(goalPos)
-    local startGN = self.gridMap:GetGridNode(self.pos)
     local goalGN = self.gridMap:GetGridNode(goalPos)
 
-    if not goalGN or not startGN then
+    if not goalGN then
         return
     end
 
-    return self:CalculatePath(startGN, goalGN)
+    return self:CalculatePath(self.currentGN, goalGN)
 end
 
 ---@param path GTurtle.TNAV.Path
@@ -560,7 +596,7 @@ end
 
 ---@return boolean
 function TNAV.GridNav:IsInitialPosition()
-    return VUtil:Equal(self.pos, self.initPos)
+    return self.currentGN:EqualPos(self.initGN)
 end
 
 ---@return (GTurtle.TNAV.MOVE | GTurtle.TNAV.TURN | nil) move?
@@ -570,23 +606,20 @@ function TNAV.GridNav:GetNextMoveAlongPath()
     end
 
     local move
-    local currentGN = self.gridMap:GetGridNode(self.pos)
+    local currentGN = self.currentGN
     local nextGN = self.activePath:GetNextNode(currentGN)
 
     if nextGN then
-        local nextPos = nextGN.pos
         -- Determine vector diff and needed turn or move to advance towards next gridNode
-        local vecDiff = VUtil:Sub(self.pos, nextPos) -- e.g: [1, 1, 1] - [1, 2, 1] = [0, -1,  0]
-        local requiredHead = TNAV.M_HEAD[vecDiff.x][vecDiff.y][vecDiff.z]
+        local requiredHead = currentGN:GetRelativeHeading(nextGN)
 
         if not requiredHead then
             self.gTurtle:Log("Could not determine next move!")
-            self.gTurtle:Log(f("- VecDiff: %s)", tostring(vecDiff)))
-            self.gTurtle:Log(f("- Pos: %s)", tostring(self.pos)))
-            self.gTurtle:Log(f("- NextPos: %s)", tostring(nextPos)))
+            self.gTurtle:Log(f("- Pos: %s)", tostring(currentGN.pos)))
+            self.gTurtle:Log(f("- NextPos: %s)", tostring(nextGN.pos)))
             return
         end
-        self.gTurtle:Log(f("(%s) -> (%s) / (%s)", tostring(self.pos), tostring(nextPos), tostring(vecDiff)))
+        self.gTurtle:Log(f("(%s) -> (%s)", tostring(currentGN.pos), tostring(nextGN.pos)))
         self.gTurtle:Log(f("H: %s | R: %s", self.head, requiredHead))
         -- if the next pos is up or below directly return it as next move (no heading required)
         if requiredHead == TNAV.MOVE.U or requiredHead == TNAV.MOVE.D then
