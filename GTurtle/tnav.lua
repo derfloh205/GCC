@@ -273,14 +273,16 @@ function TNAV.GridMap:GetGridNode(pos)
 end
 
 function TNAV.GridMap:UpdateSurroundings()
-    self.gridNav.gTurtle:Log("Updating Surroundings..")
+    local scanLog = ""
     local scanData = self.gridNav.gTurtle:ScanBlocks()
 
     for dir, data in pairs(scanData) do
-        self.gridNav.gTurtle:FLog("%s -> %s", dir, (data and data.name or "Empty"))
+        scanLog = f("%s %s[%s]", scanLog, dir, (data and "X" or " "))
         local gridNode = self.gridNav.currentGN:GetRelativeNode(self.gridNav.head, dir)
         gridNode:SetBlockData(data)
     end
+
+    self.gridNav.gTurtle:FLog("ScanLog: ", scanLog)
 end
 
 function TNAV.GridMap:LogGrid()
