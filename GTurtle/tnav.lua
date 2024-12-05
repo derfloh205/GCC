@@ -654,12 +654,13 @@ function TNAV.GridNav:SetActivePath(path)
 end
 
 ---@return (GTurtle.TNAV.MOVE | GTurtle.TNAV.TURN | nil) move?
+---@return boolean? isGoal
 function TNAV.GridNav:GetNextMoveAlongPath()
     self.gTurtle:Log("GetNextMoveAlongPath")
 
     if not self.activePath or self.activePath:IsGoal(self.currentGN) then
         self.gTurtle:Log("- Is initial position")
-        return
+        return nil, true
     end
 
     self.gTurtle:Log("- Fetching new Move along Path")

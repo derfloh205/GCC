@@ -243,15 +243,26 @@ function GTurtle.Base:NavigateToPosition(goalPos)
     if path then
         self.tnav:SetActivePath(path)
         repeat
-            local nextMove = self.tnav:GetNextMoveAlongPath()
+            local nextMove, isGoal = self.tnav:GetNextMoveAlongPath()
             if nextMove then
                 self:Log(f("Navigating: %s", tostring(nextMove)))
                 self:ExecuteMovement(nextMove)
+            elseif not isGoal then
+                -- Recalculate Path Based on new Grid Info
+                path = self.tnav:CalculatePathToPosition(goalPos)
+                if path then
+                    self.tnav:SetActivePath(path)
+                else
+                    self:Log("Navigation: No Path Available After Recalculation")
+                    return false
+                end
             end
-        until not nextMove
+        until isGoal
         self:Log(f("Arrived on Initial Position"))
+        return true
     else
         self:Log("Navigation: No Path Available")
+        return false
     end
 end
 
