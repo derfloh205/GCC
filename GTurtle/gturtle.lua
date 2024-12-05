@@ -162,9 +162,11 @@ function GTurtle.Base:Move(dir)
 
     if moved then
         self.tnav:OnMove(dir)
+        self.tNetClient:SendPosUpdate()
         if self.visualizeGridOnMove then
             self:VisualizeGrid()
         end
+        self.tNetClient:SendGridMap()
         return true
     else
         self:Log(f("- %s", tostring(err)))
@@ -210,6 +212,7 @@ function GTurtle.Base:Turn(turn)
         if self.visualizeGridOnMove then
             self:VisualizeGrid()
         end
+        self.tNetClient:SendGridMap()
         return true
     else
         self:FLog("Turning Blocked: %s", err)
@@ -235,7 +238,6 @@ function GTurtle.Base:VisualizeGrid()
     term.setCursorPos(1, 1)
     local gridString = self.tnav.gridMap:GetCenteredGridString(self.tnav.currentGN.pos, 10)
     print(gridString)
-    self.tNetClient:SendReplace(gridString)
 end
 
 ---@param goalPos Vector
