@@ -402,7 +402,7 @@ function TNAV.GridNav:new(options)
     if not options.initialHead and self.gpsEnabled then
         local success = self:InitializeHeading()
         if not success then
-            self.gTurtle:Log(f("Could not initialize Turtle Heading"))
+            self.gTurtle:Log("Could not initialize Turtle Heading")
             return false
         end
     else
@@ -441,7 +441,7 @@ function TNAV.GridNav:InitializeHeading()
     newGridNode:SetEmpty()
 
     local head = self.currentGN:GetRelativeHeading(newGridNode)
-    self.gTurtle:Log(f("Get relative head: %s / %s: %s", self.currentGN, newGridNode, tostring(head)))
+    self.gTurtle:FLog("Get relative head: %s / %s: %s", self.currentGN, newGridNode, head)
 
     if movedF then
         turtle.back()
