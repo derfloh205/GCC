@@ -14,6 +14,7 @@ local BaseTurtle =
 --BaseTurtle.tnav:LogPos()
 local goalPos = vector.new(263, -32, 46)
 
-BaseTurtle:NavigateToPosition(goalPos)
-
-BaseTurtle:NavigateToInitialPosition()
+local success = BaseTurtle:NavigateToPosition(goalPos)
+if success then
+    BaseTurtle:NavigateToInitialPosition()
+end
