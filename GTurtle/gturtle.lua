@@ -217,6 +217,7 @@ end
 ---@param goalPos Vector
 function GTurtle.Base:NavigateToPosition(goalPos)
     local path = self.tnav:CalculatePathToPosition(goalPos)
+    self:FLog("Calculated Path:\n%s", path)
     if path then
         self.tnav:SetActivePath(path)
         repeat

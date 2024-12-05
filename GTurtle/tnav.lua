@@ -374,6 +374,14 @@ function TNAV.Path:IsOnPath(gridNode)
     return pathNode ~= nil
 end
 
+function TNAV.Path:__tostring()
+    local txt = ""
+    for i, gridNode in ipairs(self.nodeList) do
+        txt = f("[%d]: %s\n", i, tostring(gridNode))
+    end
+    return txt
+end
+
 ---@class GTurtle.TNAV.GridNav.Options
 ---@field gTurtle GTurtle.Base
 ---@field initialHead? GTurtle.TNAV.HEAD
