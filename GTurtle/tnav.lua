@@ -637,7 +637,7 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN)
         calculations = calculations + 1
 
         -- to not run into a "did not yield" termination, yield every X calculations
-        if calculations % 20 == 0 then
+        if calculations % 500 == 0 then
             self.gTurtle:FLog("- Dist: %d Calcs: %d", math.floor(currentGN:GetDistance(goalGN)), calculations)
             sleep(0)
         end
