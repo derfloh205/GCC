@@ -379,7 +379,7 @@ end
 function TNAV.Path:__tostring()
     local txt = ""
     for i, gridNode in ipairs(self.nodeList) do
-        txt = f("[%d]: %s\n", i, tostring(gridNode))
+        txt = f("%s[%d]: %s\n", txt, i, tostring(gridNode))
     end
     return txt
 end
