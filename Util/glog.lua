@@ -55,7 +55,6 @@ end
 
 ---@param fString string
 ---@param ... any
----@return string
 function GLogAble:FLog(fString, ...)
     local fArgs = ...
     local strings = {}
@@ -63,7 +62,8 @@ function GLogAble:FLog(fString, ...)
         table.insert(strings, tostring(arg))
     end
 
-    return f(fString, table.unpack(strings))
+    local flogString = f(fString, table.unpack(strings))
+    self:WriteLogFile(flogString)
 end
 
 function GLogAble:LogTable(t)
@@ -71,10 +71,7 @@ function GLogAble:LogTable(t)
         return
     end
     local logString = f("\n%s", tostring(textutils.serialise(t)))
-
-    local logFile = fs.open(self.logFile, "a")
-    logFile.write(f("[%s]: %s\n", os.date("%T"), logString))
-    logFile.close()
+    self:WriteLogFile(logString)
 end
 
 return GLogAble

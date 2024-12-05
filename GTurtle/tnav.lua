@@ -200,19 +200,19 @@ function TNAV.GridNode:GetRelativeNode(head, dir)
     return self.gridMap:GetGridNode(self.pos + relVec)
 end
 
--- function TNAV.GridNode:__tostring()
---     local typeChar = ""
---     if self:IsTurtlePos() then
---         typeChar = "T"
---     elseif self:IsEmpty() then
---         typeChar = "E"
---     elseif self:IsUnknown() then
---         typeChar = "?"
---     else
---         typeChar = "X"
---     end
---     return f("(%s)[%s] ", tostring(self.pos), typeChar)
--- end
+function TNAV.GridNode:__tostring()
+    local typeChar = ""
+    if self:IsTurtlePos() then
+        typeChar = "T"
+    elseif self:IsEmpty() then
+        typeChar = "E"
+    elseif self:IsUnknown() then
+        typeChar = "?"
+    else
+        typeChar = "X"
+    end
+    return f("(%s)[%s] ", tostring(self.pos), typeChar)
+end
 
 ---@class GTurtle.TNAV.GridMap.Options
 ---@field gridNav GTurtle.TNAV.GridNav
