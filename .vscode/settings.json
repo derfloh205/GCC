@@ -10,6 +10,7 @@
         "turtle",
         "fs",
         "sleep",
-        "gps"
+        "gps",
+        "shell"
     ]
 }
