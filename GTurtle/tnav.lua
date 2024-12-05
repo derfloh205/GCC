@@ -219,11 +219,7 @@ TNAV.GridMap = Object:extend()
 function TNAV.GridMap:new(options)
     options = options or {}
     self.gridNav = options.gridNav
-    self.boundaries = {
-        x = {max = 0, min = 0},
-        y = {max = 0, min = 0},
-        z = {max = 0, min = 0}
-    }
+    self.boundaries = nil
     -- 3D Array
     ---@type table<number, table<number, table<number, GTurtle.TNAV.GridNode>>>
     self.grid = {}
@@ -231,6 +227,14 @@ end
 
 ---@param gridNode GTurtle.TNAV.GridNode
 function TNAV.GridMap:UpdateBoundaries(gridNode)
+    -- init with gridNode positions
+    self.boundaries =
+        self.boundaries or
+        {
+            x = {max = gridNode.pos.x, min = gridNode.pos.x},
+            y = {max = gridNode.pos.y, min = gridNode.pos.y},
+            z = {max = gridNode.pos.z, min = gridNode.pos.z}
+        }
     self.boundaries.x.min = math.min(self.boundaries.x.min, gridNode.pos.x)
     self.boundaries.y.min = math.min(self.boundaries.y.min, gridNode.pos.y)
     self.boundaries.z.min = math.min(self.boundaries.z.min, gridNode.pos.z)
@@ -282,7 +286,7 @@ function TNAV.GridMap:UpdateSurroundings()
         gridNode:SetBlockData(data)
     end
 
-    self.gridNav.gTurtle:FLog("ScanLog: ", scanLog)
+    self.gridNav.gTurtle:FLog("ScanLog: %s", scanLog)
 end
 
 function TNAV.GridMap:LogGrid()
@@ -454,11 +458,8 @@ function TNAV.GridNav:InitializeHeading()
         return self:InitializeHeading() -- try again
     end
 
-    self.gTurtle:Log("- GetGridNode")
     local newGridNode = self.gridMap:GetGridNode(self:GetGPSPos())
     newGridNode:SetEmpty()
-
-    self.gTurtle:Log("- GetRelativeHeading")
 
     local head
     if movedF then
@@ -467,7 +468,6 @@ function TNAV.GridNav:InitializeHeading()
         head = newGridNode:GetRelativeHeading(self.currentGN)
     end
     self.gTurtle:Log("- Heading: " .. tostring(head))
-    self.gTurtle:FLog("Get relative head: %s / %s: %s", self.currentGN, newGridNode, head)
 
     if movedF then
         turtle.back()

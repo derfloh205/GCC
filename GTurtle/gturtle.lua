@@ -125,6 +125,7 @@ end
 ---@return boolean success
 ---@return stringlib? errormsg
 function GTurtle.Base:Move(dir)
+    self:FLog("Move: %s", dir)
     local moved, err
     if dir == TNav.MOVE.F then
         moved, err = turtle.forward()
@@ -143,7 +144,7 @@ function GTurtle.Base:Move(dir)
         end
         return true
     else
-        self:Log(f("Movement Blocked: %s", tostring(err)))
+        self:Log(f("- %s", tostring(err)))
         return false, err
     end
 end
