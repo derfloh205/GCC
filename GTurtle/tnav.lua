@@ -205,7 +205,7 @@ function TNAV.GridNode:__tostring()
     if self:IsTurtlePos() then
         typeChar = "T"
     elseif self:IsEmpty() then
-        typeChar = "E"
+        typeChar = " "
     elseif self:IsUnknown() then
         typeChar = "?"
     else
