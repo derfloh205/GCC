@@ -42,10 +42,11 @@ end
 ---@param t table<K, T>
 ---@param findFunc fun(element: T, key: K):boolean
 ---@return T | nil
+---@return K | nil
 function TUtil:Find(t, findFunc)
     for k, v in pairs(t) do
         if findFunc(v, k) then
-            return v
+            return v, k
         end
     end
     return nil

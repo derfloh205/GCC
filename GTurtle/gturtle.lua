@@ -22,6 +22,7 @@ GTurtle.TYPES = {
 ---@field term? table
 ---@field visualizeGridOnMove? boolean
 ---@field initialHead? GTurtle.TNAV.HEAD
+---@field avoidUnknown? boolean
 
 ---@class GTurtle.Base : GLogAble
 ---@overload fun(options: GTurtle.Base.Options) : GTurtle.Base
@@ -42,8 +43,9 @@ function GTurtle.Base:new(options)
     ---@type GTurtle.TYPES
     self.type = GTurtle.TYPES.BASE
     self.term = options.term or term
+    options.avoidUnknown = options.avoidUnknown or false
 
-    self:Log(f("Initiating Turtle: %s", self.name))
+    self:Log(f("Initiating..."))
 
     if term ~= self.term then
         term:redirect(self.term)
@@ -59,7 +61,7 @@ function GTurtle.Base:new(options)
         logFile = f("TurtleHost[%d].log", self.id)
     }
 
-    self.tnav = TNav.GridNav({gTurtle = self})
+    self.tnav = TNav.GridNav({gTurtle = self, avoidUnknown = options.avoidUnknown})
     if self.tnav.gpsEnabled then
         self:Log(f("Using GPS Position: %s", tostring(self.tnav.pos)))
     end
