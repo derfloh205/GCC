@@ -10,7 +10,8 @@ local BaseTurtle =
 }
 
 BaseTurtle:Refuel()
-BaseTurtle:ExecuteMovement("FRFLFFLFFRFLFFRFFR")
+--BaseTurtle:ExecuteMovement("FRFLFFLFFRFLFFRFFR")
 --BaseTurtle:ExecuteMovement("FLLLLB")
 --BaseTurtle.tnav:LogPos()
-BaseTurtle:NavigateToInitialPosition()
+local goalPos = vector.new(263, -32, 46)
+BaseTurtle:NavigateToPosition(goalPos)
