@@ -629,9 +629,14 @@ end
 
 ---@return (GTurtle.TNAV.MOVE | GTurtle.TNAV.TURN | nil) move?
 function TNAV.GridNav:GetNextMoveAlongPath()
+    self.gTurtle:Log("GetNextMoveAlongPath")
+
     if self:IsInitialPosition() or not self.activePath then
+        self.gTurtle:Log("- Is initial position")
         return
     end
+
+    self.gTurtle:Log("- Fetching new Move along Path")
 
     local move
     local currentGN = self.currentGN
@@ -642,13 +647,13 @@ function TNAV.GridNav:GetNextMoveAlongPath()
         local requiredHead = currentGN:GetRelativeHeading(nextGN)
 
         if not requiredHead then
-            self.gTurtle:Log("Could not determine next move!")
-            self.gTurtle:Log(f("- Pos: %s)", tostring(currentGN.pos)))
-            self.gTurtle:Log(f("- NextPos: %s)", tostring(nextGN.pos)))
+            self.gTurtle:Log("- Could not determine next move!")
+            self.gTurtle:FLog("-> Pos: %s)", currentGN)
+            self.gTurtle:FLog("-> NextPos: %s)", nextGN)
             return
         end
-        self.gTurtle:Log(f("(%s) -> (%s)", tostring(currentGN.pos), tostring(nextGN.pos)))
-        self.gTurtle:Log(f("H: %s | R: %s", self.head, requiredHead))
+        self.gTurtle:FLog("- %s -> %s", currentGN, nextGN)
+        self.gTurtle:FLog("- H: %s | R: %s", self.head, requiredHead)
         -- if the next pos is up or below directly return it as next move (no heading required)
         if requiredHead == TNAV.MOVE.U or requiredHead == TNAV.MOVE.D then
             return requiredHead
@@ -698,7 +703,7 @@ function TNAV.GridNav:GetNextMoveAlongPath()
         end
     end
 
-    self.gTurtle:Log("Could not determine next move on active path!")
+    self.gTurtle:Log("- Could not determine next move on active path!")
 
     return move
 end
