@@ -144,7 +144,7 @@ end
 
 ---@param dir GTurtle.TNAV.MOVE
 ---@return boolean success
----@return stringlib? errormsg
+---@return string? errormsg
 function GTurtle.Base:Move(dir)
     self:FLog("Move: %s", dir)
     local moved, err
@@ -179,17 +179,17 @@ function GTurtle.Base:MoveUntilBlocked(dir)
 end
 
 ---@param path string e.g. "FBLRUD"
+---@return boolean success
+---@return string? err
 function GTurtle.Base:ExecuteMovement(path)
-    path:gsub(
-        ".",
-        function(dir)
-            if dir == TNav.TURN.L or dir == TNav.TURN.R then
-                self:Turn(dir)
-            else
-                self:Move(dir)
-            end
+    for i = 1, #path do
+        local move = string.sub(path, i, i)
+        if TNav.TURN[move] then
+            return self:Turn(move)
+        else
+            return self:Move(move)
         end
-    )
+    end
 end
 
 ---@param turn GTurtle.TNAV.TURN
@@ -246,16 +246,17 @@ function GTurtle.Base:NavigateToPosition(goalPos)
             local nextMove, isGoal = self.tnav:GetNextMoveAlongPath()
             if nextMove then
                 self:Log(f("Navigating: %s", tostring(nextMove)))
-                self:ExecuteMovement(nextMove)
-            elseif not isGoal then
-                -- Recalculate Path Based on new Grid Info
-                self:Log("Recalculating Path..")
-                path = self.tnav:CalculatePathToPosition(goalPos)
-                if path then
-                    self.tnav:SetActivePath(path)
-                else
-                    self:Log("Navigation: No Path Available After Recalculation")
-                    return false
+                local success = self:ExecuteMovement(nextMove)
+                if not success then
+                    -- Recalculate Path Based on new Grid Info
+                    self:Log("Recalculating Path..")
+                    path = self.tnav:CalculatePathToPosition(goalPos)
+                    if path then
+                        self.tnav:SetActivePath(path)
+                    else
+                        self:Log("Navigation: No Path Available After Recalculation")
+                        return false
+                    end
                 end
             end
         until isGoal
