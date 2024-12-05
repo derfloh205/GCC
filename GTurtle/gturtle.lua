@@ -54,14 +54,6 @@ function GTurtle.Base:new(options)
     self.term.clear()
     self.term.setCursorPos(1, 1)
 
-    self.tNetClient =
-        TNet.TurtleHostClient {
-        gTurtle = self,
-        log = options.log,
-        clearLog = options.clearLog,
-        logFile = f("TurtleHost[%d].log", self.id)
-    }
-
     self.tnav = TNav.GridNav({gTurtle = self, avoidUnknown = options.avoidUnknown})
     if self.tnav.gpsEnabled then
         self:Log(f("Using GPS Position: %s", tostring(self.tnav.currentGN.pos)))
@@ -70,6 +62,14 @@ function GTurtle.Base:new(options)
     if not self.tnav.head then
         error("Turtle not able to determine initial heading")
     end
+
+    self.tNetClient =
+        TNet.TurtleHostClient {
+        gTurtle = self,
+        log = options.log,
+        clearLog = options.clearLog,
+        logFile = f("TurtleHost[%d].log", self.id)
+    }
 end
 
 ---@return table<number, table>
