@@ -147,7 +147,7 @@ function TurtleNet.TurtleHostClient:SendGridMap()
     if not self.hostID then
         return
     end
-    rednet.send(self.hostID, self.gTurtle.tnav.gridMap)
+    rednet.send(self.hostID, self.gTurtle.tnav.gridMap, TurtleNet.TurtleHost.PROTOCOL.MAP_UPDATE)
 end
 
 return TurtleNet
