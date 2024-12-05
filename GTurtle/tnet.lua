@@ -85,13 +85,11 @@ end
 ---@param serializedPos Vector
 function TurtleNet.TurtleHost:OnTurtleHostSearch(id, serializedPos)
     self:Log(f("Received Host Search Broadcast from [%d]", id))
-    table.insert(
-        self.turtleData,
-        {
-            id = id,
-            pos = vector.new(serializedPos.x, serializedPos.y, serializedPos.z)
-        }
-    )
+    self.turtleData[id] = {
+        id = id,
+        pos = vector.new(serializedPos.x, serializedPos.y, serializedPos.z)
+    }
+
     rednet.send(id, "Host Search Response", TurtleNet.TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
 end
 ---@param id number
