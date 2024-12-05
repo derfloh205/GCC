@@ -103,45 +103,6 @@ function TNAV.GridNode:IsUnknown()
     return self.unknown
 end
 
--- Get valid neighbors in 3D space - Used in A*
----@return GTurtle.TNAV.GridNode[]
-function TNAV.GridNode:GetValidPathNeighbors()
-    local boundaries = self.gridMap.boundaries
-    local minX = boundaries.x.min
-    local minY = boundaries.y.min
-    local minZ = boundaries.z.min
-    local maxX = boundaries.x.max
-    local maxY = boundaries.y.max
-    local maxZ = boundaries.z.max
-
-    ---@type GTurtle.TNAV.GridNode[]
-    local neighbors = {}
-    local directions = {
-        {x = 1, y = 0, z = 0}, -- Right
-        {x = -1, y = 0, z = 0}, -- Left
-        {x = 0, y = 1, z = 0}, -- Up
-        {x = 0, y = -1, z = 0}, -- Down
-        {x = 0, y = 0, z = 1}, -- Forward
-        {x = 0, y = 0, z = -1} -- Backward
-    }
-
-    for _, dir in ipairs(directions) do
-        local nx, ny, nz = self.pos.x + dir.x, self.pos.y + dir.y, self.pos.z + dir.z
-        if nx >= minX and nx <= maxX and ny >= minY and ny <= maxY and nz >= minZ and nz <= maxZ then
-            local neighborGridNode = self.gridMap:GetGridNode(vector.new(nx, ny, nz))
-            if neighborGridNode then
-                if neighborGridNode:IsEmpty() or neighborGridNode:IsUnknown() then
-                    if (not self.gridMap.gridNav.avoidUnknown) or (not neighborGridNode:IsUnknown()) then
-                        table.insert(neighbors, neighborGridNode)
-                    end
-                end
-            end
-        end
-    end
-
-    return neighbors
-end
-
 --- Using ManhattanDistance
 ---@param gridNode GTurtle.TNAV.GridNode
 ---@return number distance
@@ -184,16 +145,7 @@ function TNAV.GridNode:GetRelativeNode(head, dir)
 end
 
 function TNAV.GridNode:__tostring()
-    local typeChar = ""
-    if self:IsTurtlePos() then
-        typeChar = "T"
-    elseif self:IsEmpty() then
-        typeChar = " "
-    elseif self:IsUnknown() then
-        typeChar = "?"
-    else
-        typeChar = "X"
-    end
+    local typeChar = self:GetDrawString()
     return f("(%s)[%s] ", tostring(self.pos), typeChar)
 end
 
@@ -607,6 +559,46 @@ function TNAV.GridNav:ReconstructPathNodeList(came_from, current)
     return nodeList
 end
 
+-- Get valid neighbors in 3D space - Used in A*
+---@param gridNode GTurtle.TNAV.GridNode
+---@return GTurtle.TNAV.GridNode[]
+function TNAV.GridNav:GetValidPathNeighbors(gridNode)
+    local boundaries = self.gridMap.boundaries
+    local minX = boundaries.x.min
+    local minY = boundaries.y.min
+    local minZ = boundaries.z.min
+    local maxX = boundaries.x.max
+    local maxY = boundaries.y.max
+    local maxZ = boundaries.z.max
+
+    ---@type GTurtle.TNAV.GridNode[]
+    local neighbors = {}
+    local directions = {
+        {x = 1, y = 0, z = 0}, -- Right
+        {x = -1, y = 0, z = 0}, -- Left
+        {x = 0, y = 1, z = 0}, -- Up
+        {x = 0, y = -1, z = 0}, -- Down
+        {x = 0, y = 0, z = 1}, -- Forward
+        {x = 0, y = 0, z = -1} -- Backward
+    }
+
+    for _, dir in ipairs(directions) do
+        local nx, ny, nz = gridNode.pos.x + dir.x, gridNode.pos.y + dir.y, gridNode.pos.z + dir.z
+        if nx >= minX and nx <= maxX and ny >= minY and ny <= maxY and nz >= minZ and nz <= maxZ then
+            local neighborGridNode = self.gridMap:GetGridNode(vector.new(nx, ny, nz))
+            if neighborGridNode then
+                if neighborGridNode:IsEmpty() or neighborGridNode:IsUnknown() then
+                    if (not self.avoidUnknown) or (not neighborGridNode:IsUnknown()) then
+                        table.insert(neighbors, neighborGridNode)
+                    end
+                end
+            end
+        end
+    end
+
+    return neighbors
+end
+
 --- A* algorithm
 ---@param startGN GTurtle.TNAV.GridNode
 ---@param goalGN GTurtle.TNAV.GridNode
@@ -664,7 +656,7 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN)
         end
 
         -- Process neighbors
-        for _, neighborGN in ipairs(currentGN:GetValidPathNeighbors()) do
+        for _, neighborGN in ipairs(self:GetValidPathNeighbors(currentGN)) do
             local tentativeGScore = gScore[currentGN.pos.x][currentGN.pos.y][currentGN.pos.z] + 1
             if tentativeGScore < gScore[neighborGN.pos.x][neighborGN.pos.y][neighborGN.pos.z] then
                 cameFromGN[neighborGN] = currentGN
