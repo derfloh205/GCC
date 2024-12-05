@@ -569,6 +569,7 @@ end
 ---@param goalGN GTurtle.TNAV.GridNode
 ---@return GTurtle.TNAV.Path? path
 function TNAV.GridNav:CalculatePath(startGN, goalGN)
+    self.gTurtle:FLog("Calculating Path: %s -> %s", startGN, goalGN)
     local boundaries = self.gridMap.boundaries
     local minX = boundaries.x.min
     local minY = boundaries.y.min
@@ -637,6 +638,7 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN)
 
         -- to not run into a "did not yield" termination, yield every X calculations
         if calculations % 20 == 0 then
+            self.gTurtle:FLog("- Calculations: %d", calculations)
             sleep(0)
         end
     end
