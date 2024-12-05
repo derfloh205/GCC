@@ -437,9 +437,11 @@ function TNAV.GridNav:InitializeHeading()
         return self:InitializeHeading() -- try again
     end
 
-    self.gTurtle:Log("- Get GridNode at new Pos")
+    self.gTurtle:Log("- GetGridNode")
     local newGridNode = self.gridMap:GetGridNode(self:GetGPSPos())
     newGridNode:SetEmpty()
+
+    self.gTurtle:Log("- GetRelativeHeading")
 
     local head = self.currentGN:GetRelativeHeading(newGridNode)
     self.gTurtle:FLog("Get relative head: %s / %s: %s", self.currentGN, newGridNode, head)
