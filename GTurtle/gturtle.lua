@@ -44,6 +44,8 @@ function GTurtle.Base:new(options)
     self.term = options.term or term
     options.avoidUnknown = options.avoidUnknown or false
 
+    self:Refuel()
+
     self:Log(f("Initiating..."))
 
     if term ~= self.term then

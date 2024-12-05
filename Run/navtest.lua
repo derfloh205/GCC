@@ -9,7 +9,6 @@ local BaseTurtle =
     visualizeGridOnMove = true
 }
 
-BaseTurtle:Refuel()
 --BaseTurtle:ExecuteMovement("FRFLFFLFFRFLFFRFFR")
 --BaseTurtle:ExecuteMovement("FLLLLB")
 --BaseTurtle.tnav:LogPos()
