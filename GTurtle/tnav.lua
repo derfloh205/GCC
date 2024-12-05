@@ -437,19 +437,17 @@ function TNAV.GridNav:InitializeHeading()
         return self:InitializeHeading() -- try again
     end
 
+    local newGridNode = self.gridMap:GetGridNode(self:GetGPSPos())
+    newGridNode:SetEmpty()
+
+    local head = self.currentGN:GetRelativeHeading(newGridNode)
+    self.gTurtle:Log(f("Get relative head: %s / %s: %s", self.currentGN, newGridNode, tostring(head)))
+
     if movedF then
         turtle.back()
     elseif movedB then
         turtle.forward()
     end
-
-    local newGridNode = self.gridMap:GetGridNode(self:GetGPSPos())
-    newGridNode:SetEmpty()
-
-    local head = self.currentGN:GetRelativeHeading(newGridNode)
-    self.gTurtle:Log(
-        f("Get relative head: (%s) / (%s): %s", tostring(self.currentGN), tostring(newGridNode), tostring(head))
-    )
 
     if not head then
         return false
