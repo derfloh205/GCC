@@ -598,6 +598,7 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN)
     gScore[startGN.pos.x][startGN.pos.y][startGN.pos.z] = 0
     fScore[startGN.pos.x][startGN.pos.y][startGN.pos.z] = startGN:GetDistance(goalGN)
 
+    local calculations = 0
     while #openSet > 0 do
         -- Find node in open_set with the lowest f_score
         table.sort(
@@ -630,6 +631,13 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN)
                     table.insert(openSet, neighborGN)
                 end
             end
+        end
+
+        calculations = calculations + 1
+
+        -- to not run into a "did not yield" termination, yield every X calculations
+        if calculations % 20 == 0 then
+            sleep(0)
         end
     end
 
