@@ -98,6 +98,9 @@ end
 
 ---@return boolean isOnPath
 function TNAV.GridNode:IsOnPath()
+    if not self.gridMap.gridNav.activePath then
+        return false
+    end
     local path = self.gridMap.gridNav.activePath
     return TUtil:Find(
         path,
