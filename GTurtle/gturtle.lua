@@ -209,6 +209,7 @@ function GTurtle.Base:Turn(turn)
 
     if turned then
         self.tnav:OnTurn(turn)
+        self.tNetClient:SendPosUpdate()
         if self.visualizeGridOnMove then
             self:VisualizeGrid()
         end

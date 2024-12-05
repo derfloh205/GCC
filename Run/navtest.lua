@@ -18,5 +18,3 @@ local success = BaseTurtle:NavigateToPosition(goalPos)
 if success then
     BaseTurtle:NavigateToInitialPosition()
 end
-
-BaseTurtle.tNetClient:SendGridMap()
