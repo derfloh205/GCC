@@ -282,8 +282,12 @@ function TNAV.GridMap:UpdateSurroundings()
 
     for dir, data in pairs(scanData) do
         scanLog = f("%s %s[%s]", scanLog, dir, (data and "X" or " "))
-        local gridNode = self.gridNav.currentGN:GetRelativeNode(self.gridNav.head, dir)
-        gridNode:SetBlockData(data)
+        local relativeNode = self.gridNav.currentGN:GetRelativeNode(self.gridNav.head, dir)
+        if data then
+            relativeNode:SetBlockData(data)
+        else
+            relativeNode:SetEmpty()
+        end
     end
 
     self.gridNav.gTurtle:FLog("ScanLog: %s", scanLog)
