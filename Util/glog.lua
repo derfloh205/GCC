@@ -53,13 +53,15 @@ function GLogAble:Log(logString)
     self:WriteLogFile(tostring(logString))
 end
 
----@param fString string
 ---@param ... any
-function GLogAble:FLog(fString, ...)
-    local fArgs = ...
+function GLogAble:FLog(...)
+    local varArgs = {...}
+    local fString = varArgs[1]
     local strings = {}
-    for _, arg in fArgs do
-        table.insert(strings, tostring(arg))
+    for i, arg in varArgs do
+        if i > 1 then
+            table.insert(strings, tostring(arg))
+        end
     end
 
     local flogString = f(fString, table.unpack(strings))
