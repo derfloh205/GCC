@@ -1,4 +1,3 @@
-shell.run("cd", "/")
 local GTurtle = require("GCC/GTurtle/gturtle")
 --TODO: nice Debug console with live log and UI !
 local T =
@@ -12,3 +11,5 @@ local T =
 _G["self"] = T
 _G["tnav"] = T.tnav
 _G["gm"] = T.tnav.gridMap
+
+shell.run("lua")
