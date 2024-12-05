@@ -70,18 +70,40 @@ function GTurtle.Base:new(options)
     end
 end
 
----@param i number slotIndex
+---@return table<number, table>
+function GTurtle.Base:GetInventoryItems()
+    local itemMap = {}
+    for i = 1, 16 do
+        itemMap[i] = turtle.getItemDetail(i)
+    end
+    return itemMap
+end
+
+---@return boolean isFuelSelected
+function GTurtle.Base:SelectFuel()
+    local itemMap = self:GetInventoryItems()
+    local preSlotID = turtle.getSelectedSlot()
+
+    for slotID, itemData in pairs(itemMap) do
+        turtle.select(slotID)
+        if self:IsFuel(itemData) then
+            return true
+        end
+    end
+
+    if preSlotID ~= turtle.getSelectedSlot() then
+        turtle.select(preSlotID)
+    end
+
+    return false
+end
+
+---@param itemData table
 ---@return boolean isFuel
-function GTurtle.Base:IsFuel(i)
+function GTurtle.Base:IsFuel(itemData)
     local isFuel = turtle.refuel(0)
 
     if not isFuel then
-        return false
-    end
-
-    local item = turtle.getItemDetail(i)
-
-    if not item then
         return false
     end
 
@@ -89,7 +111,7 @@ function GTurtle.Base:IsFuel(i)
         return true
     end
 
-    return TUtil:tContains(self.fuelWhiteList, item.name)
+    return TUtil:tContains(self.fuelWhiteList, itemData.name)
 end
 
 ---@return boolean refueled
@@ -100,25 +122,24 @@ function GTurtle.Base:Refuel()
         return true
     end
 
-    -- search for fuel
-    for i = 1, 16 do
-        local isFuel = self:IsFuel(i)
+    local preSlotID = turtle.getSelectedSlot()
+    local fuelFound = self:SelectFuel()
 
-        if isFuel then
-            while true do
-                local ok = turtle.refuel(1)
-                if self.minimumFuel <= turtle.getFuelLevel() then
-                    return true
-                end
-                if not ok then
-                    break
-                end
-            end
-        end
+    if not fuelFound then
+        self:Log("No valid fuel in inventory..")
+        return false
     end
 
-    self:Log("No Fuel Available")
-    return false
+    repeat
+        local ok = turtle.refuel(1)
+    until not ok or self.minimumFuel <= turtle.getFuelLevel()
+
+    turtle.select(preSlotID)
+
+    fuel = turtle.getFuelLevel()
+    self:FLog("Refueled: %d/%d", fuel, self.minimumFuel)
+
+    return self.minimumFuel <= fuel
 end
 
 ---@param dir GTurtle.TNAV.MOVE
