@@ -437,6 +437,7 @@ function TNAV.GridNav:InitializeHeading()
         return self:InitializeHeading() -- try again
     end
 
+    self.gTurtle:Log("- Get GridNode at new Pos")
     local newGridNode = self.gridMap:GetGridNode(self:GetGPSPos())
     newGridNode:SetEmpty()
 
