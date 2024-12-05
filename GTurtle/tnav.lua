@@ -263,7 +263,6 @@ end
 
 function TNAV.GridMap:UpdateSurroundings()
     local scanData = self.gridNav.gTurtle:ScanBlocks()
-    --self.gridNav.gTurtle:Log("Scanning Surroundings..")
 
     for dir, data in pairs(scanData) do
         --self.gridNav.gTurtle:Log(f("%s -> %s", dir, (data and data.name or "Empty")))
