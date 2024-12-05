@@ -101,13 +101,7 @@ function TNAV.GridNode:IsOnPath()
     if not self.gridMap.gridNav.activePath then
         return false
     end
-    local path = self.gridMap.gridNav.activePath
-    return TUtil:Find(
-        path,
-        function(gridNode)
-            return VUtil:Equal(self.pos, gridNode.pos)
-        end
-    ) ~= nil
+    return self.gridMap.gridNav.activePath:IsOnPath(self)
 end
 
 ---@return boolean isUnknown
@@ -366,6 +360,18 @@ function TNAV.Path:GetNextNode(currentGN)
     end
 
     return self.nodeList[index + 1]
+end
+
+---@param gridNode GTurtle.TNAV.GridNode
+function TNAV.Path:IsOnPath(gridNode)
+    local pathNode =
+        TUtil:Find(
+        self.nodeList,
+        function(pathNode)
+            return pathNode:EqualPos(gridNode)
+        end
+    )
+    return pathNode ~= nil
 end
 
 ---@class GTurtle.TNAV.GridNav.Options

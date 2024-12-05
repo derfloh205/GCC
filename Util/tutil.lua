@@ -39,7 +39,7 @@ end
 
 ---@generic T
 ---@generic K
----@param t table<K, T>
+---@param t table<K, T> | T[]
 ---@param findFunc fun(element: T, key: K):boolean
 ---@return T | nil
 ---@return K | nil
