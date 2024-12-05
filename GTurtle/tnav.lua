@@ -384,6 +384,16 @@ function TNAV.Path:IsOnPath(gridNode)
     return pathNode ~= nil
 end
 
+---@param gridNode GTurtle.TNAV.GridNode
+function TNAV.Path:IsGoal(gridNode)
+    local goalNode = self.nodeList[#self.nodeList]
+    if not goalNode then
+        return false
+    end
+
+    return goalNode:EqualPos(gridNode)
+end
+
 function TNAV.Path:__tostring()
     local txt = ""
     for i, gridNode in ipairs(self.nodeList) do
@@ -643,16 +653,11 @@ function TNAV.GridNav:SetActivePath(path)
     self.activePath = path
 end
 
----@return boolean
-function TNAV.GridNav:IsInitialPosition()
-    return self.currentGN:EqualPos(self.initGN)
-end
-
 ---@return (GTurtle.TNAV.MOVE | GTurtle.TNAV.TURN | nil) move?
 function TNAV.GridNav:GetNextMoveAlongPath()
     self.gTurtle:Log("GetNextMoveAlongPath")
 
-    if self:IsInitialPosition() or not self.activePath then
+    if not self.activePath or self.activePath:IsGoal(self.currentGN) then
         self.gTurtle:Log("- Is initial position")
         return
     end
