@@ -128,7 +128,7 @@ end
 
 function TurtleNet.TurtleHost:UpdateGridMapDisplay(turtleID)
     local turtlePos = self:GetTurtlePos(turtleID)
-    local gridString = self.gridMap:GetCenteredGridString(turtlePos, 20, 20)
+    local gridString = self.gridMap:GetCenteredGridString(turtlePos, 10, 10)
     term.clear()
     term.setCursorPos(1, 1)
     print(gridString)
