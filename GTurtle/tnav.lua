@@ -468,7 +468,7 @@ function TNAV.GridNav:InitializeHeading()
     end
     if not movedF and not movedB then
         self.gTurtle:Log("- Turning and trying again")
-        turtle.left()
+        turtle.turnLeft()
         return self:InitializeHeading() -- try again
     end
 
