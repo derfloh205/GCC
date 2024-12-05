@@ -363,15 +363,17 @@ TNAV.GridNav = Object:extend()
 function TNAV.GridNav:new(options)
     options = options or {}
     self.gTurtle = options.gTurtle
-    ---@type GTurtle.TNAV.HEAD
-    self.head = TNAV.HEAD.N
-    self.gridMap = TNAV.GridMap({gridNav = self})
-    -- try to locate initial pos via gps
+
     local gpsPos = self:GetGPSPos()
     self.gpsEnabled = gpsPos ~= nil
-    if self.gpsEnabled then
-        self.initGN = self.gridMap:GetGridNode(gpsPos or vector:new(0, 0, 0))
-        self.initGN:SetEmpty()
+
+    self.gridMap = TNAV.GridMap({gridNav = self})
+
+    self.initGN = self.gridMap:GetGridNode(gpsPos or vector:new(0, 0, 0))
+    self.initGN:SetEmpty()
+
+    if not self.gpsEnabled then
+        self.gTurtle:Log("No GPS Available. Initiate Relative Navigation")
     end
 
     self.currentGN = self.initGN
@@ -387,7 +389,7 @@ function TNAV.GridNav:new(options)
             return false
         end
     else
-        self.head = options.initialHead
+        self.head = options.initialHead or TNAV.HEAD.N
     end
 
     self.gTurtle:Log(f("Initial Heading: %s", self.head))
