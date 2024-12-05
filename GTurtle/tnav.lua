@@ -7,6 +7,8 @@ local pretty = require("cc.pretty")
 ---@class GTurtle.TNAV
 local TNAV = {}
 
+TNAV.CALCULATIONS_PER_YIELD = 150
+
 --- Possible Look Directions (Relative)
 ---@enum GTurtle.TNAV.HEAD
 TNAV.HEAD = {
@@ -663,7 +665,7 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN)
         calculations = calculations + 1
 
         -- to not run into a "did not yield" termination, yield every X calculations
-        if calculations % 250 == 0 then
+        if calculations % TNAV.CALCULATIONS_PER_YIELD == 0 then
             self.gTurtle:FLog("- Dist: %d Calcs: %d", math.floor(currentGN:GetDistance(goalGN)), calculations)
             sleep(0)
         end
