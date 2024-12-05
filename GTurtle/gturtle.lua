@@ -188,7 +188,7 @@ function GTurtle.Base:Turn(turn)
         end
         return true
     else
-        self:Log(f("Turning Blocked: %s", tostring(err)))
+        self:FLog("Turning Blocked: %s", err)
         return false, err
     end
 end
