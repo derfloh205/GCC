@@ -444,6 +444,7 @@ function TNAV.GridNav:InitializeHeading()
     self.gTurtle:Log("- GetRelativeHeading")
 
     local head = self.currentGN:GetRelativeHeading(newGridNode)
+    self.gTurtle:Log("- Heading: " .. tostring(head))
     self.gTurtle:FLog("Get relative head: %s / %s: %s", self.currentGN, newGridNode, head)
 
     if movedF then
