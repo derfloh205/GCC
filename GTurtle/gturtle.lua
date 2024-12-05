@@ -16,7 +16,6 @@ GTurtle.TYPES = {
 
 ---@class GTurtle.Base.Options : GLogAble.Options
 ---@field name string
----@field turtleHostID number
 ---@field fuelWhiteList? string[]
 ---@field minimumFuel? number
 ---@field term? table
