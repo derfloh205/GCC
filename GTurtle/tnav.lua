@@ -41,7 +41,7 @@ TNAV.M_VEC = {
     [TNAV.MOVE.D] = vector.new(0, 0, 1)
 }
 
--- Required Heading by Vector Diff between adjacent positions
+-- Relative Heading by Vector Diff between adjacent positions
 TNAV.M_HEAD = {
     [0] = {
         [0] = {
@@ -198,6 +198,20 @@ function TNAV.GridNode:GetRelativeNode(head, dir)
     end
 
     return self.gridMap:GetGridNode(self.pos + relVec)
+end
+
+function TNAV.GridNode:__tostring()
+    local typeChar = ""
+    if self:IsTurtlePos() then
+        typeChar = "T"
+    elseif self:IsEmpty() then
+        typeChar = "E"
+    elseif self:IsUnknown() then
+        typeChar = "?"
+    else
+        typeChar = "X"
+    end
+    return f("(%s)[%s] ", tostring(self.pos), typeChar)
 end
 
 ---@class GTurtle.TNAV.GridMap.Options
@@ -433,6 +447,9 @@ function TNAV.GridNav:InitializeHeading()
     newGridNode:SetEmpty()
 
     local head = self.currentGN:GetRelativeHeading(newGridNode)
+    self.gTurtle:Log(
+        f("Get relative head: (%s) / (%s): %s", tostring(self.currentGN), tostring(newGridNode), tostring(head))
+    )
 
     if not head then
         return false
