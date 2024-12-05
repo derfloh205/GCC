@@ -98,22 +98,9 @@ function TNAV.GridNode:IsEmpty()
     return self.blockData == nil
 end
 
----@return boolean isOnPath
-function TNAV.GridNode:IsOnPath()
-    if not self.gridMap.gridNav.activePath then
-        return false
-    end
-    return self.gridMap.gridNav.activePath:IsOnPath(self)
-end
-
 ---@return boolean isUnknown
 function TNAV.GridNode:IsUnknown()
     return self.unknown
-end
-
----@return boolean isTurtlePos
-function TNAV.GridNode:IsTurtlePos()
-    return self:EqualPos(self.gridMap.gridNav.currentGN)
 end
 
 -- Get valid neighbors in 3D space - Used in A*
@@ -210,8 +197,28 @@ function TNAV.GridNode:__tostring()
     return f("(%s)[%s] ", tostring(self.pos), typeChar)
 end
 
+function TNAV.GridNode:GetDrawString()
+    local mapFunc = self.gridMap.gridNodeMapFunc
+
+    local c = ""
+    if self:IsUnknown() then
+        c = " ? "
+    elseif self:IsEmpty() then
+        c = "   "
+    else
+        c = " X "
+    end
+
+    if mapFunc then
+        c = mapFunc(self) or c
+    end
+
+    return c
+end
+
 ---@class GTurtle.TNAV.GridMap.Options
 ---@field logger GLogAble
+---@field gridNodeMapFunc? fun(gridNode: GTurtle.TNAV.GridNode): string?
 
 ---@class GTurtle.TNAV.GridMap : Object
 ---@overload fun(options: GTurtle.TNAV.GridMap.Options) : GTurtle.TNAV.GridMap
@@ -225,6 +232,8 @@ function TNAV.GridMap:new(options)
     -- 3D Array
     ---@type table<number, table<number, table<number, GTurtle.TNAV.GridNode>>>
     self.grid = {}
+
+    self.gridNodeMapFunc = options.gridNodeMapFunc
 end
 
 ---@param gridNode GTurtle.TNAV.GridNode
@@ -291,18 +300,8 @@ function TNAV.GridMap:GetGridStringByBoundary(z, boundaries)
     for y = minY, maxY do
         for x = minX, maxX do
             local gridNode = self:GetGridNode(vector.new(x, y, z))
-            local c = " X "
-            if gridNode:IsTurtlePos() then
-                c = "[T]"
-            elseif gridNode:IsEmpty() then
-                if gridNode:IsOnPath() then
-                    c = " . "
-                else
-                    c = "   "
-                end
-            elseif gridNode:IsUnknown() then
-                c = " ? "
-            end
+            local c = gridNode:GetDrawString()
+
             if x == minX then
                 c = "|" .. c
             end
@@ -434,7 +433,19 @@ function TNAV.GridNav:new(options)
     local gpsPos = self:GetGPSPos()
     self.gpsEnabled = gpsPos ~= nil
 
-    self.gridMap = TNAV.GridMap({logger = self.gTurtle})
+    self.gridMap =
+        TNAV.GridMap(
+        {
+            logger = self.gTurtle,
+            gridNodeMapFunc = function(gridNode)
+                if gridNode:EqualPos(self.currentGN) then
+                    return "[T]"
+                elseif self.activePath and self.activePath:IsOnPath(gridNode) then
+                    return " . "
+                end
+            end
+        }
+    )
 
     self.initGN = self.gridMap:GetGridNode(gpsPos or vector:new(0, 0, 0))
     self.initGN:SetEmpty()
