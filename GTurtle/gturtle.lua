@@ -233,7 +233,7 @@ function GTurtle.Base:VisualizeGrid()
     -- visualize on redirected terminal (or current if there is none)
     term.clear()
     term.setCursorPos(1, 1)
-    local gridString = self.tnav.gridMap:GetGridString(self.tnav.currentGN.pos.z)
+    local gridString = self.tnav.gridMap:GetTurtleCenteredGridString(self.tnav.currentGN.pos.z, 10)
     print(gridString)
     self.tNetClient:SendReplace(gridString)
 end

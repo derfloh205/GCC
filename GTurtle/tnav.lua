@@ -295,14 +295,14 @@ end
 
 function TNAV.GridMap:LogGrid()
     local z = self.gridNav.currentGN.pos.z
-    local gridString = self:GetGridString(z)
+    local gridString = self:GetFullGridString(z)
     self.gridNav.gTurtle:Log(f("Logging Grid at Z = %d:\n%s", z, gridString))
 end
 
 ---@param z number
----@return string
-function TNAV.GridMap:GetGridString(z)
-    local boundaries = self.boundaries
+---@param boundaries table
+---@return string gridString
+function TNAV.GridMap:GetGridStringByBoundary(z, boundaries)
     local minX = boundaries.x.min
     local minY = boundaries.y.min
     local maxX = boundaries.x.max
@@ -335,6 +335,32 @@ function TNAV.GridMap:GetGridString(z)
         gridString = gridString .. "\n"
     end
     return gridString
+end
+
+---@param z number
+---@return string
+function TNAV.GridMap:GetFullGridString(z)
+    return self:GetGridStringByBoundary(z, self.boundaries)
+end
+
+---@param z number
+---@param sizeX number
+---@param sizeY? number
+---@return string gridString
+function TNAV.GridMap:GetTurtleCenteredGridString(z, sizeX, sizeY)
+    sizeY = sizeY or sizeX
+    local turtlePos = self.gridNav.currentGN.pos
+    local boundaries = {
+        x = {
+            min = turtlePos.x - math.floor(sizeX / 2),
+            max = turtlePos.x + math.ceil(sizeX / 2)
+        },
+        y = {
+            min = turtlePos.y - math.floor(sizeY / 2),
+            max = turtlePos.y + math.ceil(sizeY / 2)
+        }
+    }
+    return self:GetGridStringByBoundary(z, boundaries)
 end
 
 ---@class GTurtle.TNAV.Path.Options
