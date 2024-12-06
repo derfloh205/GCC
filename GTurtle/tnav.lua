@@ -383,7 +383,7 @@ TNAV.GridNav = Object:extend()
 function TNAV.GridNav:new(options)
     options = options or {}
     self.gTurtle = options.gTurtle
-    self.avoidAllBlocks = options.avoidAllBlocks or false
+    self.avoidAllBlocks = options.avoidAllBlocks == nil or options.avoidAllBlocks
     self.blockBlacklist = options.blockBlacklist or {}
 
     local gpsPos = self:GetGPSPos()
@@ -595,14 +595,14 @@ function TNAV.GridNav:GetValidPathNeighbors(gridNode)
                 local allowUnknown = not self.avoidUnknown or not neighborGridNode:IsUnknown()
                 local allBlocksAllowed = not self.avoidAllBlocks
                 local notBlacklisted =
-                    not isEmpty and not TUtil:tContains(self.blockBlacklist, neighborGridNode.blockData.name)
+                    (not isEmpty) and (not TUtil:tContains(self.blockBlacklist, neighborGridNode.blockData.name))
 
                 if isEmpty then
                     if allowUnknown then
                         table.insert(neighbors, neighborGridNode)
                     end
                 else
-                    if allBlocksAllowed or notBlacklisted then
+                    if allBlocksAllowed and notBlacklisted then
                         table.insert(neighbors, neighborGridNode)
                     end
                 end
