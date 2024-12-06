@@ -297,6 +297,17 @@ end
 
 ---@param goalPos Vector
 function GTurtle.Base:NavigateToPosition(goalPos)
+    local function RecalculatePath()
+        -- Recalculate Path Based on new Grid Info
+        self:Log("Recalculating Path..")
+        local path = self.tnav:CalculatePathToPosition(goalPos)
+        if path then
+            self.tnav:SetActivePath(path)
+        else
+            self:Log("Navigation: No Path Available After Recalculation")
+        end
+        return path
+    end
     local path = self.tnav:CalculatePathToPosition(goalPos)
     self:FLog("Calculated Path:\n%s", path)
     if path then
@@ -311,22 +322,20 @@ function GTurtle.Base:NavigateToPosition(goalPos)
                     if blockData then
                         local success, err = self:Dig(nextMove)
                         if not success then
-                            self:Log("Navigation Cancelled, Could not dig")
+                            self:Log("Navigating: Could not dig")
                             self:FLog("- %s", err)
-                            return false
+                            path = RecalculatePath()
+                            if not path then
+                                return false
+                            end
                         end
                     end
                 end
                 self:Log(f("Navigating: %s", tostring(nextMove)))
                 local success = self:ExecuteMovement(nextMove)
                 if not success then
-                    -- Recalculate Path Based on new Grid Info
-                    self:Log("Recalculating Path..")
-                    path = self.tnav:CalculatePathToPosition(goalPos)
-                    if path then
-                        self.tnav:SetActivePath(path)
-                    else
-                        self:Log("Navigation: No Path Available After Recalculation")
+                    path = RecalculatePath()
+                    if not path then
                         return false
                     end
                 end
