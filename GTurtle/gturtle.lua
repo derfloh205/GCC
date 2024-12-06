@@ -247,9 +247,7 @@ end
 function GTurtle.Base:Dig(dir, side)
     local success, err
 
-    local scanData = self:ScanBlocks()
-
-    local digBlock = scanData[dir]
+    local _, digBlock = self:Scan(dir)
 
     local isBlacklisted = self:IsBlockBlacklistedForDigging(digBlock)
 
@@ -278,13 +276,28 @@ end
 ---@return table<GTurtle.TNAV.MOVE, table?>
 function GTurtle.Base:ScanBlocks()
     local scanData = {}
-    local isF, dataF = turtle.inspect()
-    local isU, dataU = turtle.inspectUp()
-    local isD, dataD = turtle.inspectDown()
+    local isF, dataF = self:Scan(TNav.MOVE.F)
+    local isU, dataU = self:Scan(TNav.MOVE.U)
+    local isD, dataD = self:Scan(TNav.MOVE.D)
     scanData[TNav.MOVE.F] = isF and dataF
     scanData[TNav.MOVE.U] = isU and dataU
     scanData[TNav.MOVE.D] = isD and dataD
     return scanData
+end
+
+---@param dir GTurtle.TNAV.MOVE
+---@return boolean isBlock
+---@return table? blockData
+function GTurtle.Base:Scan(dir)
+    if dir == TNav.MOVE.F then
+        return turtle.inspect()
+    elseif dir == TNav.MOVE.U then
+        return turtle.inspectUp()
+    elseif dir == TNav.MOVE.D then
+        return turtle.inspectDown()
+    end
+
+    return false, nil
 end
 
 function GTurtle.Base:VisualizeGrid()
