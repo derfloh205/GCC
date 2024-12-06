@@ -317,17 +317,13 @@ function GTurtle.Base:NavigateToPosition(goalPos)
             if nextMove then
                 -- dig first if needed and allowed
                 if not self.avoidAllBlocks and not TNav.TURN[nextMove] then
-                    local scanData = self:ScanBlocks()
-                    local blockData = scanData[nextMove]
-                    if blockData then
-                        local success, err = self:Dig(nextMove)
-                        if not success then
-                            self:Log("Navigating: Could not dig")
-                            self:FLog("- %s", err)
-                            path = RecalculatePath()
-                            if not path then
-                                return false
-                            end
+                    local success, err = self:Dig(nextMove)
+                    if not success then
+                        self:Log("Navigating: Could not dig")
+                        self:FLog("- %s", err)
+                        path = RecalculatePath()
+                        if not path then
+                            return false
                         end
                     end
                 end
