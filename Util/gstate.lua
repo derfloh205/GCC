@@ -41,10 +41,12 @@ function GState.StateMachine:new(options)
     self.interruptStateArgs = nil
 
     ---@type GState.STATE
-    self.state = nil
+    self.initialState = options.initialState or GState.STATE.INIT
+    ---@type GState.STATE
+    self.state = self.initialState
     self.stateArgs = {}
 
-    self:SetState(options.initialState or GState.STATE.INIT, {})
+    self:SetState(self.state, self.stateArgs)
 end
 
 ---@param ... any
@@ -62,7 +64,7 @@ function GState.StateMachine:Run()
 end
 
 function GState.StateMachine:SetState(...)
-    local logMsg = f("State Transfer: [%s] -> ", self.state)
+    local logMsg = f("State Transfer: %s", self.state)
     local state, stateArgs = extractStateArgs(...)
     if self.interruptState then
         self.state = self.interruptState
@@ -73,7 +75,7 @@ function GState.StateMachine:SetState(...)
         self.state = state
         self.stateArgs = stateArgs
     end
-    self:FLog("%s -> [%s]", logMsg, self.state)
+    self:FLog("%s -> %s", logMsg, self.state)
 end
 
 function GState.StateMachine:INIT()
