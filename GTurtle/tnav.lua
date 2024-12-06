@@ -372,6 +372,8 @@ end
 ---@field gTurtle GTurtle.Base
 ---@field initialHead? GTurtle.TNAV.HEAD
 ---@field avoidUnknown? boolean
+---@field avoidAllBlocks? boolean true: avoid all blocks, false: only avoid blocks in blacklist
+---@field blockBlacklist? string[] -- used if avoidBlocks is false
 
 ---@class GTurtle.TNAV.GridNav : Object
 ---@overload fun(options: GTurtle.TNAV.GridNav.Options) : GTurtle.TNAV.GridNav
@@ -381,6 +383,8 @@ TNAV.GridNav = Object:extend()
 function TNAV.GridNav:new(options)
     options = options or {}
     self.gTurtle = options.gTurtle
+    self.avoidAllBlocks = options.avoidAllBlocks or false
+    self.blockBlacklist = options.blockBlacklist or {}
 
     local gpsPos = self:GetGPSPos()
     self.gpsEnabled = gpsPos ~= nil
@@ -587,8 +591,18 @@ function TNAV.GridNav:GetValidPathNeighbors(gridNode)
         if nx >= minX and nx <= maxX and ny >= minY and ny <= maxY and nz >= minZ and nz <= maxZ then
             local neighborGridNode = self.gridMap:GetGridNode(vector.new(nx, ny, nz))
             if neighborGridNode then
-                if neighborGridNode:IsEmpty() or neighborGridNode:IsUnknown() then
-                    if (not self.avoidUnknown) or (not neighborGridNode:IsUnknown()) then
+                local isEmpty = neighborGridNode:IsEmpty()
+                local allowUnknown = not self.avoidUnknown or not neighborGridNode:IsUnknown()
+                local allBlocksAllowed = not self.avoidAllBlocks
+                local notBlacklisted =
+                    not isEmpty and not TUtil:tContains(self.blockBlacklist, neighborGridNode.blockData.name)
+
+                if isEmpty then
+                    if allowUnknown then
+                        table.insert(neighbors, neighborGridNode)
+                    end
+                else
+                    if allBlocksAllowed or notBlacklisted then
                         table.insert(neighbors, neighborGridNode)
                     end
                 end

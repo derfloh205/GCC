@@ -2,7 +2,6 @@ local TUtil = require("GCC/Util/tutil")
 local TNav = require("GCC/GTurtle/tnav")
 local TNet = require("GCC/GTurtle/tnet")
 local GLogAble = require("GCC/Util/glog")
-local VUtil = require("GCC/Util/vutil")
 local f = string.format
 
 ---@class GTurtle
@@ -22,6 +21,8 @@ GTurtle.TYPES = {
 ---@field visualizeGridOnMove? boolean
 ---@field initialHead? GTurtle.TNAV.HEAD
 ---@field avoidUnknown? boolean
+---@field avoidAllBlocks? boolean otherwise the turtle will dig its way
+---@field digBlackList? string[] if not all blocks are avoided it uses the digBlacklist
 
 ---@class GTurtle.Base : GLogAble
 ---@overload fun(options: GTurtle.Base.Options) : GTurtle.Base
@@ -36,6 +37,8 @@ function GTurtle.Base:new(options)
     ---@diagnostic disable-next-line: redundant-parameter
     GTurtle.Base.super.new(self, options)
     os.setComputerLabel(self.name)
+    self.digBlackList = options.digBlackList
+    self.avoidAllBlocks = options.avoidAllBlocks == nil or options.avoidAllBlocks -- -> defaults to true
     self.fuelWhiteList = options.fuelWhiteList
     self.visualizeGridOnMove = options.visualizeGridOnMove
     self.minimumFuel = options.minimumFuel or 100
@@ -54,7 +57,15 @@ function GTurtle.Base:new(options)
     self.term.clear()
     self.term.setCursorPos(1, 1)
 
-    self.tnav = TNav.GridNav({gTurtle = self, avoidUnknown = options.avoidUnknown})
+    self.tnav =
+        TNav.GridNav(
+        {
+            gTurtle = self,
+            avoidUnknown = options.avoidUnknown,
+            avoidAllBlocks = self.avoidAllBlocks,
+            blockBlacklist = self.digBlackList
+        }
+    )
     if self.tnav.gpsEnabled then
         self:Log(f("Using GPS Position: %s", tostring(self.tnav.currentGN.pos)))
     end
@@ -217,6 +228,49 @@ function GTurtle.Base:Turn(turn)
         return true
     else
         self:FLog("Turning Blocked: %s", err)
+        return false, err
+    end
+end
+
+function GTurtle.Base:IsBlockBlacklistedForDigging(blockData)
+    if not blockData or not self.digBlackList then
+        return false
+    end
+    return TUtil:tContains(self.digBlackList, blockData.name)
+end
+
+--- U | D | F
+---@param dir GTurtle.TNAV.MOVE
+---@param side? "left" | "right"
+---@return boolean success
+---@return string? err
+function GTurtle.Base:Dig(dir, side)
+    local success, err
+
+    local scanData = self:ScanBlocks()
+
+    local digBlock = scanData[dir]
+
+    local isBlacklisted = self:IsBlockBlacklistedForDigging(digBlock)
+
+    if isBlacklisted then
+        return false, f("Not Digging: %s", (digBlock and digBlock.name))
+    end
+
+    if dir == TNav.MOVE.F then
+        success, err = turtle.dig(side)
+    elseif dir == TNav.MOVE.U then
+        success, err = turtle.digUp(side)
+    elseif dir == TNav.MOVE.D then
+        success, err = turtle.digDown(side)
+    end
+
+    if success then
+        self.tnav:UpdateSurroundings()
+        self.tNetClient:SendGridMap()
+        return true
+    else
+        self:FLog("Could not dig: %s", err)
         return false, err
     end
 end
