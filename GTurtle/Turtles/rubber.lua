@@ -28,7 +28,7 @@ function RubberTurtle:new(options)
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
     self.type = GTurtle.TYPES.RUBBER
-    self.rtFile = f("%d_rt.json")
+    self.rtFile = f("%d_rt.json", self.id)
     ---@type GTurtle.RubberTurtle.RTData
     self.rtData = nil
 end
