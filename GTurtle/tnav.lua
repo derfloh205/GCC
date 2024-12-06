@@ -437,7 +437,7 @@ function TNAV.GridNav:InitializeHeading()
 
     self.initializationAttempts = self.initializationAttempts + 1
 
-    if self.initializationAttempts >= 2 then
+    if self.initializationAttempts > 2 then
         return false
     end
 
