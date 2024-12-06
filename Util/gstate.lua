@@ -1,4 +1,5 @@
 local GLogAble = require("GCC/Util/glog")
+local f = string.format
 
 ---@class GState : GLogAble
 local GState = {}
@@ -40,8 +41,10 @@ function GState.StateMachine:new(options)
     self.interruptStateArgs = nil
 
     ---@type GState.STATE
-    self.state = options.initialState or GState.STATE.INIT
+    self.state = nil
     self.stateArgs = {}
+
+    self:SetState(options.initialState or GState.STATE.INIT, {})
 end
 
 ---@param ... any
@@ -59,6 +62,7 @@ function GState.StateMachine:Run()
 end
 
 function GState.StateMachine:SetState(...)
+    local logMsg = f("State Transfer: [%s] -> ", self.state)
     local state, stateArgs = extractStateArgs(...)
     if self.interruptState then
         self.state = self.interruptState
@@ -69,6 +73,7 @@ function GState.StateMachine:SetState(...)
         self.state = state
         self.stateArgs = stateArgs
     end
+    self:FLog("%s -> [%s]", logMsg, self.state)
 end
 
 function GState.StateMachine:INIT()
