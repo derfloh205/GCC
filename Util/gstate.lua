@@ -11,7 +11,7 @@ local GState = {}
 ---@overload fun(options: GState.StateMachine.Options) : GState.StateMachine
 GState.StateMachine = GLogAble:extend()
 
----@enum GState.STATE
+---@class GState.STATE
 GState.STATE = {
     INIT = "INIT",
     EXIT = "EXIT"

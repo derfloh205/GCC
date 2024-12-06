@@ -11,6 +11,7 @@
         "fs",
         "sleep",
         "gps",
-        "shell"
+        "shell",
+        "read"
     ]
 }

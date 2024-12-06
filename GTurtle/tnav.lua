@@ -171,6 +171,8 @@ end
 ---@class GTurtle.TNAV.GridMap.Options
 ---@field logger GLogAble
 ---@field gridNodeMapFunc? fun(gridNode: GTurtle.TNAV.GridNode): string?
+---@field saveFile? string if set save grid to file continously
+---@field loadFile? string if set attempt to load data from file at initialization
 
 ---@class GTurtle.TNAV.GridMap : Object
 ---@overload fun(options: GTurtle.TNAV.GridMap.Options) : GTurtle.TNAV.GridMap
@@ -184,8 +186,41 @@ function TNAV.GridMap:new(options)
     -- 3D Array
     ---@type table<number, table<number, table<number, GTurtle.TNAV.GridNode>>>
     self.grid = {}
-
     self.gridNodeMapFunc = options.gridNodeMapFunc
+
+    self.saveFile = options.saveFile
+    self.loadFile = options.loadFile
+
+    if self.loadFile and fs.exists(self.loadFile) then
+        local loadFile = fs.open(self.loadFile, "r")
+        -- serialized -> no functions or metatables, only base types (table, number, string ...)
+        local serializedGridMap = textutils.unserialiseJSON(loadFile.readAll())
+        self:LoadSerializedData(serializedGridMap)
+        loadFile.close()
+    end
+end
+
+---@param serializedGridMap table
+function TNAV.GridMap:LoadSerializedData(serializedGridMap)
+    for x, xData in pairs(serializedGridMap.grid) do
+        for y, yData in pairs(xData) do
+            for z, serializedGridNode in pairs(yData) do
+                local gridNode = self:GetGridNode(vector.new(x, y, z))
+                gridNode.unknown = serializedGridNode.unknown
+                gridNode.blockData = serializedGridNode.blockData
+            end
+        end
+    end
+end
+
+function TNAV.GridMap:WriteFile()
+    if not self.saveFile then
+        return
+    end
+    local serializedGridMap = textutils.serialiseJSON(self)
+    local saveFile = fs.open(self.saveFile, "w")
+    saveFile.write(serializedGridMap)
+    saveFile.close()
 end
 
 ---@param gridNode GTurtle.TNAV.GridNode
@@ -205,15 +240,6 @@ function TNAV.GridMap:UpdateBoundaries(gridNode)
     self.boundaries.x.max = math.max(self.boundaries.x.max, gridNode.pos.x)
     self.boundaries.y.max = math.max(self.boundaries.y.max, gridNode.pos.y)
     self.boundaries.z.max = math.max(self.boundaries.z.max, gridNode.pos.z)
-end
-
---- initializes or updates a scanned grid node
----@param pos Vector
----@param blockData table?
-function TNAV.GridMap:UpdateGridNode(pos, blockData)
-    local gridNode = self:GetGridNode(pos)
-    gridNode.blockData = blockData or nil
-    gridNode.unknown = false
 end
 
 -- creates a new gridnode at pos or returns an existing one
@@ -374,6 +400,7 @@ end
 ---@field avoidUnknown? boolean
 ---@field avoidAllBlocks? boolean true: avoid all blocks, false: only avoid blocks in blacklist
 ---@field blockBlacklist? string[] -- used if avoidBlocks is false
+---@field gridFile? string
 
 ---@class GTurtle.TNAV.GridNav : Object
 ---@overload fun(options: GTurtle.TNAV.GridNav.Options) : GTurtle.TNAV.GridNav
@@ -385,6 +412,7 @@ function TNAV.GridNav:new(options)
     self.gTurtle = options.gTurtle
     self.avoidAllBlocks = options.avoidAllBlocks == nil or options.avoidAllBlocks
     self.blockBlacklist = options.blockBlacklist or {}
+    self.gridFile = options.gridFile
 
     local gpsPos = self:GetGPSPos()
     self.gpsEnabled = gpsPos ~= nil
@@ -393,6 +421,8 @@ function TNAV.GridNav:new(options)
         TNAV.GridMap(
         {
             logger = self.gTurtle,
+            saveFile = self.gridFile,
+            loadFile = self.gridFile,
             gridNodeMapFunc = function(gridNode)
                 if gridNode:EqualPos(self.currentGN) then
                     return "[T]"
@@ -545,6 +575,7 @@ function TNAV.GridNav:UpdateSurroundings()
     end
 
     self.gTurtle:FLog("ScanLog: %s", scanLog)
+    self.gridMap:WriteFile()
 end
 
 --- A*

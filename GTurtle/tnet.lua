@@ -149,15 +149,7 @@ function TurtleNet.TurtleHost:OnMapUpdate(id, msg)
     local serializedGridMap = msg --[[@as GTurtle.TNAV.GridMap]]
     self:FLog("Boundary Test: X %d / %d", serializedGridMap.boundaries.x.min, serializedGridMap.boundaries.x.max)
 
-    for x, xData in pairs(serializedGridMap.grid) do
-        for y, yData in pairs(xData) do
-            for z, serializedGridNode in pairs(yData) do
-                local gridNode = self.gridMap:GetGridNode(vector.new(x, y, z))
-                gridNode.unknown = serializedGridNode.unknown
-                gridNode.blockData = serializedGridNode.blockData
-            end
-        end
-    end
+    self.gridMap:LoadSerializedData(serializedGridMap)
 
     self:UpdateGridMapDisplay(id)
 end

@@ -23,6 +23,7 @@ GTurtle.TYPES = {
 ---@field avoidUnknown? boolean
 ---@field avoidAllBlocks? boolean otherwise the turtle will dig its way
 ---@field digBlacklist? string[] if not all blocks are avoided it uses the digBlacklist
+---@field cacheGrid? boolean
 
 ---@class GTurtle.Base : GState.StateMachine
 ---@overload fun(options: GTurtle.Base.Options) : GTurtle.Base
@@ -49,13 +50,13 @@ function GTurtle.Base:new(options)
 
     self:Refuel()
 
-    self:Log(f("Initiating..."))
-
     if term ~= self.term then
         term:redirect(self.term)
     end
     self.term.clear()
     self.term.setCursorPos(1, 1)
+    self.cacheGrid = options.cacheGrid or false
+    self.gridFile = f("%d_grid.json")
 
     self.tnav =
         TNav.GridNav(
@@ -63,7 +64,8 @@ function GTurtle.Base:new(options)
             gTurtle = self,
             avoidUnknown = options.avoidUnknown,
             avoidAllBlocks = self.avoidAllBlocks,
-            blockBlacklist = self.digBlacklist
+            blockBlacklist = self.digBlacklist,
+            gridFile = self.cacheGrid and self.gridFile
         }
     )
     if self.tnav.gpsEnabled then
@@ -360,6 +362,11 @@ end
 
 function GTurtle.Base:NavigateToInitialPosition()
     self:NavigateToPosition(self.tnav.initGN.pos)
+end
+
+function GTurtle.Base:INIT()
+    self:FLog("Initiating Basic Turtle: %s", self.name)
+    self:SetState(GState.STATE.EXIT)
 end
 
 return GTurtle
