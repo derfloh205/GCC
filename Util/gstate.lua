@@ -55,7 +55,7 @@ function GState.StateMachine:Run()
         if not stateFunc or type(stateFunc) ~= "function" then
             return
         end
-    until stateFunc(table.unpack(self.stateArgs)) == false -- nil should continue
+    until stateFunc(self, table.unpack(self.stateArgs)) == false -- nil should continue
 end
 
 function GState.StateMachine:SetState(...)
