@@ -22,7 +22,7 @@ GTurtle.TYPES = {
 ---@field initialHead? GTurtle.TNAV.HEAD
 ---@field avoidUnknown? boolean
 ---@field avoidAllBlocks? boolean otherwise the turtle will dig its way
----@field digBlackList? string[] if not all blocks are avoided it uses the digBlacklist
+---@field digBlacklist? string[] if not all blocks are avoided it uses the digBlacklist
 
 ---@class GTurtle.Base : GLogAble
 ---@overload fun(options: GTurtle.Base.Options) : GTurtle.Base
@@ -37,7 +37,7 @@ function GTurtle.Base:new(options)
     ---@diagnostic disable-next-line: redundant-parameter
     GTurtle.Base.super.new(self, options)
     os.setComputerLabel(self.name)
-    self.digBlackList = options.digBlackList
+    self.digBlacklist = options.digBlacklist
     self.avoidAllBlocks = options.avoidAllBlocks == nil or options.avoidAllBlocks -- -> defaults to true
     self.fuelWhiteList = options.fuelWhiteList
     self.visualizeGridOnMove = options.visualizeGridOnMove
@@ -63,7 +63,7 @@ function GTurtle.Base:new(options)
             gTurtle = self,
             avoidUnknown = options.avoidUnknown,
             avoidAllBlocks = self.avoidAllBlocks,
-            blockBlacklist = self.digBlackList
+            blockBlacklist = self.digBlacklist
         }
     )
     if self.tnav.gpsEnabled then
@@ -233,10 +233,10 @@ function GTurtle.Base:Turn(turn)
 end
 
 function GTurtle.Base:IsBlockBlacklistedForDigging(blockData)
-    if not blockData or not self.digBlackList then
+    if not blockData or not self.digBlacklist then
         return false
     end
-    return TUtil:tContains(self.digBlackList, blockData.name)
+    return TUtil:tContains(self.digBlacklist, blockData.name)
 end
 
 --- U | D | F
