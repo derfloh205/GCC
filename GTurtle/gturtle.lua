@@ -304,6 +304,19 @@ function GTurtle.Base:NavigateToPosition(goalPos)
         repeat
             local nextMove, isGoal = self.tnav:GetNextMoveAlongPath()
             if nextMove then
+                -- dig first if needed and allowed
+                if not self.avoidAllBlocks and not TNav.TURN[nextMove] then
+                    local scanData = self:ScanBlocks()
+                    local blockData = scanData[nextMove]
+                    if blockData then
+                        local success, err = self:Dig(nextMove)
+                        if not success then
+                            self:Log("Navigation Cancelled, Could not dig")
+                            self:FLog("- %s", err)
+                            return false
+                        end
+                    end
+                end
                 self:Log(f("Navigating: %s", tostring(nextMove)))
                 local success = self:ExecuteMovement(nextMove)
                 if not success then
