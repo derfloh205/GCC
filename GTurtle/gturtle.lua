@@ -1,7 +1,7 @@
 local TUtil = require("GCC/Util/tutil")
 local TNav = require("GCC/GTurtle/tnav")
 local TNet = require("GCC/GTurtle/tnet")
-local GLogAble = require("GCC/Util/glog")
+local GState = require("GCC/Util/gstate")
 local f = string.format
 
 ---@class GTurtle
@@ -13,7 +13,7 @@ GTurtle.TYPES = {
     RUBBER = "RUBBER"
 }
 
----@class GTurtle.Base.Options : GLogAble.Options
+---@class GTurtle.Base.Options : GState.StateMachine.Options
 ---@field name string
 ---@field fuelWhiteList? string[]
 ---@field minimumFuel? number
@@ -24,9 +24,9 @@ GTurtle.TYPES = {
 ---@field avoidAllBlocks? boolean otherwise the turtle will dig its way
 ---@field digBlacklist? string[] if not all blocks are avoided it uses the digBlacklist
 
----@class GTurtle.Base : GLogAble
+---@class GTurtle.Base : GState.StateMachine
 ---@overload fun(options: GTurtle.Base.Options) : GTurtle.Base
-GTurtle.Base = GLogAble:extend()
+GTurtle.Base = GState.StateMachine:extend()
 
 ---@param options GTurtle.Base.Options
 function GTurtle.Base:new(options)
@@ -360,20 +360,6 @@ end
 
 function GTurtle.Base:NavigateToInitialPosition()
     self:NavigateToPosition(self.tnav.initGN.pos)
-end
-
----@class GTurtle.Rubber.Options : GTurtle.Base.Options
-
----@class GTurtle.Rubber : GTurtle.Base
----@overload fun(options: GTurtle.Rubber.Options) : GTurtle.Rubber
-GTurtle.Rubber = GTurtle.Base:extend()
-
----@param options GTurtle.Rubber.Options
-function GTurtle.Rubber:new(options)
-    options = options or {}
-    ---@diagnostic disable-next-line: redundant-parameter
-    self.super.new(self, options)
-    self.type = GTurtle.TYPES.RUBBER
 end
 
 return GTurtle
