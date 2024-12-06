@@ -56,7 +56,7 @@ function GTurtle.Base:new(options)
     self.term.clear()
     self.term.setCursorPos(1, 1)
     self.cacheGrid = options.cacheGrid or false
-    self.gridFile = f("%d_grid.json")
+    self.gridFile = f("%d_grid.json", self.id)
 
     self.tnav =
         TNav.GridNav(
