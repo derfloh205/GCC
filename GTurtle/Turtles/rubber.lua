@@ -77,7 +77,8 @@ function RubberTurtle:INIT()
 end
 
 function RubberTurtle:FETCH_SAPLINGS()
-    self:NavigateToPosition(self.resourceGN.pos)
+    local success = self:NavigateToPosition(self.resourceGN.pos)
+    self:FLog("Navigate To Resource Chest:%s", success)
     -- search for chest
     local neighbors = self.tnav:GetNeighbors(true)
     local chestGNs =
