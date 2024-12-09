@@ -178,7 +178,7 @@ function RubberTurtle:EXPLORE_TREE_POSITIONS()
     self:FLog("Tree Candidate Position: %s", candidateGN)
 
     if candidateGN then
-        local success = self:NavigateToPosition(candidateGN.pos)
+        local success = self:NavigateToPosition(candidateGN.pos, true)
     end
 
     self:SetState(RubberTurtle.STATE.EXIT)
