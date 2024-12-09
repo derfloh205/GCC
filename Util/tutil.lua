@@ -56,12 +56,17 @@ end
 ---@generic K
 ---@param t table<K, T> | T[]
 ---@param filterFunc fun(element: T, key: K): boolean
+---@param preserveKeys? boolean
 ---@return table<K, T>
-function TUtil:Filter(t, filterFunc)
+function TUtil:Filter(t, filterFunc, preserveKeys)
     local filtered = {}
     for k, v in pairs(t) do
         if filterFunc(v, k) then
-            filtered[k] = v
+            if preserveKeys then
+                filtered[k] = v
+            else
+                table.insert(filtered, v)
+            end
         end
     end
     return filtered
