@@ -200,7 +200,7 @@ function GTurtle.Base:IsFuel(itemData)
     end
 
     if self.fuelBlacklist then
-        return not TUtil:tContains(self.fuelBlacklist, itemData)
+        return not TUtil:tContains(self.fuelBlacklist, itemData.name)
     end
 
     if not self.fuelWhitelist then
