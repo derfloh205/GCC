@@ -452,6 +452,7 @@ end
 ---@param goalPos Vector
 ---@param flat? boolean only allow navigation in current Z
 function GTurtle.Base:NavigateToPosition(goalPos, flat)
+    self:FLog("Trying to navigate to position: %s", tostring(goalPos))
     local function RecalculatePath()
         -- Recalculate Path Based on new Grid Info
         self:Log("Recalculating Path..")
