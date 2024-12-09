@@ -178,8 +178,8 @@ function RubberTurtle:GetTreePositionCandidate()
             sleep(0)
         end
 
-        self:Log("Could not find empty area, Increasing Grid")
-        self.tnav.gridMap:IncreaseGridSize(1, 1, 0)
+        --self:Log("Could not find empty area, Increasing Grid")
+        --self.tnav.gridMap:IncreaseGridSize(1, 1, 0)
 
         local gridX, gridY = self.tnav.gridMap:GetGridSize()
     until candidateGN or (gridX > maxGridSize and gridY > maxGridSize)
