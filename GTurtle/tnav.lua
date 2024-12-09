@@ -593,10 +593,9 @@ function TNAV.GridNav:UpdateSurroundings()
 end
 
 ---@param flat boolean? ignores neighbors of different Z
----@param empty? boolean
----@param notVisited? boolean
+---@param filterFunc? fun(gn: GTurtle.TNAV.GridNode): boolean
 ---@return GTurtle.TNAV.GridNode[]
-function TNAV.GridNav:GetNeighbors(flat, empty, notVisited)
+function TNAV.GridNav:GetNeighbors(flat, filterFunc)
     ---@type GTurtle.TNAV.GridNode[]
     local neighbors = {}
 
@@ -627,15 +626,15 @@ function TNAV.GridNav:GetNeighbors(flat, empty, notVisited)
         )
     end
 
-    neighbors =
-        TUtil:Filter(
-        neighbors,
-        function(n)
-            local filterEmpty = empty ~= nil and (empty and n:IsEmpty())
-            local filterVisited = notVisited ~= nil and (notVisited and not n:IsVisited())
-            return filterEmpty and filterVisited
-        end
-    )
+    if filterFunc then
+        neighbors =
+            TUtil:Filter(
+            neighbors,
+            function(gridNode)
+                return filterFunc(gridNode)
+            end
+        )
+    end
 
     return neighbors
 end

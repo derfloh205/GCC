@@ -77,31 +77,29 @@ function RubberTurtle:INIT()
 end
 
 function RubberTurtle:FETCH_SAPLINGS()
-    self:Log("Fetching Saplings...")
-    local success = self:NavigateToPosition(self.resourceGN.pos)
-    self:FLog("Navigate To Resource Chest:%s", success)
+    self:NavigateToPosition(self.resourceGN.pos)
     -- search for chest
-    local neighbors = self.tnav:GetNeighbors(true)
-    local chestGNs =
-        TUtil:Filter(
-        neighbors,
+    local chests =
+        self.tnav:GetNeighbors(
+        true,
         function(gn)
             return gn:IsChest()
         end
     )
-    if not chestGNs[1] then
+
+    if #chests == 0 then
         -- dance once to scan surroundings
         self:ExecuteMovement("RRRR")
-        chestGNs =
-            TUtil:Filter(
-            neighbors,
+        chests =
+            self.tnav:GetNeighbors(
+            true,
             function(gn)
                 return gn:IsChest()
             end
         )
     end
 
-    local chestGN = chestGNs[1]
+    local chestGN = chests[1]
 
     -- if still nothing here then user lied to us!
     if not chestGN then
