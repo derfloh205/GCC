@@ -295,7 +295,7 @@ function TNAV.GridMap:GetAreaAround(gridNode, blockRadius, height)
         end
     end
 
-    return TNAV.GridArea {nodeList = areaNodes}
+    return TNAV.GridArea {nodeList = areaNodes, gridMap = self}
 end
 
 ---@return number x
@@ -422,6 +422,7 @@ end
 
 ---@class GTurtle.TNAV.GridArea.Options
 ---@field nodeList GTurtle.TNAV.GridNode[]
+---@field gridMap GTurtle.TNAV.GridMap
 
 ---@class GTurtle.TNAV.GridArea
 ---@overload fun(options: GTurtle.TNAV.GridArea.Options) : GTurtle.TNAV.GridArea
@@ -429,6 +430,7 @@ TNAV.GridArea = Object:extend()
 
 ---@param options GTurtle.TNAV.GridArea.Options
 function TNAV.GridArea:new(options)
+    self.gridMap = options.gridMap
     self.nodeList = options.nodeList
     self.boundaries = {
         x = {min = 0, max = 0},
@@ -449,6 +451,30 @@ function TNAV.GridArea:new(options)
     self.sizeX = self.boundaries.x.max - self.boundaries.x.min
     self.sizeY = self.boundaries.y.max - self.boundaries.y.min
     self.sizeZ = self.boundaries.z.max - self.boundaries.z.min
+end
+
+---@param z number? optional Z to get 4 corners
+---@return GTurtle.TNAV.GridNode[]
+function TNAV.GridArea:GetCorners(z)
+    if z then
+        return {
+            self.gridMap:GetGridNode(vector.new(self.boundaries.x.min, self.boundaries.y.min, z)),
+            self.gridMap:GetGridNode(vector.new(self.boundaries.x.max, self.boundaries.y.max, z)),
+            self.gridMap:GetGridNode(vector.new(self.boundaries.x.min, self.boundaries.y.max, z)),
+            self.gridMap:GetGridNode(vector.new(self.boundaries.x.max, self.boundaries.y.min, z))
+        }
+    else
+        return {
+            self.gridMap:GetGridNode(vector.new(self.boundaries.x.min, self.boundaries.y.min, self.boundaries.z.min)),
+            self.gridMap:GetGridNode(vector.new(self.boundaries.x.max, self.boundaries.y.max, self.boundaries.z.max)),
+            self.gridMap:GetGridNode(vector.new(self.boundaries.x.min, self.boundaries.y.min, self.boundaries.z.max)),
+            self.gridMap:GetGridNode(vector.new(self.boundaries.x.min, self.boundaries.y.max, self.boundaries.z.min)),
+            self.gridMap:GetGridNode(vector.new(self.boundaries.x.min, self.boundaries.y.max, self.boundaries.z.max)),
+            self.gridMap:GetGridNode(vector.new(self.boundaries.x.max, self.boundaries.y.min, self.boundaries.z.min)),
+            self.gridMap:GetGridNode(vector.new(self.boundaries.x.max, self.boundaries.y.min, self.boundaries.z.max)),
+            self.gridMap:GetGridNode(vector.new(self.boundaries.x.max, self.boundaries.y.max, self.boundaries.z.min))
+        }
+    end
 end
 
 function TNAV.GridArea:IsEmpty()
@@ -748,23 +774,9 @@ end
 ---@return GTurtle.TNAV.GridNode[]
 function TNAV.GridNav:GetValidPathNeighbors(gridNode, flat)
     local boundaries = self.gridMap.boundaries
-    -- local minX = boundaries.x.min
-    -- local minY = boundaries.y.min
-    -- local minZ = boundaries.z.min
-    -- local maxX = boundaries.x.max
-    -- local maxY = boundaries.y.max
-    -- local maxZ = boundaries.z.max
 
     ---@type GTurtle.TNAV.GridNode[]
     local neighbors = {}
-    -- local directions = {
-    --     {x = 1, y = 0, z = 0}, -- Right
-    --     {x = -1, y = 0, z = 0}, -- Left
-    --     {x = 0, y = 1, z = 0}, -- Up
-    --     {x = 0, y = -1, z = 0}, -- Down
-    --     {x = 0, y = 0, z = 1}, -- Forward
-    --     {x = 0, y = 0, z = -1} -- Backward
-    -- }
 
     neighbors =
         self.gridMap:GetNeighborsOf(
@@ -790,30 +802,6 @@ function TNAV.GridNav:GetValidPathNeighbors(gridNode, flat)
         end
     )
 
-    -- for _, dir in ipairs(directions) do
-    --     local nx, ny, nz = gridNode.pos.x + dir.x, gridNode.pos.y + dir.y, gridNode.pos.z + dir.z
-    --     if nx >= minX and nx <= maxX and ny >= minY and ny <= maxY and nz >= minZ and nz <= maxZ then
-    --         local neighborGridNode = self.gridMap:GetGridNode(vector.new(nx, ny, nz))
-    --         if neighborGridNode then
-    --             local isEmpty = neighborGridNode:IsEmpty()
-    --             local allowUnknown = not self.avoidUnknown or not neighborGridNode:IsUnknown()
-    --             local allBlocksAllowed = not self.avoidAllBlocks
-    --             local notBlacklisted =
-    --                 (not isEmpty) and (not TUtil:tContains(self.blockBlacklist, neighborGridNode.blockData.name))
-
-    --             if isEmpty then
-    --                 if allowUnknown then
-    --                     table.insert(neighbors, neighborGridNode)
-    --                 end
-    --             else
-    --                 if allBlocksAllowed and notBlacklisted then
-    --                     table.insert(neighbors, neighborGridNode)
-    --                 end
-    --             end
-    --         end
-    --     end
-    -- end
-
     return neighbors
 end
 
@@ -824,13 +812,6 @@ end
 ---@return GTurtle.TNAV.Path? path
 function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
     self.gTurtle:FLog("Calculating Path: %s -> %s", startGN, goalGN)
-    -- local boundaries = self.gridMap.boundaries
-    -- local minX = boundaries.x.min
-    -- local minY = boundaries.y.min
-    -- local minZ = boundaries.z.min
-    -- local maxX = boundaries.x.max
-    -- local maxY = boundaries.y.max
-    -- local maxZ = boundaries.z.max
 
     ---@type GTurtle.TNAV.GridNode[]
     local openSet = {startGN}
@@ -839,16 +820,6 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
     -- Initialize cost dictionaries
     local gScore = {}
     local fScore = {}
-    -- for x = minX, maxX do
-    --     gScore[x], fScore[x] = {}, {}
-    --     for y = minY, maxY do
-    --         gScore[x][y], fScore[x][y] = {}, {}
-    --         for z = minZ, maxZ do
-    --             gScore[x][y][z] = math.huge
-    --             fScore[x][y][z] = math.huge
-    --         end
-    --     end
-    -- end
 
     local function GetGScore(gn)
         local pos = gn.pos

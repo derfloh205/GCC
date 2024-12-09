@@ -177,11 +177,25 @@ function RubberTurtle:EXPLORE_TREE_POSITIONS()
 
     self:FLog("Tree Candidate Position: %s", candidateGN)
 
-    if candidateGN then
+    if candidateGN and candidateArea then
         local success = self:NavigateToPosition(candidateGN.pos, true)
+        if not success then
+            self:Log("Not able to navigate to tree pos")
+            return
+        end
+        local areaCorners = candidateArea:GetCorners(candidateGN.pos.z)
+        -- navigate to area corners to inspect
+        for _, cornerGN in ipairs(areaCorners) do
+            local success = self:NavigateToPosition(cornerGN.pos, true)
+            if not success then
+                self:Log("Not able to inspect tree area")
+                return
+            end
+        end
+    else
+        self:Log("No available tree pos candidate")
+        self:SetState(RubberTurtle.STATE.EXIT)
     end
-
-    self:SetState(RubberTurtle.STATE.EXIT)
 end
 
 function RubberTurtle:DECIDE_ACTION()
