@@ -108,7 +108,7 @@ function GTurtle.Base:GetTurtleData()
 end
 
 function GTurtle.Base:WriteTurtleData()
-    if self.turtleData and self.tdFile and fs.exists(self.tdFile) then
+    if self.turtleData and self.tdFile then
         local file = fs.open(self.tdFile, "w")
         file.write(textutils.serialiseJSON(self.turtleData))
         file.close()
