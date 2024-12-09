@@ -399,6 +399,4 @@ function GTurtle.Base:INIT()
     self:SetState(GState.STATE.EXIT)
 end
 
-print("returning gturtle lib: " .. tostring(GTurtle))
-
 return GTurtle
