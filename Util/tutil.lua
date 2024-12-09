@@ -84,7 +84,7 @@ function TUtil:Map(t, mapFunc, preserveKeys)
         if preserveKeys then
             mapped[k] = mapFunc(v, k)
         else
-            table.insert(mapFunc(v, k))
+            table.insert(mapped, mapFunc(v, k))
         end
     end
     return mapped
