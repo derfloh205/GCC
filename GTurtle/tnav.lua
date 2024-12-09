@@ -428,6 +428,7 @@ function TNAV.GridArea:IsEmpty()
             return false
         end
     end
+    return true
 end
 
 function TNAV.GridArea:IsUnknown()
@@ -436,6 +437,7 @@ function TNAV.GridArea:IsUnknown()
             return true
         end
     end
+    return false
 end
 
 ---@class GTurtle.TNAV.Path.Options
