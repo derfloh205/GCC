@@ -824,13 +824,13 @@ end
 ---@return GTurtle.TNAV.Path? path
 function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
     self.gTurtle:FLog("Calculating Path: %s -> %s", startGN, goalGN)
-    local boundaries = self.gridMap.boundaries
-    local minX = boundaries.x.min
-    local minY = boundaries.y.min
-    local minZ = boundaries.z.min
-    local maxX = boundaries.x.max
-    local maxY = boundaries.y.max
-    local maxZ = boundaries.z.max
+    -- local boundaries = self.gridMap.boundaries
+    -- local minX = boundaries.x.min
+    -- local minY = boundaries.y.min
+    -- local minZ = boundaries.z.min
+    -- local maxX = boundaries.x.max
+    -- local maxY = boundaries.y.max
+    -- local maxZ = boundaries.z.max
 
     ---@type GTurtle.TNAV.GridNode[]
     local openSet = {startGN}
@@ -839,19 +839,48 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
     -- Initialize cost dictionaries
     local gScore = {}
     local fScore = {}
-    for x = minX, maxX do
-        gScore[x], fScore[x] = {}, {}
-        for y = minY, maxY do
-            gScore[x][y], fScore[x][y] = {}, {}
-            for z = minZ, maxZ do
-                gScore[x][y][z] = math.huge
-                fScore[x][y][z] = math.huge
-            end
-        end
-    end
+    -- for x = minX, maxX do
+    --     gScore[x], fScore[x] = {}, {}
+    --     for y = minY, maxY do
+    --         gScore[x][y], fScore[x][y] = {}, {}
+    --         for z = minZ, maxZ do
+    --             gScore[x][y][z] = math.huge
+    --             fScore[x][y][z] = math.huge
+    --         end
+    --     end
+    -- end
 
     gScore[startGN.pos.x][startGN.pos.y][startGN.pos.z] = 0
     fScore[startGN.pos.x][startGN.pos.y][startGN.pos.z] = startGN:GetDistance(goalGN)
+
+    local function GetGScore(gn)
+        local pos = gn.pos
+        local x, y, z = pos.x, pos.y, pos.z
+        gScore[x] = gScore[x] or {}
+        gScore[x][y] = gScore[x][y] or {}
+        gScore[x][y][z] = gScore[x][y][z] or math.huge
+        return gScore[x][y][z]
+    end
+
+    local function SetGScore(gn, score)
+        local pos = gn.pos
+        local x, y, z = pos.x, pos.y, pos.z
+        gScore[x][y][z] = score
+    end
+    local function GetFScore(gn)
+        local pos = gn.pos
+        local x, y, z = pos.x, pos.y, pos.z
+        fScore[x] = fScore[x] or {}
+        fScore[x][y] = fScore[x][y] or {}
+        fScore[x][y][z] = fScore[x][y][z] or math.huge
+        return fScore[x][y][z]
+    end
+
+    local function SetFScore(gn, score)
+        local pos = gn.pos
+        local x, y, z = pos.x, pos.y, pos.z
+        fScore[x][y][z] = score
+    end
 
     local calculations = 0
     while #openSet > 0 do
@@ -859,7 +888,7 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
         table.sort(
             openSet,
             function(aGN, bGN)
-                return fScore[aGN.pos.x][aGN.pos.y][aGN.pos.z] < fScore[bGN.pos.x][bGN.pos.y][bGN.pos.z]
+                return GetFScore(aGN) < GetFScore(bGN)
             end
         )
         ---@type GTurtle.TNAV.GridNode
@@ -876,12 +905,11 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
 
         -- Process neighbors
         for _, neighborGN in ipairs(self:GetValidPathNeighbors(currentGN, flat)) do
-            local tentativeGScore = gScore[currentGN.pos.x][currentGN.pos.y][currentGN.pos.z] + 1
-            if tentativeGScore < gScore[neighborGN.pos.x][neighborGN.pos.y][neighborGN.pos.z] then
+            local tentativeGScore = GetGScore(currentGN) + 1
+            if tentativeGScore < GetGScore[neighborGN] then
                 cameFromGN[neighborGN] = currentGN
-                gScore[neighborGN.pos.x][neighborGN.pos.y][neighborGN.pos.z] = tentativeGScore
-                fScore[neighborGN.pos.x][neighborGN.pos.y][neighborGN.pos.z] =
-                    tentativeGScore + neighborGN:GetDistance(goalGN)
+                SetGScore(neighborGN, tentativeGScore)
+                SetFScore(neighborGN, tentativeGScore + neighborGN:GetDistance(goalGN))
                 if not TUtil:tContains(openSet, neighborGN) then
                     table.insert(openSet, neighborGN)
                 end
