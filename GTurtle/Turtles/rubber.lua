@@ -164,6 +164,7 @@ function RubberTurtle:GetTreePositionCandidate()
             local gridNode = self.tnav.gridMap:GetGridNode(vector.new(x, y, z))
             local inFence = self.tnav.geoFence and self.tnav.geoFence:IsWithin(gridNode)
             if inFence and not TUtil:tContains(self.invalidTreeGNs, gridNode) then
+                self:FLog("Tree Pos? %s", gridNode)
                 local area = self.tnav.gridMap:GetAreaAround(gridNode, requiredRadius)
 
                 if area:IsEmpty() then
