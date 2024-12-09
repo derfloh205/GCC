@@ -208,6 +208,7 @@ function RubberTurtle:EXPLORE_TREE_POSITIONS()
             local success = self:NavigateToPosition(cornerGN.pos, true)
             if not success then
                 self:Log("Not able to inspect tree area")
+                table.insert(self.invalidTreeGNs, candidateGN)
                 return
             end
         end
