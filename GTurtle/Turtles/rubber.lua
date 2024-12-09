@@ -73,6 +73,7 @@ function RubberTurtle:INIT()
     --     end
     -- end
 
+    self.treeCount = 1
     rtData.treePositions = {}
 
     self:WriteTurtleData()
