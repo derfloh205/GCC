@@ -66,6 +66,43 @@ TNAV.M_HEAD = {
     }
 }
 
+---@class GTurtle.TNAV.GeoFence.Options
+---@field corners GTurtle.TNAV.GridNode
+
+---@class GTurtle.TNAV.GeoFence : Object
+---@overload fun(options: GTurtle.TNAV.GeoFence.Options) : GTurtle.TNAV.GeoFence
+TNAV.GeoFence = Object:extend()
+
+---@param options GTurtle.TNAV.GeoFence.Options
+function TNAV.GeoFence:new(options)
+    self.corners = options.corners or {}
+    self.boundaries = {
+        x = {min = 0, max = 0},
+        y = {min = 0, max = 0},
+        z = {min = 0, max = 0}
+    }
+
+    for _, node in ipairs(self.corners) do
+        self.boundaries.x.min = math.min(self.boundaries.x.min, node.pos.x)
+        self.boundaries.y.min = math.min(self.boundaries.y.min, node.pos.y)
+        self.boundaries.z.min = math.min(self.boundaries.z.min, node.pos.z)
+
+        self.boundaries.x.max = math.max(self.boundaries.x.max, node.pos.x)
+        self.boundaries.y.max = math.max(self.boundaries.y.max, node.pos.y)
+        self.boundaries.z.max = math.max(self.boundaries.z.max, node.pos.z)
+    end
+end
+
+---@param gridNode GTurtle.TNAV.GridNode
+---@return boolean IsWithin
+function TNAV.GeoFence:IsWithin(gridNode)
+    local inX = MUtil:InRange(gridNode.pos.x, self.boundaries.x.min, self.boundaries.x.max)
+    local inY = MUtil:InRange(gridNode.pos.y, self.boundaries.y.min, self.boundaries.y.max)
+    local inZ = MUtil:InRange(gridNode.pos.z, self.boundaries.z.min, self.boundaries.z.max)
+
+    return inX and inY and inZ
+end
+
 ---@class GTurtle.TNAV.GridNode.Options
 ---@field gridMap GTurtle.TNAV.GridMap
 ---@field pos Vector
@@ -567,6 +604,7 @@ end
 ---@field avoidAllBlocks? boolean true: avoid all blocks, false: only avoid blocks in blacklist
 ---@field blockBlacklist? string[] -- used if avoidBlocks is false
 ---@field gridFile? string
+---@field fenceCorners? Vector[]
 
 ---@class GTurtle.TNAV.GridNav : Object
 ---@overload fun(options: GTurtle.TNAV.GridNav.Options) : GTurtle.TNAV.GridNav
@@ -625,6 +663,18 @@ function TNAV.GridNav:new(options)
     self.gTurtle:Log(f("Initial Heading: %s", self.head))
 
     self:UpdateSurroundings()
+
+    if options.fenceCorners then
+        self.geoFence =
+            TNAV.GeoFence {
+            corners = TUtil:Map(
+                options.fenceCorners,
+                function(pos)
+                    return self.gridMap:GetGridNode(pos)
+                end
+            )
+        }
+    end
 end
 
 ---@return boolean success
@@ -773,8 +823,6 @@ end
 ---@param flat? boolean
 ---@return GTurtle.TNAV.GridNode[]
 function TNAV.GridNav:GetValidPathNeighbors(gridNode, flat)
-    local boundaries = self.gridMap.boundaries
-
     ---@type GTurtle.TNAV.GridNode[]
     local neighbors = {}
 
@@ -788,6 +836,10 @@ function TNAV.GridNav:GetValidPathNeighbors(gridNode, flat)
             local allBlocksAllowed = not self.avoidAllBlocks
             local notBlacklisted =
                 (not isEmpty) and (not TUtil:tContains(self.blockBlacklist, neighborGridNode.blockData.name))
+
+            if self.geoFence and not self.geoFence:IsWithin(neighborGridNode) then
+                return false
+            end
 
             if isEmpty then
                 if allowUnknown then
