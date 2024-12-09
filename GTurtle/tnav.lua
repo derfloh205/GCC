@@ -391,6 +391,35 @@ function TNAV.GridMap:IncreaseGridSize(incX, incY, incZ)
     self:Log("Increased")
 end
 
+---@param gridNode GTurtle.TNAV.GridNode
+---@param flat? boolean
+---@param filterFunc fun(gridNode: GTurtle.TNAV.GridNode) : boolean
+function TNAV.GridMap:GetNeighborsOf(gridNode, flat, filterFunc)
+    ---@type GTurtle.TNAV.GridNode[]
+    local neighbors = {}
+
+    table.insert(neighbors, self:GetGridNode(vector.new(gridNode.pos.x + 1, gridNode.pos.y, gridNode.pos.z)))
+    table.insert(neighbors, self:GetGridNode(vector.new(gridNode.pos.x - 1, gridNode.pos.y, gridNode.pos.z)))
+    table.insert(neighbors, self:GetGridNode(vector.new(gridNode.pos.x, gridNode.pos.y + 1, gridNode.pos.z)))
+    table.insert(neighbors, self:GetGridNode(vector.new(gridNode.pos.x, gridNode.pos.y - 1, gridNode.pos.z)))
+    if not flat then
+        table.insert(neighbors, self:GetGridNode(vector.new(gridNode.pos.x, gridNode.pos.y, gridNode.pos.z + 1)))
+        table.insert(neighbors, self:GetGridNode(vector.new(gridNode.pos.x, gridNode.pos.y, gridNode.pos.z - 1)))
+    end
+
+    if filterFunc then
+        neighbors =
+            TUtil:Filter(
+            neighbors,
+            function(gridNode)
+                return filterFunc(gridNode)
+            end
+        )
+    end
+
+    return neighbors
+end
+
 ---@class GTurtle.TNAV.GridArea.Options
 ---@field nodeList GTurtle.TNAV.GridNode[]
 
@@ -694,47 +723,7 @@ end
 ---@param filterFunc? fun(gn: GTurtle.TNAV.GridNode): boolean
 ---@return GTurtle.TNAV.GridNode[]
 function TNAV.GridNav:GetNeighbors(flat, filterFunc)
-    ---@type GTurtle.TNAV.GridNode[]
-    local neighbors = {}
-
-    table.insert(
-        neighbors,
-        self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x + 1, self.currentGN.pos.y, self.currentGN.pos.z))
-    )
-    table.insert(
-        neighbors,
-        self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x - 1, self.currentGN.pos.y, self.currentGN.pos.z))
-    )
-    table.insert(
-        neighbors,
-        self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x, self.currentGN.pos.y + 1, self.currentGN.pos.z))
-    )
-    table.insert(
-        neighbors,
-        self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x, self.currentGN.pos.y - 1, self.currentGN.pos.z))
-    )
-    if not flat then
-        table.insert(
-            neighbors,
-            self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x, self.currentGN.pos.y, self.currentGN.pos.z + 1))
-        )
-        table.insert(
-            neighbors,
-            self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x, self.currentGN.pos.y, self.currentGN.pos.z - 1))
-        )
-    end
-
-    if filterFunc then
-        neighbors =
-            TUtil:Filter(
-            neighbors,
-            function(gridNode)
-                return filterFunc(gridNode)
-            end
-        )
-    end
-
-    return neighbors
+    return self.gridMap:GetNeighborsOf(self.currentGN, flat, filterFunc)
 end
 
 --- A*
@@ -778,7 +767,8 @@ function TNAV.GridNav:GetValidPathNeighbors(gridNode, flat)
     -- }
 
     neighbors =
-        self:GetNeighbors(
+        self.gridMap:GetNeighborsOf(
+        gridNode,
         flat,
         function(neighborGridNode)
             local isEmpty = neighborGridNode:IsEmpty()
