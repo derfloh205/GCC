@@ -82,11 +82,16 @@ function TNAV.GridNode:new(options)
     self.pos = options.pos
     self:SetBlockData(options.blockData)
     self.unknown = options.unknown or false
+    self.visited = false
 end
 
 function TNAV.GridNode:SetBlockData(blockData)
     self.blockData = blockData
     self.unknown = false
+end
+
+function TNAV.GridNode:IsVisited()
+    return self.visited
 end
 
 function TNAV.GridNode:SetEmpty()
@@ -548,6 +553,7 @@ end
 ---@param dir GTurtle.TNAV.MOVE
 function TNAV.GridNav:OnMove(dir)
     self.currentGN = self.currentGN:GetRelativeNode(self.head, dir)
+    self.currentGN.visited = true
     self:UpdateSurroundings()
 end
 
@@ -576,6 +582,46 @@ function TNAV.GridNav:UpdateSurroundings()
 
     self.gTurtle:FLog("ScanLog: %s", scanLog)
     self.gridMap:WriteFile()
+end
+
+---@param flat boolean? ignores neighbors of different Z
+---@param empty? boolean
+---@param notVisited? boolean
+---@return GTurtle.TNAV.GridNode[]
+function TNAV.GridNav:GetNeighbors(flat, empty, notVisited)
+    ---@type GTurtle.TNAV.GridNode[]
+    local neighbors = {}
+
+    table.insert(
+        self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x + 1, self.currentGN.pos.y, self.currentGN.pos.z))
+    )
+    table.insert(
+        self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x - 1, self.currentGN.pos.y, self.currentGN.pos.z))
+    )
+    table.insert(
+        self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x, self.currentGN.pos.y + 1, self.currentGN.pos.z))
+    )
+    table.insert(
+        self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x, self.currentGN.pos.y - 1, self.currentGN.pos.z))
+    )
+    if not flat then
+        table.insert(
+            self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x, self.currentGN.pos.y, self.currentGN.pos.z + 1))
+        )
+        table.insert(
+            self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x, self.currentGN.pos.y, self.currentGN.pos.z - 1))
+        )
+    end
+
+    neighbors =
+        TUtil:Filter(
+        neighbors,
+        function(n)
+            return (empty and n:IsEmpty()) and (notVisited and not n:IsVisited())
+        end
+    )
+
+    return neighbors
 end
 
 --- A*

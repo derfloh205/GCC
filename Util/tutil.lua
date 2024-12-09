@@ -52,4 +52,19 @@ function TUtil:Find(t, findFunc)
     return nil
 end
 
+---@generic T
+---@generic K
+---@param t table<K, T> | T[]
+---@param filterFunc fun(element: T, key: K): boolean
+---@return table<K, T>
+function TUtil:Filter(t, filterFunc)
+    local filtered = {}
+    for k, v in pairs(t) do
+        if filterFunc(v, k) then
+            filtered[k] = v
+        end
+    end
+    return filtered
+end
+
 return TUtil

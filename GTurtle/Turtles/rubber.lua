@@ -4,6 +4,7 @@ local TUtil = require("GCC/Util/tutil")
 local TermUtil = require("GCC/Util/termutil")
 local FUtil = require("GCC/Util/futil")
 local SUtil = require("GCC/Util/sutil")
+local VUtil = require("GCC/Util/vutil")
 local f = string.format
 
 ---@class GTurtle.TurtleData.Rubber.Data
@@ -21,7 +22,7 @@ local RubberTurtle = GTurtle.Base:extend()
 
 ---@class GTurtle.RubberTurtle.STATE : GState.STATE
 RubberTurtle.STATE = {
-    SEARCH_TREE = "SEARCH_TREE"
+    EXPLORE_WORK_FIELD = "EXPLORE_WORK_FIELD"
 }
 TUtil:Inject(RubberTurtle.STATE, GState.STATE)
 
@@ -49,10 +50,24 @@ function RubberTurtle:INIT()
         self:FLog("Produce Chest Pos: %s", rtData.produceChestPos)
     end
 
-    self:SetState(RubberTurtle.STATE.SEARCH_TREE)
+    self.resourceGN = self.tnav.gridMap:GetGridNode(rtData.resourceChestPos)
+    self.resourceGN.unknown = false
+    self.produceGN = self.tnav.gridMap:GetGridNode(rtData.produceChestPos)
+    self.produceGN.unknown = false
+
+    self:SetState(RubberTurtle.STATE.EXPLORE_WORK_FIELD)
 end
 
-function RubberTurtle:SEARCH_TREE()
+function RubberTurtle:EXPLORE_WORK_FIELD()
+    self:NavigateToPosition(self.resourceGN.pos)
+    self:NavigateToPosition(self.produceGN.pos)
+    repeat
+        local neighborGNs = self.tnav:GetNeighbors(true, true, true)
+        if neighborGNs[1] then
+            self:NavigateToPosition(neighborGNs[1].pos)
+        end
+    until #neighborGNs == 0
+
     self:SetState(RubberTurtle.STATE.EXIT)
 end
 
