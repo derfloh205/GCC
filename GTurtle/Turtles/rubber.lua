@@ -152,7 +152,7 @@ function RubberTurtle:GetTreePositionCandidate()
                 local area = self.tnav.gridMap:GetAreaAround(gridNode, requiredRadius)
 
                 if area:IsEmpty() then
-                    return gridNode, candidateArea
+                    return gridNode, area
                 end
                 --yield
                 self:FLog("Non Empty Area: %s", gridNode)
@@ -170,7 +170,7 @@ function RubberTurtle:GetTreePositionCandidate()
         self:FLog("Could not find candidate for tree position (Grid Size: %d)", maxGridSize)
     end
 
-    return candidateGN, candidateArea
+    return
 end
 
 function RubberTurtle:EXPLORE_TREE_POSITIONS()
