@@ -31,4 +31,15 @@ function TermUtil:ReadConfirmation(prompt)
     end
 end
 
+---@param prompt string
+---@return number
+function TermUtil:ReadNumber(prompt)
+    local number
+    repeat
+        print(prompt)
+        number = read()
+    until type(number) == "number"
+    return number
+end
+
 return TermUtil

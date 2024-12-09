@@ -5,7 +5,6 @@ RubberTurtle {
     minimumFuel = 100,
     log = true,
     clearLog = true,
-    visualizeGridOnMove = true,
-    treeCount = 1
+    visualizeGridOnMove = true
     --cacheGrid = true -- TODO: Serialization
 }:Run()

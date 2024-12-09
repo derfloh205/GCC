@@ -10,13 +10,11 @@ local f = string.format
 ---@field resourceChestPos Vector
 ---@field produceChestPos Vector
 ---@field treePositions Vector[]
----@field fenceCorners Vector[]
 
 ---@class GTurtle.TurtleData.Rubber : GTurtle.TurtleData
 ---@field data GTurtle.TurtleData.Rubber.Data
 
 ---@class GTurtle.RubberTurtle.Options : GTurtle.Base.Options
----@field treeCount number
 
 ---@class GTurtle.RubberTurtle : GTurtle.Base
 ---@overload fun(options: GTurtle.RubberTurtle.Options) : GTurtle.RubberTurtle
@@ -48,7 +46,6 @@ function RubberTurtle:new(options)
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
     self.type = GTurtle.TYPES.RUBBER
-    self.treeCount = options.treeCount or 1
     ---@type GTurtle.TurtleData.Rubber
     self.turtleData = self.turtleData
 end
@@ -68,16 +65,14 @@ function RubberTurtle:INIT()
     if not rtData.produceChestPos then
         rtData.produceChestPos = TermUtil:ReadVector("Produce Chest Position?")
     end
-    if not rtData.fenceCorners then
-        rtData.fenceCorners = {}
-        rtData.fenceCorners[1] = TermUtil:ReadVector("Geo Fence Corner #1?")
-        rtData.fenceCorners[2] = TermUtil:ReadVector("Geo Fence Corner #2?")
-        rtData.fenceCorners[3] = TermUtil:ReadVector("Geo Fence Corner #3?")
+    if not rtData.treePositions or #rtData.treePositions == 0 then
+        self.treeCount = TermUtil:ReadNumber("Tree Count?")
+        rtData.treePositions = {}
+        for i = 1, self.treeCount do
+            table.insert(rtData.treePositions, TermUtil:ReadVector(f("#%s Tree Pos?", i)))
+        end
     end
 
-    self.tnav:SetGeoFence(rtData.fenceCorners)
-
-    rtData.treePositions = rtData.treePositions or {}
     self:WriteTurtleData()
 
     self.resourceGN = self.tnav.gridMap:GetGridNode(VUtil:Deserialize(rtData.resourceChestPos))
@@ -174,8 +169,6 @@ function RubberTurtle:GetTreePositionCandidate()
     if not candidateGN then
         self:FLog("Could not find candidate for tree position (Grid Size: %d)", maxGridSize)
     end
-
-    return
 end
 
 function RubberTurtle:EXPLORE_TREE_POSITIONS()
