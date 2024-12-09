@@ -80,6 +80,7 @@ function RubberTurtle:INIT()
         rtData.fenceCorners[1] = TermUtil:ReadVector("Fence #1")
         rtData.fenceCorners[2] = TermUtil:ReadVector("Fence #2")
         rtData.fenceCorners[3] = TermUtil:ReadVector("Fence #3")
+        rtData.fenceCorners[4] = TermUtil:ReadVector("Fence #4")
     end
 
     rtData.treePositions = rtData.treePositions or {}
@@ -87,8 +88,6 @@ function RubberTurtle:INIT()
     self:WriteTurtleData()
 
     self.tnav:SetGeoFence(rtData.fenceCorners)
-
-    self:FLog("Geo Fence Corners? %d", #self.tnav.geoFence.corners)
 
     self.resourceGN = self.tnav.gridMap:GetGridNode(VUtil:Deserialize(rtData.resourceChestPos))
     self.resourceGN.unknown = false
