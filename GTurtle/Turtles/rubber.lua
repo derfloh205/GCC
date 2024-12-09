@@ -86,14 +86,7 @@ function RubberTurtle:INIT()
 
     self:WriteTurtleData()
 
-    self.tnav:SetGeoFence(
-        TUtil:Map(
-            rtData.fenceCorners,
-            function(vector)
-                return self.tnav.gridMap:GetGridNode(VUtil:Deserialize(vector))
-            end
-        )
-    )
+    self.tnav:SetGeoFence(rtData.fenceCorners)
 
     self:FLog("Geo Fence Corners? ", #self.tnav.geoFence.corners)
 
