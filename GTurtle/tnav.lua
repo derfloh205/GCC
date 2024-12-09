@@ -593,22 +593,28 @@ function TNAV.GridNav:GetNeighbors(flat, empty, notVisited)
     local neighbors = {}
 
     table.insert(
+        neighbors,
         self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x + 1, self.currentGN.pos.y, self.currentGN.pos.z))
     )
     table.insert(
+        neighbors,
         self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x - 1, self.currentGN.pos.y, self.currentGN.pos.z))
     )
     table.insert(
+        neighbors,
         self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x, self.currentGN.pos.y + 1, self.currentGN.pos.z))
     )
     table.insert(
+        neighbors,
         self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x, self.currentGN.pos.y - 1, self.currentGN.pos.z))
     )
     if not flat then
         table.insert(
+            neighbors,
             self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x, self.currentGN.pos.y, self.currentGN.pos.z + 1))
         )
         table.insert(
+            neighbors,
             self.gridMap:GetGridNode(vector.new(self.currentGN.pos.x, self.currentGN.pos.y, self.currentGN.pos.z - 1))
         )
     end
