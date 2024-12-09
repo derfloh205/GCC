@@ -5,7 +5,7 @@ RubberTurtle {
     minimumFuel = 100,
     log = true,
     clearLog = true,
-    visualizeGridOnMove = true
+    visualizeGridOnMove = true,
+    treeCount = 1,
+    cacheGrid = true
 }:Run()
-
---TODO no terminal output?!
