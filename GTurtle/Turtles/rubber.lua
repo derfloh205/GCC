@@ -1,4 +1,5 @@
 local GTurtle = require("GCC/GTurtle/gturtle")
+local TNav = require("GCC/GTurtle/tnav")
 local GState = require("GCC/Util/gstate")
 local TUtil = require("GCC/Util/tutil")
 local TermUtil = require("GCC/Util/termutil")
@@ -12,6 +13,7 @@ local f = string.format
 ---@field resourceChestPos Vector
 ---@field produceChestPos Vector
 ---@field treePositions Vector[]
+---@field fenceCorners Vector[]
 
 ---@class GTurtle.TurtleData.Rubber : GTurtle.TurtleData
 ---@field data GTurtle.TurtleData.Rubber.Data
@@ -63,14 +65,23 @@ function RubberTurtle:INIT()
     self:FLog("Initiating Rubber Turtle: %s", self.name)
     local rtData = self:GetRTData()
 
-    if not rtData.produceChestPos or not rtData.resourceChestPos then
+    if not rtData.resourceChestPos then
         rtData.resourceChestPos = TermUtil:ReadVector("Resource Chest Position?")
-        rtData.produceChestPos = TermUtil:ReadVector("Produce Chest Position?")
-    else
-        self:Log("Loading Data from File:")
-        self:FLog("Resource Chest Pos: %s", rtData.resourceChestPos)
-        self:FLog("Produce Chest Pos: %s", rtData.produceChestPos)
     end
+    if not rtData.produceChestPos then
+        rtData.produceChestPos = TermUtil:ReadVector("Produce Chest Position?")
+    end
+    if not rtData.fenceCorners then
+        rtData.fenceCorners[1] = TermUtil:ReadVector("Geo Fence Corner #1?")
+        rtData.fenceCorners[2] = TermUtil:ReadVector("Geo Fence Corner #2?")
+        rtData.fenceCorners[3] = TermUtil:ReadVector("Geo Fence Corner #3?")
+    end
+
+    self.tnav.geoFence =
+        TNav.GeoFence {
+        corners = rtData.fenceCorners
+    }
+
     rtData.treePositions = rtData.treePositions or {}
     self:WriteTurtleData()
 
