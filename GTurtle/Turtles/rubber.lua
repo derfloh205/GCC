@@ -104,6 +104,7 @@ function RubberTurtle:FETCH_SAPLINGS()
     if #chests == 0 then
         -- dance once to scan surroundings
         self:ExecuteMovement("RRRR")
+        self:Log("Danced")
         chests =
             self.tnav:GetNeighbors(
             true,
