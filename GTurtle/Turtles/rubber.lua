@@ -175,7 +175,7 @@ function RubberTurtle:GetTreePositionCandidate()
                     self:FLog("Non Empty Area: %s", gridNode)
                 end
             end
-            --sleep(0)
+            sleep(0)
         end
 
         self:Log("Could not find empty area, Increasing Grid")
