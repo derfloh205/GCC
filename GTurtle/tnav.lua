@@ -631,7 +631,9 @@ function TNAV.GridNav:GetNeighbors(flat, empty, notVisited)
         TUtil:Filter(
         neighbors,
         function(n)
-            return (empty and n:IsEmpty()) and (notVisited and not n:IsVisited())
+            local filterEmpty = empty ~= nil and (empty and n:IsEmpty())
+            local filterVisited = notVisited ~= nil and (notVisited and not n:IsVisited())
+            return filterEmpty and filterVisited
         end
     )
 
