@@ -124,6 +124,20 @@ function GTurtle.Base:GetInventoryItems()
     return itemMap
 end
 
+---@param name string
+---@return number? slotID
+---@return number? amount
+function GTurtle.Base:GetInventoryItem(name)
+    local itemMap = self:GetInventoryItems()
+    for slot, itemData in pairs(itemMap) do
+        if itemData and name == itemData.name then
+            return slot, itemData.count
+        end
+    end
+
+    return
+end
+
 ---@return boolean isFuelSelected
 function GTurtle.Base:SelectFuel()
     local itemMap = self:GetInventoryItems()
@@ -340,6 +354,52 @@ function GTurtle.Base:VisualizeGrid()
     print(gridString)
 end
 
+---@param reqHead GTurtle.TNAV.HEAD
+function GTurtle.Base:TurnToHead(reqHead)
+    local head = self.tnav.head
+    if head == reqHead then
+        return
+    end
+
+    if reqHead == TNav.HEAD.N then
+        if head == TNav.HEAD.W then
+            self:Turn("R")
+        elseif head == TNav.HEAD.E then
+            self:Turn("L")
+        elseif head == TNav.HEAD.S then
+            self:Turn("R")
+            self:Turn("R")
+        end
+    elseif reqHead == TNav.HEAD.S then
+        if head == TNav.HEAD.W then
+            self:Turn("L")
+        elseif head == TNav.HEAD.E then
+            self:Turn("R")
+        elseif head == TNav.HEAD.N then
+            self:Turn("R")
+            self:Turn("R")
+        end
+    elseif reqHead == TNav.HEAD.W then
+        if head == TNav.HEAD.N then
+            self:Turn("L")
+        elseif head == TNav.HEAD.S then
+            self:Turn("R")
+        elseif head == TNav.HEAD.E then
+            self:Turn("R")
+            self:Turn("R")
+        end
+    elseif reqHead == TNav.HEAD.E then
+        if head == TNav.HEAD.N then
+            self:Turn("R")
+        elseif head == TNav.HEAD.S then
+            self:Turn("L")
+        elseif head == TNav.HEAD.W then
+            self:Turn("R")
+            self:Turn("R")
+        end
+    end
+end
+
 ---@param goalPos Vector
 function GTurtle.Base:NavigateToPosition(goalPos)
     local function RecalculatePath()
@@ -360,24 +420,28 @@ function GTurtle.Base:NavigateToPosition(goalPos)
         repeat
             local nextMove, isGoal = self.tnav:GetNextMoveAlongPath()
             if nextMove then
-                -- dig first if needed and allowed
-                if not self.avoidAllBlocks and not TNav.TURN[nextMove] then
-                    local success, err = self:Dig(nextMove)
+                if TNav.HEAD[nextMove] then
+                    -- dig first if needed and allowed
+                    self:TurnToHead(nextMove)
+                else
+                    if not self.avoidAllBlocks then
+                        local success, err = self:Dig(nextMove)
+                        if not success then
+                            self:Log("Navigating: Could not dig")
+                            self:FLog("- %s", err)
+                            path = RecalculatePath()
+                            if not path then
+                                return false
+                            end
+                        end
+                    end
+                    self:Log(f("Navigating: %s", tostring(nextMove)))
+                    local success = self:Move(nextMove)
                     if not success then
-                        self:Log("Navigating: Could not dig")
-                        self:FLog("- %s", err)
                         path = RecalculatePath()
                         if not path then
                             return false
                         end
-                    end
-                end
-                self:Log(f("Navigating: %s", tostring(nextMove)))
-                local success = self:ExecuteMovement(nextMove)
-                if not success then
-                    path = RecalculatePath()
-                    if not path then
-                        return false
                     end
                 end
             end

@@ -41,4 +41,10 @@ function VUtil:Add(v1, v2)
     return vector.new(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z)
 end
 
+---@param v Vector Serialized
+---@return Vector
+function VUtil:Deserialize(v)
+    return vector.new(v.x, v.y, v.z)
+end
+
 return VUtil

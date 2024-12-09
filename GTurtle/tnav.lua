@@ -9,7 +9,7 @@ local TNAV = {}
 
 TNAV.CALCULATIONS_PER_YIELD = 150
 
---- Possible Look Directions (Relative)
+--- Possible Look Directions
 ---@enum GTurtle.TNAV.HEAD
 TNAV.HEAD = {
     N = "N", -- North
@@ -795,7 +795,7 @@ function TNAV.GridNav:SetActivePath(path)
     self.activePath = path
 end
 
----@return (GTurtle.TNAV.MOVE | GTurtle.TNAV.TURN | nil) move?
+---@return (GTurtle.TNAV.MOVE | GTurtle.TNAV.HEAD | nil) move?
 ---@return boolean? isGoal
 function TNAV.GridNav:GetNextMoveAlongPath()
     self.gTurtle:Log("GetNextMoveAlongPath")
@@ -821,55 +821,22 @@ function TNAV.GridNav:GetNextMoveAlongPath()
             self.gTurtle:FLog("-> NextPos: %s)", nextGN)
             return
         end
+
+        -- if heading is not required heading, return required heading
+        if self.head ~= requiredHead then
+            self.gTurtle:FLog("- H: %s | R: %s", self.head, requiredHead)
+            return requiredHead
+        end
+
         self.gTurtle:FLog("- %s -> %s", currentGN, nextGN)
-        self.gTurtle:FLog("- H: %s | R: %s", self.head, requiredHead)
+
         -- if the next pos is up or below directly return it as next move (no heading required)
         if requiredHead == TNAV.MOVE.U or requiredHead == TNAV.MOVE.D then
             return requiredHead
         end
 
-        -- determine available move to reach the next position based on current heading and required heading
-        if requiredHead == TNAV.HEAD.N then
-            if self.head == TNAV.HEAD.N then
-                return TNAV.MOVE.F
-            elseif self.head == TNAV.HEAD.S then
-                return TNAV.TURN.R
-            elseif self.head == TNAV.HEAD.E then
-                return TNAV.TURN.L
-            elseif self.head == TNAV.HEAD.W then
-                return TNAV.TURN.R
-            end
-        elseif requiredHead == TNAV.HEAD.S then
-            if self.head == TNAV.HEAD.N then
-                return TNAV.TURN.R
-            elseif self.head == TNAV.HEAD.S then
-                return TNAV.MOVE.F
-            elseif self.head == TNAV.HEAD.E then
-                return TNAV.TURN.R
-            elseif self.head == TNAV.HEAD.W then
-                return TNAV.TURN.L
-            end
-        elseif requiredHead == TNAV.HEAD.E then
-            if self.head == TNAV.HEAD.N then
-                return TNAV.TURN.R
-            elseif self.head == TNAV.HEAD.S then
-                return TNAV.TURN.L
-            elseif self.head == TNAV.HEAD.E then
-                return TNAV.MOVE.F
-            elseif self.head == TNAV.HEAD.W then
-                return TNAV.TURN.R
-            end
-        elseif requiredHead == TNAV.HEAD.W then
-            if self.head == TNAV.HEAD.N then
-                return TNAV.TURN.L
-            elseif self.head == TNAV.HEAD.S then
-                return TNAV.TURN.R
-            elseif self.head == TNAV.HEAD.E then
-                return TNAV.TURN.R
-            elseif self.head == TNAV.HEAD.W then
-                return TNAV.MOVE.F
-            end
-        end
+        -- otherwise forward movement is sufficient
+        return TNAV.MOVE.F
     end
 
     self.gTurtle:Log("- Could not determine next move on active path!")

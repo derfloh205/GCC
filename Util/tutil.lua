@@ -72,4 +72,21 @@ function TUtil:Filter(t, filterFunc, preserveKeys)
     return filtered
 end
 
+---@generic T
+---@generic K
+---@param t table<K, T> | T[]
+---@param mapFunc fun(element: T, key: K): any
+---@param preserveKeys? boolean
+function TUtil:Map(t, mapFunc, preserveKeys)
+    local mapped = {}
+    for k, v in pairs(t) do
+        if preserveKeys then
+            mapped[k] = mapFunc(v, k)
+        else
+            table.insert(mapFunc(v, k))
+        end
+    end
+    return mapped
+end
+
 return TUtil
