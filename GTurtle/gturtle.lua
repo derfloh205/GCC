@@ -435,7 +435,7 @@ function GTurtle.Base:NavigateToPosition(goalPos)
                             end
                         end
                     end
-                    self:Log(f("Navigating: %s", tostring(nextMove)))
+                    self:FLog("Navigating: %s", nextMove)
                     local success = self:Move(nextMove)
                     if not success then
                         path = RecalculatePath()
@@ -446,7 +446,7 @@ function GTurtle.Base:NavigateToPosition(goalPos)
                 end
             end
         until isGoal
-        self:Log(f("Arrived on Target Position"))
+        self:FLog("Arrived on Target Position")
         return true
     else
         self:Log("Navigation: No Path Available")

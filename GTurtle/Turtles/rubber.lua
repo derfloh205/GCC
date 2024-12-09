@@ -77,6 +77,7 @@ function RubberTurtle:INIT()
 end
 
 function RubberTurtle:FETCH_SAPLINGS()
+    self:Log("Fetching Saplings...")
     local success = self:NavigateToPosition(self.resourceGN.pos)
     self:FLog("Navigate To Resource Chest:%s", success)
     -- search for chest
