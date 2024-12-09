@@ -382,7 +382,7 @@ function GTurtle.Base:NavigateToPosition(goalPos)
                 end
             end
         until isGoal
-        self:Log(f("Arrived on Initial Position"))
+        self:Log(f("Arrived on Target Position"))
         return true
     else
         self:Log("Navigation: No Path Available")
