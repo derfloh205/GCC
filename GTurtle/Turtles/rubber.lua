@@ -72,6 +72,7 @@ function RubberTurtle:INIT()
         rtData.produceChestPos = TermUtil:ReadVector("Produce Chest Position?")
     end
     if not rtData.fenceCorners then
+        rtData.fenceCorners = {}
         rtData.fenceCorners[1] = TermUtil:ReadVector("Geo Fence Corner #1?")
         rtData.fenceCorners[2] = TermUtil:ReadVector("Geo Fence Corner #2?")
         rtData.fenceCorners[3] = TermUtil:ReadVector("Geo Fence Corner #3?")
