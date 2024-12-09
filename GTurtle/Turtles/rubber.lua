@@ -88,7 +88,7 @@ function RubberTurtle:INIT()
 
     self.tnav:SetGeoFence(rtData.fenceCorners)
 
-    self:FLog("Geo Fence Corners? ", #self.tnav.geoFence.corners)
+    self:FLog("Geo Fence Corners? %d", #self.tnav.geoFence.corners)
 
     self.resourceGN = self.tnav.gridMap:GetGridNode(VUtil:Deserialize(rtData.resourceChestPos))
     self.resourceGN.unknown = false
