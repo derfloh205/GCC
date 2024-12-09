@@ -54,7 +54,7 @@ end
 
 ---@return GTurtle.TurtleData.Rubber.Data
 function RubberTurtle:GetRTData()
-    return self:GetTurtleData().data
+    return self.turtleData.data
 end
 
 function RubberTurtle:INIT()
