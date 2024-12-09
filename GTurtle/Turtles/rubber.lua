@@ -10,6 +10,7 @@ local f = string.format
 ---@field resourceChestPos Vector
 ---@field produceChestPos Vector
 ---@field treePositions Vector[]
+---@field fenceCorners Vector[]
 
 ---@class GTurtle.TurtleData.Rubber : GTurtle.TurtleData
 ---@field data GTurtle.TurtleData.Rubber.Data
@@ -48,6 +49,7 @@ function RubberTurtle:new(options)
     self.type = GTurtle.TYPES.RUBBER
     ---@type GTurtle.TurtleData.Rubber
     self.turtleData = self.turtleData
+    self.treeCount = 1
 end
 
 ---@return GTurtle.TurtleData.Rubber.Data
@@ -73,10 +75,18 @@ function RubberTurtle:INIT()
     --     end
     -- end
 
-    self.treeCount = 1
-    rtData.treePositions = {}
+    if not rtData.fenceCorners then
+        rtData.fenceCorners = rtData.fenceCorners or {}
+        rtData.fenceCorners[1] = TermUtil:ReadVector("Fence #1")
+        rtData.fenceCorners[2] = TermUtil:ReadVector("Fence #2")
+        rtData.fenceCorners[3] = TermUtil:ReadVector("Fence #3")
+    end
+
+    rtData.treePositions = rtData.treePositions or {}
 
     self:WriteTurtleData()
+
+    self.tnav:SetGeoFence(rtData.fenceCorners)
 
     self.resourceGN = self.tnav.gridMap:GetGridNode(VUtil:Deserialize(rtData.resourceChestPos))
     self.resourceGN.unknown = false
