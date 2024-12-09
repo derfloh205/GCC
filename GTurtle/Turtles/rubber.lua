@@ -7,7 +7,7 @@ local SUtil = require("GCC/Util/sutil")
 local f = string.format
 
 ---@class GTurtle.TurtleData.Rubber.Data
----@field saplingChestPos Vector
+---@field resourceChestPos Vector
 ---@field produceChestPos Vector
 
 ---@class GTurtle.TurtleData.Rubber : GTurtle.TurtleData
@@ -39,13 +39,13 @@ function RubberTurtle:INIT()
     self:FLog("Initiating Rubber Turtle: %s", self.name)
     local rtData = self.turtleData.data
 
-    if not rtData.produceChestPos or not rtData.saplingChestPos then
-        rtData.saplingChestPos = TermUtil:ReadVector("Sapling Chest Position?")
+    if not rtData.produceChestPos or not rtData.resourceChestPos then
+        rtData.resourceChestPos = TermUtil:ReadVector("Resource Chest Position?")
         rtData.produceChestPos = TermUtil:ReadVector("Produce Chest Position?")
         self:WriteTurtleData()
     else
         self:Log("Loading Data from File:")
-        self:FLog("Sapling Chest Pos: %s", rtData.saplingChestPos)
+        self:FLog("Resource Chest Pos: %s", rtData.resourceChestPos)
         self:FLog("Produce Chest Pos: %s", rtData.produceChestPos)
     end
 

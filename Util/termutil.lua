@@ -1,18 +1,21 @@
 local SUtil = require("GCC/Util/sutil")
+local f = string.format
 ---@class TermUtil
 local TermUtil = {}
 
 ---@param prompt string
 ---@return Vector vector
 function TermUtil:ReadVector(prompt)
-    print(prompt .. "\nFormat: 'x,y,z'")
     local split = {}
+    local x, y, z
     repeat
+        print(prompt .. "\nFormat: 'x,y,z'")
         local posString = read()
         split = SUtil:Split(posString, ",")
-    until type(split[1]) == "number" and type(split[2]) == "number" and type(split[3]) == "number"
+        x, y, z = split[1], split[2], split[3]
+    until type(x) == "number" and type(y) == "number" and type(z) == "number"
 
-    return vector.new(split[1], split[2], split[3])
+    return vector.new(x, y, z)
 end
 
 ---@param prompt string
