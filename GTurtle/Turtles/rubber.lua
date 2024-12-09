@@ -65,13 +65,15 @@ function RubberTurtle:INIT()
     if not rtData.produceChestPos then
         rtData.produceChestPos = TermUtil:ReadVector("Produce Chest Position?")
     end
-    if not rtData.treePositions or #rtData.treePositions == 0 then
-        self.treeCount = TermUtil:ReadNumber("Tree Count?")
-        rtData.treePositions = {}
-        for i = 1, self.treeCount do
-            table.insert(rtData.treePositions, TermUtil:ReadVector(f("#%s Tree Pos?", i)))
-        end
-    end
+    -- if not rtData.treePositions or #rtData.treePositions == 0 then
+    --     self.treeCount = TermUtil:ReadNumber("Tree Count?")
+    --     rtData.treePositions = {}
+    --     for i = 1, self.treeCount do
+    --         table.insert(rtData.treePositions, TermUtil:ReadVector(f("#%s Tree Pos?", i)))
+    --     end
+    -- end
+
+    rtData.treePositions = {}
 
     self:WriteTurtleData()
 
@@ -139,7 +141,7 @@ end
 ---@return GTurtle.TNAV.GridNode? candidateGN
 ---@return GTurtle.TNAV.GridArea? candidateArea
 function RubberTurtle:GetTreePositionCandidate()
-    local requiredRadius = 3
+    local requiredRadius = 1
     local z = self.tnav.currentGN.pos.z
     local maxGridSize = 15
 
