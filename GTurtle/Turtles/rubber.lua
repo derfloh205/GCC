@@ -11,6 +11,7 @@ local f = string.format
 ---@class GTurtle.TurtleData.Rubber.Data
 ---@field resourceChestPos Vector
 ---@field produceChestPos Vector
+---@field treePositions Vector[]
 
 ---@class GTurtle.TurtleData.Rubber : GTurtle.TurtleData
 ---@field data GTurtle.TurtleData.Rubber.Data
@@ -191,6 +192,13 @@ function RubberTurtle:EXPLORE_TREE_POSITIONS()
                 self:Log("Not able to inspect tree area")
                 return
             end
+        end
+        if candidateArea:IsEmpty() then
+            self:FLog("Viable Tree Position Found: %s", candidateGN)
+            table.insert(self.treeGNs, candidateGN)
+            local rtData = self:GetRTData()
+            table.insert(rtData.treePositions, candidateGN.pos)
+            self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
         end
     else
         self:Log("No available tree pos candidate")
