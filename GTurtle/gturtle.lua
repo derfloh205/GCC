@@ -285,11 +285,19 @@ function GTurtle.Base:ExecuteMovement(path)
     for i = 1, #path do
         local move = string.sub(path, i, i)
         if TNav.TURN[move] then
-            return self:Turn(move)
+            local success, err = self:Turn(move)
+            if not success then
+                return false, err
+            end
         else
-            return self:Move(move)
+            local success, err = self:Move(move)
+            if not success then
+                return false, err
+            end
         end
     end
+
+    return true
 end
 
 ---@param turn GTurtle.TNAV.TURN
