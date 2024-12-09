@@ -159,25 +159,23 @@ function RubberTurtle:GetTreePositionCandidate()
 
     local candidateGN, candidateArea
 
-    repeat
-        for x, xData in pairs(self.tnav.gridMap.grid) do
-            for y, _ in pairs(xData) do
-                local gridNode = self.tnav.gridMap:GetGridNode(vector.new(x, y, z))
-                local inFence = self.tnav.geoFence and self.tnav.geoFence:IsWithin(gridNode)
-                if inFence and not TUtil:tContains(self.invalidTreeGNs, gridNode) then
-                    local area = self.tnav.gridMap:GetAreaAround(gridNode, requiredRadius)
+    for x, xData in pairs(self.tnav.gridMap.grid) do
+        for y, _ in pairs(xData) do
+            local gridNode = self.tnav.gridMap:GetGridNode(vector.new(x, y, z))
+            local inFence = self.tnav.geoFence and self.tnav.geoFence:IsWithin(gridNode)
+            if inFence and not TUtil:tContains(self.invalidTreeGNs, gridNode) then
+                local area = self.tnav.gridMap:GetAreaAround(gridNode, requiredRadius)
 
-                    if area:IsEmpty() then
-                        return gridNode, area
-                    else
-                        table.insert(self.invalidTreeGNs, gridNode)
-                    end
-                    self:FLog("Non Empty Area: %s", gridNode)
+                if area:IsEmpty() then
+                    return gridNode, area
+                else
+                    table.insert(self.invalidTreeGNs, gridNode)
                 end
+                self:FLog("Non Empty Area: %s", gridNode)
             end
-            sleep(0)
         end
-    until candidateGN
+        --sleep(0)
+    end
 
     --self:Log("Could not find empty area, Increasing Grid")
     --self.tnav.gridMap:IncreaseGridSize(1, 1, 0)
