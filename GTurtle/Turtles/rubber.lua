@@ -23,7 +23,6 @@ local RubberTurtle = GTurtle.Base:extend()
 
 ---@class GTurtle.RubberTurtle.STATE : GState.STATE
 RubberTurtle.STATE = {
-    EXPLORE_WORK_FIELD = "EXPLORE_WORK_FIELD",
     EXPLORE_TREE_POSITIONS = "EXPLORE_TREE_POSITIONS",
     FETCH_SAPLINGS = "FETCH_SAPLINGS",
     SEARCH_TREE = "",
@@ -74,29 +73,44 @@ function RubberTurtle:INIT()
         end
     )
 
-    self:SetState(RubberTurtle.STATE.EXPLORE_WORK_FIELD)
-end
-
-function RubberTurtle:EXPLORE_WORK_FIELD()
-    self:NavigateToPosition(self.produceGN.pos)
-    self:NavigateToPosition(self.resourceGN.pos)
-    -- repeat
-    --     local neighborGNs = self.tnav:GetNeighbors(true, true, true)
-    --     self:FLog("Navigating to non visited: ", neighborGNs[1])
-    --     if neighborGNs[1] then
-    --         self:NavigateToPosition(neighborGNs[1].pos)
-    --     end
-    -- until #neighborGNs == 0
-
     self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
 end
 
 function RubberTurtle:FETCH_SAPLINGS()
     self:NavigateToPosition(self.resourceGN.pos)
     -- search for chest
-    for i = 1, 4 do
+    local neighbors = self.tnav:GetNeighbors(true)
+    local chestGNs =
+        TUtil:Filter(
+        neighbors,
+        function(gn)
+            return gn:IsChest()
+        end
+    )
+    if not chestGNs[1] then
+        -- dance once to scan surroundings
+        self:ExecuteMovement("RRRR")
+        chestGNs =
+            TUtil:Filter(
+            neighbors,
+            function(gn)
+                return gn:IsChest()
+            end
+        )
     end
-    return false
+
+    local chestGN = chestGNs[1]
+
+    -- if still nothing here then user lied to us!
+    if not chestGN then
+        self:Log("Error: Resource Chest not found!")
+        self:SetState(RubberTurtle.STATE.EXIT)
+        return
+    end
+
+    -- otherwise fetch saplings..
+    self:Log("Fetching Saplings..")
+    self:SetState(RubberTurtle.STATE.EXIT)
 end
 
 function RubberTurtle:EXPLORE_TREE_POSITIONS()

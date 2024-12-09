@@ -1,8 +1,8 @@
 local Object = require("GCC/Util/classics")
 local VUtil = require("GCC/Util/vutil")
 local TUtil = require("GCC/Util/tutil")
+local Const = require("GCC/Util/const")
 local f = string.format
-local pretty = require("cc.pretty")
 
 ---@class GTurtle.TNAV
 local TNAV = {}
@@ -96,6 +96,14 @@ end
 
 function TNAV.GridNode:SetEmpty()
     self:SetBlockData(nil)
+end
+
+---@return boolean isChest
+function TNAV.GridNode:IsChest()
+    if self:IsEmpty() or self:IsUnknown() then
+        return false
+    end
+    return TUtil:tContains(Const.ChestBlocks, self.blockData.name)
 end
 
 ---@return boolean isEmpty
