@@ -461,7 +461,7 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
         end
         return path
     end
-    local path = self.tnav:CalculatePathToPosition(goalPos)
+    local path = self.tnav:CalculatePathToPosition(goalPos, flat)
     self:FLog("Calculated Path:\n%s", path)
     if path then
         self.tnav:SetActivePath(path)
