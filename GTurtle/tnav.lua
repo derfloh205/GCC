@@ -862,6 +862,8 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
     local function SetGScore(gn, score)
         local pos = gn.pos
         local x, y, z = pos.x, pos.y, pos.z
+        gScore[x] = gScore[x] or {}
+        gScore[x][y] = gScore[x][y] or {}
         gScore[x][y][z] = score
     end
     local function GetFScore(gn)
@@ -876,6 +878,8 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
     local function SetFScore(gn, score)
         local pos = gn.pos
         local x, y, z = pos.x, pos.y, pos.z
+        fScore[x] = fScore[x] or {}
+        fScore[x][y] = fScore[x][y] or {}
         fScore[x][y][z] = score
     end
 
