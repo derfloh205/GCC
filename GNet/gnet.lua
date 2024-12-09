@@ -9,7 +9,7 @@ local GNet = {}
 ---@field callback fun(server: GNet.Server, id: number, msg: string)
 
 ---@class GNet.Server.Options : GLogAble.Options
----@field endpointConfigs GNet.Server.EndpointConfig[]
+---@field endpointConfigs GNet.Server.EndpointConfig[]?
 
 ---@class GNet.Server : GLogAble
 ---@overload fun(options: GNet.Server.Options) : GNet.Server
