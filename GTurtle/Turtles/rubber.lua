@@ -5,6 +5,7 @@ local TermUtil = require("GCC/Util/termutil")
 local FUtil = require("GCC/Util/futil")
 local SUtil = require("GCC/Util/sutil")
 local VUtil = require("GCC/Util/vutil")
+local CONST = require("GCC/Util/const")
 local f = string.format
 
 ---@class GTurtle.TurtleData.Rubber.Data
@@ -30,9 +31,20 @@ RubberTurtle.STATE = {
 }
 TUtil:Inject(RubberTurtle.STATE, GState.STATE)
 
+RubberTurtle.INVENTORY_WHITELIST = {
+    CONST.ITEMS.RUBBER_SAPLINGS,
+    CONST.ITEMS.RUBBER_WOOD
+}
+
+RubberTurtle.FUEL_BLACKLIST = {
+    CONST.ITEMS.RUBBER_SAPLINGS,
+    CONST.ITEMS.RUBBER_WOOD
+}
+
 ---@param options GTurtle.RubberTurtle.Options
 function RubberTurtle:new(options)
     options = options or {}
+    options.fuelBlacklist = self.FUEL_BLACKLIST
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
     self.type = GTurtle.TYPES.RUBBER
@@ -109,7 +121,13 @@ function RubberTurtle:FETCH_SAPLINGS()
     end
 
     -- otherwise fetch saplings..
-    self:Log("Fetching Saplings..")
+    self:Log("Turn to Chest")
+    local relativeHead = self.tnav.currentGN:GetRelativeHeading(chestGN)
+    self:TurnToHead(relativeHead)
+    self:Log("Get Saplings..")
+    self:SuckFromChest(CONST.ITEMS.RUBBER_SAPLINGS)
+    self:DropExcept(self.INVENTORY_WHITELIST)
+
     self:SetState(RubberTurtle.STATE.EXIT)
 end
 
@@ -119,7 +137,7 @@ end
 
 function RubberTurtle:DECIDE_ACTION()
     -- if no rubber sapling in inventory - fetch from resource chest
-    if not self:GetInventoryItem("ic2:blockrubsapling") then
+    if not self:GetInventoryItem(CONST.ITEMS.RUBBER_SAPLINGS) then
         self:SetState(RubberTurtle.STATE.FETCH_SAPLINGS)
     elseif #self.treeGNs < self.treeCount then
         self:SetState(RubberTurtle.STATE.EXPLORE_TREE_POSITIONS)

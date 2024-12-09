@@ -19,7 +19,8 @@ GTurtle.TYPES = {
 
 ---@class GTurtle.Base.Options : GState.StateMachine.Options
 ---@field name string
----@field fuelWhiteList? string[]
+---@field fuelWhitelist? string[]
+---@field fuelBlacklist? string[]
 ---@field minimumFuel? number
 ---@field term? table
 ---@field visualizeGridOnMove? boolean
@@ -44,7 +45,8 @@ function GTurtle.Base:new(options)
     os.setComputerLabel(self.name)
     self.digBlacklist = options.digBlacklist
     self.avoidAllBlocks = options.avoidAllBlocks == nil or options.avoidAllBlocks -- -> defaults to true
-    self.fuelWhiteList = options.fuelWhiteList
+    self.fuelWhitelist = options.fuelWhitelist
+    self.fuelBlacklist = options.fuelBlacklist
     self.visualizeGridOnMove = options.visualizeGridOnMove
     self.minimumFuel = options.minimumFuel or 100
     self.tdFile = f("%d_td.json", self.id)
@@ -138,6 +140,39 @@ function GTurtle.Base:GetInventoryItem(name)
     return
 end
 
+---@param name string
+---@param requestedCount number? if not set get all
+function GTurtle.Base:SuckFromChest(name, requestedCount)
+    local success, err
+    repeat
+        success, err = turtle.suck()
+        local hasItem, itemCount = self:GetInventoryItem(name)
+        local enoughItems = not requestedCount or (requestedCount <= itemCount)
+        local sufficient = hasItem and enoughItems
+    until not success or sufficient
+
+    return success, err
+end
+
+---@param itemNames string[]
+function GTurtle.Base:DropExcept(itemNames)
+    local selectedSlotID = turtle.getSelectedSlot()
+    local dropItems =
+        TUtil:Filter(
+        self:GetInventoryItems(),
+        function(itemData)
+            return not TUtil:tContains(itemNames, itemData.name)
+        end,
+        true
+    )
+
+    for slotID, _ in pairs(dropItems) do
+        turtle.select(slotID)
+        turtle.drop()
+    end
+    turtle.select(selectedSlotID)
+end
+
 ---@return boolean isFuelSelected
 function GTurtle.Base:SelectFuel()
     local itemMap = self:GetInventoryItems()
@@ -166,11 +201,15 @@ function GTurtle.Base:IsFuel(itemData)
         return false
     end
 
-    if not self.fuelWhiteList then
+    if self.fuelBlacklist then
+        return not TUtil:tContains(self.fuelBlacklist, itemData)
+    end
+
+    if not self.fuelWhitelist then
         return true
     end
 
-    return TUtil:tContains(self.fuelWhiteList, itemData.name)
+    return TUtil:tContains(self.fuelWhitelist, itemData.name)
 end
 
 ---@return boolean refueled
