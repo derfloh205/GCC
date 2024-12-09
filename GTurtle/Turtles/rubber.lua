@@ -1,10 +1,7 @@
 local GTurtle = require("GCC/GTurtle/gturtle")
-local TNav = require("GCC/GTurtle/tnav")
 local GState = require("GCC/Util/gstate")
 local TUtil = require("GCC/Util/tutil")
 local TermUtil = require("GCC/Util/termutil")
-local FUtil = require("GCC/Util/futil")
-local SUtil = require("GCC/Util/sutil")
 local VUtil = require("GCC/Util/vutil")
 local CONST = require("GCC/Util/const")
 local f = string.format
@@ -78,10 +75,7 @@ function RubberTurtle:INIT()
         rtData.fenceCorners[3] = TermUtil:ReadVector("Geo Fence Corner #3?")
     end
 
-    self.tnav.geoFence =
-        TNav.GeoFence {
-        corners = rtData.fenceCorners
-    }
+    self.tnav:SetGeoFence(rtData.fenceCorners)
 
     rtData.treePositions = rtData.treePositions or {}
     self:WriteTurtleData()

@@ -665,16 +665,21 @@ function TNAV.GridNav:new(options)
     self:UpdateSurroundings()
 
     if options.fenceCorners then
-        self.geoFence =
-            TNAV.GeoFence {
-            corners = TUtil:Map(
-                options.fenceCorners,
-                function(pos)
-                    return self.gridMap:GetGridNode(pos)
-                end
-            )
-        }
+        self:SetGeoFence(options.fenceCorners)
     end
+end
+
+---@param corners Vector[]
+function TNAV.GridNav:SetGeoFence(corners)
+    self.geoFence =
+        TNAV.GeoFence {
+        corners = TUtil:Map(
+            corners,
+            function(pos)
+                return self.gridMap:GetGridNode(pos)
+            end
+        )
+    }
 end
 
 ---@return boolean success
