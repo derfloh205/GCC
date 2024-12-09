@@ -63,6 +63,7 @@ function RubberTurtle:EXPLORE_WORK_FIELD()
     self:NavigateToPosition(self.produceGN.pos)
     repeat
         local neighborGNs = self.tnav:GetNeighbors(true, true, true)
+        self:FLog("Navigating to non visited: ", neighborGNs[1])
         if neighborGNs[1] then
             self:NavigateToPosition(neighborGNs[1].pos)
         end
