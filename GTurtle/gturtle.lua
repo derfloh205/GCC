@@ -13,6 +13,10 @@ GTurtle.TYPES = {
     RUBBER = "RUBBER"
 }
 
+---@class GTurtle.TurtleData
+---@field data table
+---@field id number
+
 ---@class GTurtle.Base.Options : GState.StateMachine.Options
 ---@field name string
 ---@field fuelWhiteList? string[]
@@ -43,6 +47,9 @@ function GTurtle.Base:new(options)
     self.fuelWhiteList = options.fuelWhiteList
     self.visualizeGridOnMove = options.visualizeGridOnMove
     self.minimumFuel = options.minimumFuel or 100
+    self.tdFile = f("%d_td.json", self.id)
+    ---@type GTurtle.TurtleData
+    self.turtleData = self:GetTurtleData()
     ---@type GTurtle.TYPES
     self.type = GTurtle.TYPES.BASE
     self.term = options.term or term
@@ -83,6 +90,29 @@ function GTurtle.Base:new(options)
         clearLog = options.clearLog,
         logFile = f("TurtleHost[%d].log", self.id)
     }
+end
+
+---@return GTurtle.TurtleData turtleData
+function GTurtle.Base:GetTurtleData()
+    if self.tdFile and fs.exists(self.tdFile) then
+        local file = fs.open(self.tdFile, "r")
+        local data = textutils.unserialiseJSON(file.readAll())
+        file.close()
+        return data
+    else
+        return {
+            id = self.id,
+            data = {}
+        }
+    end
+end
+
+function GTurtle.Base:WriteTurtleData()
+    if self.turtleData and self.tdFile and fs.exists(self.tdFile) then
+        local file = fs.open(self.tdFile, "w")
+        file.write(textutils.serialiseJSON(self.turtleData))
+        file.close()
+    end
 end
 
 ---@return table<number, table>

@@ -7,3 +7,5 @@ RubberTurtle {
     clearLog = true,
     visualizeGridOnMove = true
 }:Run()
+
+--TODO no terminal output?!

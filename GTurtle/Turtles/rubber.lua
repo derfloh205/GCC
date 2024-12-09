@@ -6,9 +6,12 @@ local FUtil = require("GCC/Util/futil")
 local SUtil = require("GCC/Util/sutil")
 local f = string.format
 
----@class GTurtle.RubberTurtle.RTData
+---@class GTurtle.TurtleData.Rubber.Data
 ---@field saplingChestPos Vector
 ---@field produceChestPos Vector
+
+---@class GTurtle.TurtleData.Rubber : GTurtle.TurtleData
+---@field data GTurtle.TurtleData.Rubber.Data
 
 ---@class GTurtle.RubberTurtle.Options : GTurtle.Base.Options
 
@@ -28,28 +31,25 @@ function RubberTurtle:new(options)
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
     self.type = GTurtle.TYPES.RUBBER
-    self.rtFile = f("%d_rt.json", self.id)
-    ---@type GTurtle.RubberTurtle.RTData
-    self.rtData = nil
+    ---@type GTurtle.TurtleData.Rubber
+    self.turtleData = self.turtleData
 end
 
 function RubberTurtle:INIT()
     self:FLog("Initiating Rubber Turtle: %s", self.name)
-    if fs.exists(self.rtFile) then
-        local confirmed = TermUtil:ReadConfirmation("Load Positions from Cache?")
-        if confirmed then
-            local saplingChestPos = TermUtil:ReadVector("Sapling Chest Position?")
-            print("saplingChestPos: " .. tostring(saplingChestPos))
-        else
-            self.rtData = FUtil:LoadJSON(self.rtFile)
-            if not self.rtData then
-                print("Could not load data from " .. self.rtFile)
-                self:SetState(RubberTurtle.STATE.EXIT)
-            else
-                self:SetState(self.STATE.SEARCH_TREE)
-            end
-        end
+    local rtData = self.turtleData.data
+
+    if not rtData.produceChestPos or not rtData.saplingChestPos then
+        rtData.saplingChestPos = TermUtil:ReadVector("Sapling Chest Position?")
+        rtData.produceChestPos = TermUtil:ReadVector("Produce Chest Position?")
+        self:WriteTurtleData()
+    else
+        self:Log("Loading Data from File:")
+        self:FLog("Sapling Chest Pos: %s", rtData.saplingChestPos)
+        self:FLog("Produce Chest Pos: %s", rtData.produceChestPos)
     end
+
+    self:SetState(RubberTurtle.STATE.SEARCH_TREE)
 end
 
 function RubberTurtle:SEARCH_TREE()
