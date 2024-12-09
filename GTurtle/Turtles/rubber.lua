@@ -95,6 +95,8 @@ function RubberTurtle:INIT()
         )
     )
 
+    self:FLog("Geo Fence Corners? ", self.tnav.geoFence.corners)
+
     self.resourceGN = self.tnav.gridMap:GetGridNode(VUtil:Deserialize(rtData.resourceChestPos))
     self.resourceGN.unknown = false
     self.produceGN = self.tnav.gridMap:GetGridNode(VUtil:Deserialize(rtData.produceChestPos))
