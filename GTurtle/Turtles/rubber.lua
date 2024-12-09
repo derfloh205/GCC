@@ -155,7 +155,7 @@ function RubberTurtle:GetTreePositionCandidate()
     local requiredRadius = 1
     local z = self.tnav.currentGN.pos.z
     local maxGridSize = 15
-    self.invalidCandidates = self.invalidCandidates or {}
+    self.invalidTreeGNs = self.invalidTreeGNs or {}
 
     local candidateGN, candidateArea
 
@@ -164,13 +164,13 @@ function RubberTurtle:GetTreePositionCandidate()
             for y, _ in pairs(xData) do
                 local gridNode = self.tnav.gridMap:GetGridNode(vector.new(x, y, z))
 
-                if not TUtil:tContains(self.invalidCandidates, gridNode) then
+                if not TUtil:tContains(self.invalidTreeGNs, gridNode) then
                     local area = self.tnav.gridMap:GetAreaAround(gridNode, requiredRadius)
 
                     if area:IsEmpty() then
                         return gridNode, area
                     else
-                        table.insert(self.invalidCandidates, gridNode)
+                        table.insert(self.invalidTreeGNs, gridNode)
                     end
                     self:FLog("Non Empty Area: %s", gridNode)
                 end
@@ -199,6 +199,7 @@ function RubberTurtle:EXPLORE_TREE_POSITIONS()
         local success = self:NavigateToPosition(candidateGN.pos, true)
         if not success then
             self:Log("Not able to navigate to tree pos")
+            table.insert(self.invalidTreeGNs, candidateGN)
             return
         end
         local areaCorners = candidateArea:GetCorners(candidateGN.pos.z)
