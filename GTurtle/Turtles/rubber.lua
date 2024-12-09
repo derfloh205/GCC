@@ -99,6 +99,8 @@ function RubberTurtle:FETCH_SAPLINGS()
         end
     )
 
+    self:Log("Chest found? " .. tostring(#chests))
+
     if #chests == 0 then
         -- dance once to scan surroundings
         self:ExecuteMovement("RRRR")
