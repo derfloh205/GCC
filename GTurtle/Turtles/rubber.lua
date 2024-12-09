@@ -144,15 +144,18 @@ function RubberTurtle:GetTreePositionCandidate()
     local candidateGN, candidateArea
 
     repeat
-        for _, xData in pairs(self.tnav.gridMap.grid) do
-            for _, yData in pairs(xData) do
-                local gridNode = yData[z]
+        for x, xData in pairs(self.tnav.gridMap.grid) do
+            for y, _ in pairs(xData) do
+                local gridNode = self.tnav.gridMap:GetGridNode(vector.new(x, y, z))
 
                 local area = self.tnav.gridMap:GetAreaAround(gridNode, requiredRadius)
 
                 if area:IsEmpty() then
                     return gridNode, candidateArea
                 end
+                --yield
+                self:FLog("Non Empty Area: %s", gridNode)
+                sleep(0)
             end
         end
 
