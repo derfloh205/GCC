@@ -193,7 +193,7 @@ end
 function RubberTurtle:EXPLORE_TREE_POSITIONS()
     local candidateGN, candidateArea = self:GetTreePositionCandidate()
 
-    self:FLog("Tree Candidate Position: %s", candidateGN)
+    self:FLog("Tree Candidate Position %s", candidateGN)
 
     if candidateGN and candidateArea then
         local success = self:NavigateToPosition(candidateGN.pos, true)
