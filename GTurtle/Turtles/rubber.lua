@@ -86,7 +86,14 @@ function RubberTurtle:INIT()
 
     self:WriteTurtleData()
 
-    self.tnav:SetGeoFence(rtData.fenceCorners)
+    self.tnav:SetGeoFence(
+        TUtil:Map(
+            rtData.fenceCorners,
+            function(vector)
+                return self.tnav.gridMap:GetGridNode(VUtil:Deserialize(vector))
+            end
+        )
+    )
 
     self.resourceGN = self.tnav.gridMap:GetGridNode(VUtil:Deserialize(rtData.resourceChestPos))
     self.resourceGN.unknown = false
