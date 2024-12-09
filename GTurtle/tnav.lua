@@ -910,7 +910,7 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
         -- Process neighbors
         for _, neighborGN in ipairs(self:GetValidPathNeighbors(currentGN, flat)) do
             local tentativeGScore = GetGScore(currentGN) + 1
-            if tentativeGScore < GetGScore[neighborGN] then
+            if tentativeGScore < GetGScore(neighborGN) then
                 cameFromGN[neighborGN] = currentGN
                 SetGScore(neighborGN, tentativeGScore)
                 SetFScore(neighborGN, tentativeGScore + neighborGN:GetDistance(goalGN))
