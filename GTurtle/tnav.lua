@@ -374,6 +374,7 @@ function TNAV.GridMap:FLog(...)
 end
 
 function TNAV.GridMap:IncreaseGridSize(incX, incY, incZ)
+    self:Log("Increasing Grid Size..")
     for x = self.boundaries.x.min - incX, self.boundaries.x.max + incX do
         if not MUtil:InRange(x, self.boundaries.x.min, self.boundaries.x.max) then
             for y = self.boundaries.y.min - incY, self.boundaries.y.max + incY do
@@ -387,6 +388,7 @@ function TNAV.GridMap:IncreaseGridSize(incX, incY, incZ)
             end
         end
     end
+    self:Log("Increased")
 end
 
 ---@class GTurtle.TNAV.GridArea.Options

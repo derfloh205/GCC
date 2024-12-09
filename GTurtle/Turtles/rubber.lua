@@ -177,6 +177,8 @@ function RubberTurtle:EXPLORE_TREE_POSITIONS()
     if candidateGN then
         local success = self:NavigateToPosition(candidateGN.pos)
     end
+
+    self:SetState(RubberTurtle.STATE.EXIT)
 end
 
 function RubberTurtle:DECIDE_ACTION()
