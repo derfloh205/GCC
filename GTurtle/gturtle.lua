@@ -448,11 +448,12 @@ function GTurtle.Base:TurnToHead(reqHead)
 end
 
 ---@param goalPos Vector
-function GTurtle.Base:NavigateToPosition(goalPos)
+---@param flat? boolean only allow navigation in current Z
+function GTurtle.Base:NavigateToPosition(goalPos, flat)
     local function RecalculatePath()
         -- Recalculate Path Based on new Grid Info
         self:Log("Recalculating Path..")
-        local path = self.tnav:CalculatePathToPosition(goalPos)
+        local path = self.tnav:CalculatePathToPosition(goalPos, flat)
         if path then
             self.tnav:SetActivePath(path)
         else

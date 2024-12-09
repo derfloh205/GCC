@@ -755,50 +755,74 @@ end
 
 -- Get valid neighbors in 3D space - Used in A*
 ---@param gridNode GTurtle.TNAV.GridNode
+---@param flat? boolean
 ---@return GTurtle.TNAV.GridNode[]
-function TNAV.GridNav:GetValidPathNeighbors(gridNode)
+function TNAV.GridNav:GetValidPathNeighbors(gridNode, flat)
     local boundaries = self.gridMap.boundaries
-    local minX = boundaries.x.min
-    local minY = boundaries.y.min
-    local minZ = boundaries.z.min
-    local maxX = boundaries.x.max
-    local maxY = boundaries.y.max
-    local maxZ = boundaries.z.max
+    -- local minX = boundaries.x.min
+    -- local minY = boundaries.y.min
+    -- local minZ = boundaries.z.min
+    -- local maxX = boundaries.x.max
+    -- local maxY = boundaries.y.max
+    -- local maxZ = boundaries.z.max
 
     ---@type GTurtle.TNAV.GridNode[]
     local neighbors = {}
-    local directions = {
-        {x = 1, y = 0, z = 0}, -- Right
-        {x = -1, y = 0, z = 0}, -- Left
-        {x = 0, y = 1, z = 0}, -- Up
-        {x = 0, y = -1, z = 0}, -- Down
-        {x = 0, y = 0, z = 1}, -- Forward
-        {x = 0, y = 0, z = -1} -- Backward
-    }
+    -- local directions = {
+    --     {x = 1, y = 0, z = 0}, -- Right
+    --     {x = -1, y = 0, z = 0}, -- Left
+    --     {x = 0, y = 1, z = 0}, -- Up
+    --     {x = 0, y = -1, z = 0}, -- Down
+    --     {x = 0, y = 0, z = 1}, -- Forward
+    --     {x = 0, y = 0, z = -1} -- Backward
+    -- }
 
-    for _, dir in ipairs(directions) do
-        local nx, ny, nz = gridNode.pos.x + dir.x, gridNode.pos.y + dir.y, gridNode.pos.z + dir.z
-        if nx >= minX and nx <= maxX and ny >= minY and ny <= maxY and nz >= minZ and nz <= maxZ then
-            local neighborGridNode = self.gridMap:GetGridNode(vector.new(nx, ny, nz))
-            if neighborGridNode then
-                local isEmpty = neighborGridNode:IsEmpty()
-                local allowUnknown = not self.avoidUnknown or not neighborGridNode:IsUnknown()
-                local allBlocksAllowed = not self.avoidAllBlocks
-                local notBlacklisted =
-                    (not isEmpty) and (not TUtil:tContains(self.blockBlacklist, neighborGridNode.blockData.name))
+    neighbors =
+        self:GetNeighbors(
+        flat,
+        function(neighborGridNode)
+            local isEmpty = neighborGridNode:IsEmpty()
+            local allowUnknown = not self.avoidUnknown or not neighborGridNode:IsUnknown()
+            local allBlocksAllowed = not self.avoidAllBlocks
+            local notBlacklisted =
+                (not isEmpty) and (not TUtil:tContains(self.blockBlacklist, neighborGridNode.blockData.name))
 
-                if isEmpty then
-                    if allowUnknown then
-                        table.insert(neighbors, neighborGridNode)
-                    end
-                else
-                    if allBlocksAllowed and notBlacklisted then
-                        table.insert(neighbors, neighborGridNode)
-                    end
+            if isEmpty then
+                if allowUnknown then
+                    return true
+                end
+            else
+                if allBlocksAllowed and notBlacklisted then
+                    return true
                 end
             end
+            return false
         end
-    end
+    )
+
+    -- for _, dir in ipairs(directions) do
+    --     local nx, ny, nz = gridNode.pos.x + dir.x, gridNode.pos.y + dir.y, gridNode.pos.z + dir.z
+    --     if nx >= minX and nx <= maxX and ny >= minY and ny <= maxY and nz >= minZ and nz <= maxZ then
+    --         local neighborGridNode = self.gridMap:GetGridNode(vector.new(nx, ny, nz))
+    --         if neighborGridNode then
+    --             local isEmpty = neighborGridNode:IsEmpty()
+    --             local allowUnknown = not self.avoidUnknown or not neighborGridNode:IsUnknown()
+    --             local allBlocksAllowed = not self.avoidAllBlocks
+    --             local notBlacklisted =
+    --                 (not isEmpty) and (not TUtil:tContains(self.blockBlacklist, neighborGridNode.blockData.name))
+
+    --             if isEmpty then
+    --                 if allowUnknown then
+    --                     table.insert(neighbors, neighborGridNode)
+    --                 end
+    --             else
+    --                 if allBlocksAllowed and notBlacklisted then
+    --                     table.insert(neighbors, neighborGridNode)
+    --                 end
+    --             end
+    --         end
+    --     end
+    -- end
 
     return neighbors
 end
@@ -806,8 +830,9 @@ end
 --- A* algorithm
 ---@param startGN GTurtle.TNAV.GridNode
 ---@param goalGN GTurtle.TNAV.GridNode
+---@param flat? boolean
 ---@return GTurtle.TNAV.Path? path
-function TNAV.GridNav:CalculatePath(startGN, goalGN)
+function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
     self.gTurtle:FLog("Calculating Path: %s -> %s", startGN, goalGN)
     local boundaries = self.gridMap.boundaries
     local minX = boundaries.x.min
@@ -860,7 +885,7 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN)
         end
 
         -- Process neighbors
-        for _, neighborGN in ipairs(self:GetValidPathNeighbors(currentGN)) do
+        for _, neighborGN in ipairs(self:GetValidPathNeighbors(currentGN, flat)) do
             local tentativeGScore = gScore[currentGN.pos.x][currentGN.pos.y][currentGN.pos.z] + 1
             if tentativeGScore < gScore[neighborGN.pos.x][neighborGN.pos.y][neighborGN.pos.z] then
                 cameFromGN[neighborGN] = currentGN
@@ -886,15 +911,16 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN)
 end
 
 ---@param goalPos Vector
+---@param flat? boolean
 ---@return GTurtle.TNAV.Path? path
-function TNAV.GridNav:CalculatePathToPosition(goalPos)
+function TNAV.GridNav:CalculatePathToPosition(goalPos, flat)
     local goalGN = self.gridMap:GetGridNode(goalPos)
 
     if not goalGN then
         return
     end
 
-    return self:CalculatePath(self.currentGN, goalGN)
+    return self:CalculatePath(self.currentGN, goalGN, flat)
 end
 
 ---@param path GTurtle.TNAV.Path
