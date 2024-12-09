@@ -29,6 +29,7 @@ GTurtle.TYPES = {
 ---@field avoidAllBlocks? boolean otherwise the turtle will dig its way
 ---@field digBlacklist? string[] if not all blocks are avoided it uses the digBlacklist
 ---@field cacheGrid? boolean
+---@field fenceCorners? Vector[]
 
 ---@class GTurtle.Base : GState.StateMachine
 ---@overload fun(options: GTurtle.Base.Options) : GTurtle.Base
@@ -74,7 +75,8 @@ function GTurtle.Base:new(options)
             avoidUnknown = options.avoidUnknown,
             avoidAllBlocks = self.avoidAllBlocks,
             blockBlacklist = self.digBlacklist,
-            gridFile = self.cacheGrid and self.gridFile
+            gridFile = self.cacheGrid and self.gridFile,
+            fenceCorners = options.fenceCorners
         }
     )
     if self.tnav.gpsEnabled then
