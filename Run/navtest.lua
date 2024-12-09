@@ -2,7 +2,7 @@ local GTurtle = require("GCC/GTurtle/gturtle")
 
 local BaseTurtle =
     GTurtle.Base {
-    name = "Testy",
+    name = "Navy",
     minimumFuel = 100,
     log = true,
     clearLog = true,
