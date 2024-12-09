@@ -160,10 +160,9 @@ function RubberTurtle:GetTreePositionCandidate()
                 if area:IsEmpty() then
                     return gridNode, area
                 end
-                --yield
                 self:FLog("Non Empty Area: %s", gridNode)
-                sleep(0)
             end
+            sleep(0)
         end
 
         self:Log("Could not find empty area, Increasing Grid")
