@@ -131,11 +131,56 @@ function RubberTurtle:FETCH_SAPLINGS()
     self:SuckFromChest(CONST.ITEMS.RUBBER_SAPLINGS)
     self:DropExcept(self.INVENTORY_WHITELIST)
 
-    self:SetState(RubberTurtle.STATE.EXIT)
+    self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
+end
+
+---@return GTurtle.TNAV.GridNode? candidateGN
+---@return GTurtle.TNAV.GridArea? candidateArea
+function RubberTurtle:GetTreePositionCandidate()
+    local requiredRadius = 3
+    local z = self.tnav.currentGN.pos.z
+    local maxGridSize = 15
+
+    local candidateGN, candidateArea
+
+    repeat
+        for _, xData in pairs(self.tnav.gridMap.grid) do
+            for _, yData in pairs(xData) do
+                local gridNode = yData[z]
+
+                local area = self.tnav.gridMap:GetAreaAround(gridNode, requiredRadius)
+
+                if area:IsEmpty() then
+                    candidateGN = gridNode
+                    candidateArea = area
+                    break
+                end
+            end
+            if candidateGN then
+                break
+            end
+        end
+
+        if not candidateGN then
+            self.tnav.gridMap:IncreaseGridSize(1, 1, 0)
+        end
+
+        local gridX, gridY = self.tnav.gridMap:GetGridSize()
+    until candidateGN and candidateArea or (gridX > maxGridSize and gridY > maxGridSize)
+
+    if not candidateGN then
+        self:FLog("Could not find candidate for tree position (Grid Size: %d)", maxGridSize)
+    end
 end
 
 function RubberTurtle:EXPLORE_TREE_POSITIONS()
-    return false
+    local candidateGN, candidateArea = self:GetTreePositionCandidate()
+
+    self:FLog("Tree Candidate Position: %s", candidateGN)
+
+    if candidateGN then
+        local success = self:NavigateToPosition(candidateGN.pos)
+    end
 end
 
 function RubberTurtle:DECIDE_ACTION()

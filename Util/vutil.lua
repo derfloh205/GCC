@@ -1,4 +1,5 @@
----@class GCC.Util.VUtil
+--- Vector Utils
+---@class VUtil
 local VUtil = {}
 
 ---@class Vector

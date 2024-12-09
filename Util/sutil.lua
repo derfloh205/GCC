@@ -1,3 +1,4 @@
+--- String Utils
 ---@class SUtil
 local SUtil = {}
 

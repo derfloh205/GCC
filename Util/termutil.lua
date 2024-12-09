@@ -1,5 +1,6 @@
 local SUtil = require("GCC/Util/sutil")
 local f = string.format
+--- Terminal Utils
 ---@class TermUtil
 local TermUtil = {}
 

@@ -1,3 +1,4 @@
+--- Table Utils
 ---@class GCC.Util.TUtil
 local TUtil = {}
 

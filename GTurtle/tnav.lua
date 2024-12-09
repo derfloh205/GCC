@@ -1,6 +1,7 @@
 local Object = require("GCC/Util/classics")
 local VUtil = require("GCC/Util/vutil")
 local TUtil = require("GCC/Util/tutil")
+local MUtil = require("GCC/Util/mutil")
 local CONST = require("GCC/Util/const")
 local f = string.format
 
@@ -278,6 +279,36 @@ function TNAV.GridMap:GetGridNode(pos)
     return gridNode
 end
 
+---@param gridNode GTurtle.TNAV.GridNode
+---@param blockRadius number
+---@param height number? default: 0
+---@return GTurtle.TNAV.GridArea area
+function TNAV.GridMap:GetAreaAround(gridNode, blockRadius, height)
+    height = height or 0
+    local areaNodes = {}
+
+    for x = gridNode.pos.x - blockRadius, gridNode.pos.x + blockRadius do
+        for y = gridNode.pos.y - blockRadius, gridNode.pos.y + blockRadius do
+            for z = gridNode.pos.z, gridNode.pos.z + height do
+                table.insert(areaNodes, self:GetGridNode(vector.new(x, y, z)))
+            end
+        end
+    end
+
+    return TNAV.GridArea {nodeList = areaNodes}
+end
+
+---@return number x
+---@return number y
+---@return number z
+function TNAV.GridMap:GetGridSize()
+    local sizeX = self.boundaries.x.max - self.boundaries.x.min
+    local sizeY = self.boundaries.y.max - self.boundaries.y.min
+    local sizeZ = self.boundaries.z.max - self.boundaries.z.min
+
+    return sizeX, sizeY, sizeZ
+end
+
 ---@param z number
 ---@param boundaries table
 ---@return string gridString
@@ -339,6 +370,69 @@ end
 function TNAV.GridMap:FLog(...)
     if self.logger then
         self.logger:FLog(...)
+    end
+end
+
+function TNAV.GridMap:IncreaseGridSize(incX, incY, incZ)
+    for x = self.boundaries.x.min - incX, self.boundaries.x.max + incX do
+        if not MUtil:InRange(x, self.boundaries.x.min, self.boundaries.x.max) then
+            for y = self.boundaries.y.min - incY, self.boundaries.y.max + incY do
+                if not MUtil:InRange(y, self.boundaries.y.min, self.boundaries.y.max) then
+                    for z = self.boundaries.z.min - incZ, self.boundaries.z.max + incZ do
+                        if not MUtil:InRange(z, self.boundaries.z.min, self.boundaries.z.max) then
+                            self:GetGridNode(vector.new(x, y, z))
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+---@class GTurtle.TNAV.GridArea.Options
+---@field nodeList GTurtle.TNAV.GridNode[]
+
+---@class GTurtle.TNAV.GridArea
+---@overload fun(options: GTurtle.TNAV.GridArea.Options) : GTurtle.TNAV.GridArea
+TNAV.GridArea = Object:extend()
+
+---@param options GTurtle.TNAV.GridArea.Options
+function TNAV.GridArea:new(options)
+    self.nodeList = options.nodeList
+    self.boundaries = {
+        x = {min = 0, max = 0},
+        y = {min = 0, max = 0},
+        z = {min = 0, max = 0}
+    }
+
+    for _, gridNode in ipairs(self.nodeList) do
+        self.boundaries.x.min = math.min(self.boundaries.x.min, gridNode.pos.x)
+        self.boundaries.y.min = math.min(self.boundaries.y.min, gridNode.pos.y)
+        self.boundaries.z.min = math.min(self.boundaries.z.min, gridNode.pos.z)
+
+        self.boundaries.x.max = math.max(self.boundaries.x.max, gridNode.pos.x)
+        self.boundaries.y.max = math.max(self.boundaries.y.max, gridNode.pos.y)
+        self.boundaries.z.max = math.max(self.boundaries.z.max, gridNode.pos.z)
+    end
+
+    self.sizeX = self.boundaries.x.max - self.boundaries.x.min
+    self.sizeY = self.boundaries.y.max - self.boundaries.y.min
+    self.sizeZ = self.boundaries.z.max - self.boundaries.z.min
+end
+
+function TNAV.GridArea:IsEmpty()
+    for _, gridNode in ipairs(self.nodeList) do
+        if not gridNode:IsEmpty() then
+            return false
+        end
+    end
+end
+
+function TNAV.GridArea:IsUnknown()
+    for _, gridNode in ipairs(self.nodeList) do
+        if gridNode:IsUnknown() then
+            return true
+        end
     end
 end
 
