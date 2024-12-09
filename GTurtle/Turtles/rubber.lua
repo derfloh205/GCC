@@ -208,7 +208,7 @@ end
 
 function RubberTurtle:DECIDE_ACTION()
     -- if no rubber sapling in inventory - fetch from resource chest
-    if not self:GetInventoryItem(CONST.ITEMS.RUBBER_SAPLINGS) then
+    if false then --not self:GetInventoryItem(CONST.ITEMS.RUBBER_SAPLINGS) then
         self:SetState(RubberTurtle.STATE.FETCH_SAPLINGS)
     elseif #self.treeGNs < self.treeCount then
         self:SetState(RubberTurtle.STATE.EXPLORE_TREE_POSITIONS)

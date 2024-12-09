@@ -6,6 +6,6 @@ RubberTurtle {
     log = true,
     clearLog = true,
     visualizeGridOnMove = true,
-    treeCount = 1,
-    cacheGrid = true
+    treeCount = 1
+    --cacheGrid = true -- TODO: Serialization
 }:Run()
