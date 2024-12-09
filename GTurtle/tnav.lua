@@ -850,9 +850,6 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
     --     end
     -- end
 
-    gScore[startGN.pos.x][startGN.pos.y][startGN.pos.z] = 0
-    fScore[startGN.pos.x][startGN.pos.y][startGN.pos.z] = startGN:GetDistance(goalGN)
-
     local function GetGScore(gn)
         local pos = gn.pos
         local x, y, z = pos.x, pos.y, pos.z
@@ -881,6 +878,9 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
         local x, y, z = pos.x, pos.y, pos.z
         fScore[x][y][z] = score
     end
+
+    SetGScore(startGN, 0)
+    SetFScore(startGN, startGN:GetDistance(goalGN))
 
     local calculations = 0
     while #openSet > 0 do
