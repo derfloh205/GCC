@@ -12,7 +12,7 @@ function TermUtil:ReadVector(prompt)
         print(prompt .. "\nFormat: 'x,y,z'")
         local posString = read()
         split = SUtil:Split(posString, ",")
-        x, y, z = split[1], split[2], split[3]
+        x, y, z = tonumber(split[1]), tonumber(split[2]), tonumber(split[3])
     until type(x) == "number" and type(y) == "number" and type(z) == "number"
 
     return vector.new(x, y, z)
