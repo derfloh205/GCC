@@ -125,9 +125,9 @@ function RubberTurtle:DECIDE_ACTION()
         self:SetState(RubberTurtle.STATE.FETCH_SAPLINGS)
     elseif #self.treeGNs < self.treeCount then
         self:SetState(RubberTurtle.STATE.EXPLORE_TREE_POSITIONS)
+    else
+        self:SetState(RubberTurtle.STATE.EXIT)
     end
-
-    self:SetState(RubberTurtle.STATE.EXIT)
 end
 
 return RubberTurtle
