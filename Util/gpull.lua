@@ -78,7 +78,7 @@ end
 function GPull:GetConfig()
     if not fs.exists(GPull.CONFIG_FILE) then
         local file = fs.open(GPull.CONFIG_FILE, "w")
-        file.write(textutils.serialiseJSON({}))
+        file.write("{}")
         file.close()
     end
     local configFile = fs.open(GPull.CONFIG_FILE, "r")
@@ -90,7 +90,7 @@ end
 
 function GPull:WriteConfig(config)
     local configFile = fs.open(GPull.CONFIG_FILE, "w")
-    configFile.write(textutils.serialiseJSON(config))
+    configFile.write(textutils.serialiseJSON(config or {}))
     configFile.close()
 end
 
