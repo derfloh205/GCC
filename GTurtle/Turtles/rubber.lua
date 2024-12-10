@@ -176,6 +176,8 @@ function RubberTurtle:GetTreePositionCandidate()
         self.tnav.gridMap:IterateGridNodes(
         function(gridNode)
             if gridNode:IsEmpty() then
+                local sX, sY = self.tnav.gridMap:GetGridSize()
+                self:FLog("gridsize: %d/%d", sX, sY)
                 self:FLog("Tree Pos? %s", gridNode)
                 local inFence = self.tnav.geoFence and self.tnav.geoFence:IsWithin(gridNode)
                 self:FLog("- In Fence: %s", inFence)
