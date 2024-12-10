@@ -40,8 +40,8 @@ end
 ---@param y number
 ---@return boolean clicked
 function GUI.Clickable:IsClicked(x, y)
-    local posX, posY = self.window:GetPosition()
-    local sizeX, sizeY = self.window:GetSize()
+    local posX, posY = self.window:getPosition()
+    local sizeX, sizeY = self.window:getSize()
     local inX = MUtil:InRange(x, posX, sizeX)
     local inY = MUtil:InRange(y, posY, sizeY)
     return inX and inY

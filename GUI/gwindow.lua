@@ -32,7 +32,7 @@ end
 ---@param color number
 function GWindow:SetBackgroundColor(color)
     self.window.setBackgroundColor(color)
-    local x, y = self.window:GetSize()
+    local x, y = self.window:getSize()
     self:DrawFilledBox(0, 0, x, y, color)
 end
 
@@ -60,7 +60,7 @@ function GWindow:Print(txt)
 end
 
 function GWindow:Clear()
-    local x, y = self.window:GetSize()
+    local x, y = self.window:getSize()
     self:DrawFilledBox(0, 0, x, y, colors.black)
 end
 
