@@ -67,13 +67,6 @@ function RubberTurtle:INIT()
     if not rtData.produceChestPos then
         rtData.produceChestPos = TermUtil:ReadVector("Produce Chest Position?")
     end
-    -- if not rtData.treePositions or #rtData.treePositions == 0 then
-    --     self.treeCount = TermUtil:ReadNumber("Tree Count?")
-    --     rtData.treePositions = {}
-    --     for i = 1, self.treeCount do
-    --         table.insert(rtData.treePositions, TermUtil:ReadVector(f("#%s Tree Pos?", i)))
-    --     end
-    -- end
 
     if not rtData.fenceCorners then
         rtData.fenceCorners = rtData.fenceCorners or {}

@@ -1,10 +1,11 @@
-local GTurtle = require("GCC/GTurtle/gturtle")
+local RubberTurtle = require("GCC/GTurtle/Turtles/rubber")
 --TODO: nice Debug console with live log and UI !
 local T =
-    GTurtle.Base {
+    RubberTurtle {
     log = true,
     clearLog = true,
-    visualizeGridOnMove = true,
+    minimumFuel = 100,
+    --visualizeGridOnMove = true,
     name = "Buggy"
 }
 
