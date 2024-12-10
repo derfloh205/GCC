@@ -28,8 +28,8 @@ end
 ---@param gridNode GNAV.GridNode
 function GNAV.Boundary:Update(gridNode)
     self.x = self.x or {min = gridNode.pos.x, max = gridNode.pos.x}
-    self.y = self.y or {min = gridNode.pos.x, max = gridNode.pos.x}
-    self.z = self.z or {min = gridNode.pos.x, max = gridNode.pos.x}
+    self.y = self.y or {min = gridNode.pos.y, max = gridNode.pos.y}
+    self.z = self.z or {min = gridNode.pos.z, max = gridNode.pos.z}
 
     self.x.min = math.min(self.x.min, gridNode.pos.x)
     self.y.min = math.min(self.y.min, gridNode.pos.y)
