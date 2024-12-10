@@ -1,6 +1,6 @@
 local TUtil = require("GCC/Util/tutil")
 local TNav = require("GCC/GTurtle/tnav")
-local GNAV = require("GCC/Gnav/gnav")
+local GNAV = require("GCC/GNav/gnav")
 local TNet = require("GCC/GTurtle/tnet")
 local GState = require("GCC/Util/gstate")
 local f = string.format
