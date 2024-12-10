@@ -114,17 +114,17 @@ function GUI.Frontend:Run()
                 while true do
                     if self.touchscreen then
                         local _, _, x, y = os.pullEvent("monitor_touch")
-                        term.native().clear()
-                        term.native().setCursorPos(1, 1)
-                        term.native().write("touched: " .. x .. "/" .. y)
+                        -- term.native().clear()
+                        -- term.native().setCursorPos(1, 1)
+                        -- term.native().write("touched: " .. x .. "/" .. y)
                         if clickable:IsClicked(x, y) then
                             clickable.clickCallback(clickable)
                         end
                     else
                         local _, _, x, y = os.pullEvent("mouse_click")
-                        term.native().clear()
-                        term.native().setCursorPos(1, 1)
-                        term.native().write("clicked: " .. x .. "/" .. y)
+                        -- term.native().clear()
+                        -- term.native().setCursorPos(1, 1)
+                        -- term.native().write("clicked: " .. x .. "/" .. y)
                         if clickable:IsClicked(x, y) then
                             clickable.clickCallback(clickable)
                         end
