@@ -506,7 +506,7 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
                             end
                         end
                     end
-                    self:FLog("Navigating: %s", nextMove)
+                    --self:FLog("Navigating: %s", nextMove)
                     local success = self:Move(nextMove)
                     if not success then
                         path = RecalculatePath()

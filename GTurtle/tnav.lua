@@ -510,8 +510,6 @@ function TNAV.GridNav:GetNextMoveAlongPath()
         return nil, true
     end
 
-    self.gTurtle:Log("- Fetching new Move along Path")
-
     local move
     local currentGN = self.currentGN
     local nextGN = self.activePath:GetNextNode(currentGN)
