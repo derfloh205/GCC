@@ -184,13 +184,15 @@ function RubberTurtle:GetTreePositionCandidate()
 
                 if inFence and not TUtil:tContains(self.invalidTreeGNs, gridNode) then
                     local area = self.tnav.gridMap:GetAreaAround(gridNode, requiredRadius)
+                    local areaEmpty = area:IsEmpty()
+                    local areaInFence = self.tnav.geoFence:IsAreaWithin(area)
 
-                    if area:IsEmpty() and self.tnav.geoFence:IsAreaWithin(area) then
+                    if areaEmpty and areaInFence then
                         return gridNode, area
                     else
                         table.insert(self.invalidTreeGNs, gridNode)
                     end
-                    self:FLog("Non Empty Area: %s", gridNode)
+                    self:FLog("Invalid Area: %s E: %s F: %s", gridNode, areaEmpty, areaInFence)
                 end
             end
         end
