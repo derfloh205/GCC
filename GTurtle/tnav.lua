@@ -1,5 +1,5 @@
 local Object = require("GCC/Util/classics")
-local VUtil = require("GCC/Util/vutil")
+local GVector = require("GCC/Util/gvector")
 local TUtil = require("GCC/Util/tutil")
 local MUtil = require("GCC/Util/mutil")
 local CONST = require("GCC/Util/const")
@@ -36,12 +36,12 @@ TNAV.MOVE = {
 
 -- Absolute Vector Diffs based on Heading
 TNAV.M_VEC = {
-    [TNAV.HEAD.N] = vector.new(0, 1, 0),
-    [TNAV.HEAD.S] = vector.new(0, 1, 0),
-    [TNAV.HEAD.W] = vector.new(1, 0, 0),
-    [TNAV.HEAD.E] = vector.new(1, 0, 0),
-    [TNAV.MOVE.U] = vector.new(0, 0, 1),
-    [TNAV.MOVE.D] = vector.new(0, 0, 1)
+    [TNAV.HEAD.N] = GVector(0, 1, 0),
+    [TNAV.HEAD.S] = GVector(0, 1, 0),
+    [TNAV.HEAD.W] = GVector(1, 0, 0),
+    [TNAV.HEAD.E] = GVector(1, 0, 0),
+    [TNAV.MOVE.U] = GVector(0, 0, 1),
+    [TNAV.MOVE.D] = GVector(0, 0, 1)
 }
 
 -- Relative Heading by Vector Diff between adjacent positions
@@ -105,7 +105,7 @@ end
 
 ---@class GTurtle.TNAV.GridNode.Options
 ---@field gridMap GTurtle.TNAV.GridMap
----@field pos Vector
+---@field pos GVector
 ---@field blockData table?
 ---@field unknown? boolean
 
@@ -158,19 +158,19 @@ end
 ---@param gridNode GTurtle.TNAV.GridNode
 ---@return number distance
 function TNAV.GridNode:GetDistance(gridNode)
-    return VUtil:ManhattanDistance(self.pos, gridNode.pos)
+    return self.pos:ManhattanDistance(gridNode.pos)
 end
 
 ---@param gridNode GTurtle.TNAV.GridNode
 ---@return boolean equalPos
 function TNAV.GridNode:EqualPos(gridNode)
-    return VUtil:Equal(self.pos, gridNode.pos)
+    return self.pos:Equal(gridNode.pos)
 end
 
 ---@param gridNode GTurtle.TNAV.GridNode
 ---@return GTurtle.TNAV.HEAD
 function TNAV.GridNode:GetRelativeHeading(gridNode)
-    local vecDiff = VUtil:Sub(self.pos, gridNode.pos)
+    local vecDiff = self.pos:Sub(gridNode.pos)
 
     return TNAV.M_HEAD[vecDiff.x][vecDiff.y][vecDiff.z]
 end
@@ -189,7 +189,7 @@ function TNAV.GridNode:GetRelativeNode(head, dir)
             (head == TNAV.HEAD.N and dir == TNAV.MOVE.F) or
             (head == TNAV.HEAD.S and dir == TNAV.MOVE.B)
      then
-        relVec = -relVec
+        relVec = relVec:Mul(-1)
     end
 
     return self.gridMap:GetGridNode(self.pos + relVec)
@@ -255,10 +255,10 @@ end
 function TNAV.GridMap:LoadSerializedData(serializedGridMap)
     for x, xData in pairs(serializedGridMap.grid) do
         for y, yData in pairs(xData) do
-            for z, serializedGridNode in pairs(yData) do
-                local gridNode = self:GetGridNode(vector.new(x, y, z))
-                gridNode.unknown = serializedGridNode.unknown
-                gridNode.blockData = serializedGridNode.blockData
+            for z, serializedGN in pairs(yData) do
+                local gridNode = self:GetGridNode(GVector(x, y, z))
+                gridNode.unknown = serializedGN.unknown
+                gridNode.blockData = serializedGN.blockData
             end
         end
     end
@@ -294,7 +294,7 @@ function TNAV.GridMap:UpdateBoundaries(gridNode)
 end
 
 -- creates a new gridnode at pos or returns an existing one
----@param pos Vector
+---@param pos GVector
 ---@return GTurtle.TNAV.GridNode
 function TNAV.GridMap:GetGridNode(pos)
     local x, y, z = pos.x, pos.y, pos.z
@@ -327,7 +327,7 @@ function TNAV.GridMap:GetAreaAround(gridNode, blockRadius, height)
     for x = gridNode.pos.x - blockRadius, gridNode.pos.x + blockRadius do
         for y = gridNode.pos.y - blockRadius, gridNode.pos.y + blockRadius do
             for z = gridNode.pos.z, gridNode.pos.z + height do
-                table.insert(areaNodes, self:GetGridNode(vector.new(x, y, z)))
+                table.insert(areaNodes, self:GetGridNode(GVector(x, y, z)))
             end
         end
     end
@@ -358,7 +358,7 @@ function TNAV.GridMap:GetGridStringByBoundary(z, boundaries)
 
     for y = minY, maxY do
         for x = minX, maxX do
-            local gridNode = self:GetGridNode(vector.new(x, y, z))
+            local gridNode = self:GetGridNode(GVector(x, y, z))
             local c = gridNode:GetDrawString()
 
             if x == minX then
@@ -380,7 +380,7 @@ function TNAV.GridMap:GetFullGridString(z)
     return self:GetGridStringByBoundary(z, self.boundaries)
 end
 
----@param centerPos Vector
+---@param centerPos GVector
 ---@param sizeX number
 ---@param sizeY? number
 ---@return string gridString
@@ -418,7 +418,7 @@ function TNAV.GridMap:IncreaseGridSize(incX, incY, incZ)
                 if not MUtil:InRange(y, self.boundaries.y.min, self.boundaries.y.max) then
                     for z = self.boundaries.z.min - incZ, self.boundaries.z.max + incZ do
                         if not MUtil:InRange(z, self.boundaries.z.min, self.boundaries.z.max) then
-                            self:GetGridNode(vector.new(x, y, z))
+                            self:GetGridNode(GVector(x, y, z))
                         end
                     end
                 end
@@ -435,13 +435,13 @@ function TNAV.GridMap:GetNeighborsOf(gridNode, flat, filterFunc)
     ---@type GTurtle.TNAV.GridNode[]
     local neighbors = {}
 
-    table.insert(neighbors, self:GetGridNode(vector.new(gridNode.pos.x + 1, gridNode.pos.y, gridNode.pos.z)))
-    table.insert(neighbors, self:GetGridNode(vector.new(gridNode.pos.x - 1, gridNode.pos.y, gridNode.pos.z)))
-    table.insert(neighbors, self:GetGridNode(vector.new(gridNode.pos.x, gridNode.pos.y + 1, gridNode.pos.z)))
-    table.insert(neighbors, self:GetGridNode(vector.new(gridNode.pos.x, gridNode.pos.y - 1, gridNode.pos.z)))
+    table.insert(neighbors, self:GetGridNode(GVector(gridNode.pos.x + 1, gridNode.pos.y, gridNode.pos.z)))
+    table.insert(neighbors, self:GetGridNode(GVector(gridNode.pos.x - 1, gridNode.pos.y, gridNode.pos.z)))
+    table.insert(neighbors, self:GetGridNode(GVector(gridNode.pos.x, gridNode.pos.y + 1, gridNode.pos.z)))
+    table.insert(neighbors, self:GetGridNode(GVector(gridNode.pos.x, gridNode.pos.y - 1, gridNode.pos.z)))
     if not flat then
-        table.insert(neighbors, self:GetGridNode(vector.new(gridNode.pos.x, gridNode.pos.y, gridNode.pos.z + 1)))
-        table.insert(neighbors, self:GetGridNode(vector.new(gridNode.pos.x, gridNode.pos.y, gridNode.pos.z - 1)))
+        table.insert(neighbors, self:GetGridNode(GVector(gridNode.pos.x, gridNode.pos.y, gridNode.pos.z + 1)))
+        table.insert(neighbors, self:GetGridNode(GVector(gridNode.pos.x, gridNode.pos.y, gridNode.pos.z - 1)))
     end
 
     if filterFunc then
@@ -495,21 +495,21 @@ end
 function TNAV.GridArea:GetCorners(z)
     if z then
         return {
-            self.gridMap:GetGridNode(vector.new(self.boundaries.x.min, self.boundaries.y.min, z)),
-            self.gridMap:GetGridNode(vector.new(self.boundaries.x.max, self.boundaries.y.max, z)),
-            self.gridMap:GetGridNode(vector.new(self.boundaries.x.min, self.boundaries.y.max, z)),
-            self.gridMap:GetGridNode(vector.new(self.boundaries.x.max, self.boundaries.y.min, z))
+            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.min, z)),
+            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.max, z)),
+            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.max, z)),
+            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.min, z))
         }
     else
         return {
-            self.gridMap:GetGridNode(vector.new(self.boundaries.x.min, self.boundaries.y.min, self.boundaries.z.min)),
-            self.gridMap:GetGridNode(vector.new(self.boundaries.x.max, self.boundaries.y.max, self.boundaries.z.max)),
-            self.gridMap:GetGridNode(vector.new(self.boundaries.x.min, self.boundaries.y.min, self.boundaries.z.max)),
-            self.gridMap:GetGridNode(vector.new(self.boundaries.x.min, self.boundaries.y.max, self.boundaries.z.min)),
-            self.gridMap:GetGridNode(vector.new(self.boundaries.x.min, self.boundaries.y.max, self.boundaries.z.max)),
-            self.gridMap:GetGridNode(vector.new(self.boundaries.x.max, self.boundaries.y.min, self.boundaries.z.min)),
-            self.gridMap:GetGridNode(vector.new(self.boundaries.x.max, self.boundaries.y.min, self.boundaries.z.max)),
-            self.gridMap:GetGridNode(vector.new(self.boundaries.x.max, self.boundaries.y.max, self.boundaries.z.min))
+            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.min, self.boundaries.z.min)),
+            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.max, self.boundaries.z.max)),
+            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.min, self.boundaries.z.max)),
+            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.max, self.boundaries.z.min)),
+            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.max, self.boundaries.z.max)),
+            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.min, self.boundaries.z.min)),
+            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.min, self.boundaries.z.max)),
+            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.max, self.boundaries.z.min))
         }
     end
 end
@@ -604,7 +604,7 @@ end
 ---@field avoidAllBlocks? boolean true: avoid all blocks, false: only avoid blocks in blacklist
 ---@field blockBlacklist? string[] -- used if avoidBlocks is false
 ---@field gridFile? string
----@field fenceCorners? Vector[]
+---@field fenceCorners? GVector[]
 
 ---@class GTurtle.TNAV.GridNav : Object
 ---@overload fun(options: GTurtle.TNAV.GridNav.Options) : GTurtle.TNAV.GridNav
@@ -637,7 +637,7 @@ function TNAV.GridNav:new(options)
         }
     )
 
-    self.initGN = self.gridMap:GetGridNode(gpsPos or vector:new(0, 0, 0))
+    self.initGN = self.gridMap:GetGridNode(gpsPos or GVector(0, 0, 0))
     self.initGN:SetEmpty()
 
     if not self.gpsEnabled then
@@ -669,7 +669,7 @@ function TNAV.GridNav:new(options)
     end
 end
 
----@param corners Vector[]
+---@param corners GVector[]
 function TNAV.GridNav:SetGeoFence(corners)
     self.geoFence =
         TNAV.GeoFence {
@@ -730,11 +730,11 @@ function TNAV.GridNav:InitializeHeading()
     end
 end
 
----@return Vector? pos
+---@return GVector? pos
 function TNAV.GridNav:GetGPSPos()
     local gpsPos = {gps.locate()}
     if gpsPos and #gpsPos == 3 then
-        return vector.new(gpsPos[1], gpsPos[2], gpsPos[3])
+        return GVector(gpsPos[1], gpsPos[2], gpsPos[3])
     end
 end
 
@@ -960,7 +960,7 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
     return nil -- No path found
 end
 
----@param goalPos Vector
+---@param goalPos GVector
 ---@param flat? boolean
 ---@return GTurtle.TNAV.Path? path
 function TNAV.GridNav:CalculatePathToPosition(goalPos, flat)

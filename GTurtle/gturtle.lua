@@ -52,7 +52,7 @@ function GTurtle.Base:new(options)
     self.minimumFuel = options.minimumFuel or 100
     self.tdFile = f("%d_td.json", self.id)
     ---@type GTurtle.TurtleData
-    self.turtleData = self:GetTurtleData()
+    self.turtleData = self:LoadTurtleData()
     ---@type GTurtle.TYPES
     self.type = GTurtle.TYPES.BASE
     self.term = options.term or term
@@ -97,12 +97,13 @@ function GTurtle.Base:new(options)
 end
 
 ---@return GTurtle.TurtleData turtleData
-function GTurtle.Base:GetTurtleData()
+function GTurtle.Base:LoadTurtleData()
     if self.tdFile and fs.exists(self.tdFile) then
         local file = fs.open(self.tdFile, "r")
-        local data = textutils.unserialiseJSON(file.readAll())
+        local fileData = textutils.unserialiseJSON(file.readAll())
+        fileData.data = self:DeserializeTurtleData(fileData.data)
         file.close()
-        return data
+        return fileData
     else
         return {
             id = self.id,
@@ -111,10 +112,28 @@ function GTurtle.Base:GetTurtleData()
     end
 end
 
+--- to be overridden by child turtle types
+---@param data table
+---@return table
+function GTurtle.Base:DeserializeTurtleData(data)
+    return data
+end
+
+--- to be overridden by child turtle types
+---@param data table
+---@return table
+function GTurtle.Base:SerializeTurtleData(data)
+    return data
+end
+
 function GTurtle.Base:WriteTurtleData()
     if self.turtleData and self.tdFile then
         local file = fs.open(self.tdFile, "w")
-        file.write(textutils.serialiseJSON(self.turtleData))
+        local writeData = {
+            id = self.turtleData.id,
+            data = self:SerializeTurtleData(self.turtleData.data)
+        }
+        file.write(textutils.serialiseJSON(writeData))
         file.close()
     end
 end

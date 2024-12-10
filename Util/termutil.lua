@@ -1,12 +1,13 @@
 local SUtil = require("GCC/Util/sutil")
+local GVector = require("GCC/Util/gvector")
 local f = string.format
 --- Terminal Utils
 ---@class TermUtil
 local TermUtil = {}
 
 ---@param prompt string
----@return Vector vector
-function TermUtil:ReadVector(prompt)
+---@return GVector gvector
+function TermUtil:ReadGVector(prompt)
     local split = {}
     local x, y, z
     repeat
@@ -16,7 +17,7 @@ function TermUtil:ReadVector(prompt)
         x, y, z = tonumber(split[1]), tonumber(split[2]), tonumber(split[3])
     until type(x) == "number" and type(y) == "number" and type(z) == "number"
 
-    return vector.new(x, y, z)
+    return GVector(x, y, z)
 end
 
 ---@param prompt string

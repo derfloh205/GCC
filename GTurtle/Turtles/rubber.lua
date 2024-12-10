@@ -2,15 +2,21 @@ local GTurtle = require("GCC/GTurtle/gturtle")
 local GState = require("GCC/Util/gstate")
 local TUtil = require("GCC/Util/tutil")
 local TermUtil = require("GCC/Util/termutil")
-local VUtil = require("GCC/Util/vutil")
+local GVector = require("GCC/Util/gvector")
 local CONST = require("GCC/Util/const")
 local f = string.format
 
+---@class GTurtle.TurtleData.Rubber.Data.Serialized
+---@field resourceChestPos GVector.Serialized
+---@field produceChestPos GVector.Serialized
+---@field treePositions GVector.Serialized[]
+---@field fenceCorners GVector.Serialized[]
+
 ---@class GTurtle.TurtleData.Rubber.Data
----@field resourceChestPos Vector
----@field produceChestPos Vector
----@field treePositions Vector[]
----@field fenceCorners Vector[]
+---@field resourceChestPos GVector
+---@field produceChestPos GVector
+---@field treePositions GVector[]
+---@field fenceCorners GVector[]
 
 ---@class GTurtle.TurtleData.Rubber : GTurtle.TurtleData
 ---@field data GTurtle.TurtleData.Rubber.Data
@@ -52,45 +58,60 @@ function RubberTurtle:new(options)
     self.treeCount = 1
 end
 
+---@param data GTurtle.TurtleData.Rubber.Data
+---@return GTurtle.TurtleData.Rubber.Data.Serialized
+function RubberTurtle:SerializeTurtleData(data)
+    return {
+        resourceChestPos = data.resourceChestPos:Serialize(),
+        produceChestPos = data.produceChestPos:Serialize(),
+        fenceCorners = GVector:SerializeList(data.fenceCorners),
+        treePositions = GVector:SerializeList(data.treePositions)
+    }
+end
+
+---@param data GTurtle.TurtleData.Rubber.Data.Serialized
 ---@return GTurtle.TurtleData.Rubber.Data
-function RubberTurtle:GetRTData()
-    return self.turtleData.data
+function RubberTurtle:DeserializeTurtleData(data)
+    return {
+        resourceChestPos = GVector:Deserialize(data.resourceChestPos),
+        produceChestPos = GVector:Deserialize(data.produceChestPos),
+        fenceCorners = GVector:DeserializeList(data.fenceCorners),
+        treePositions = GVector:DeserializeList(data.treePositions)
+    }
 end
 
 function RubberTurtle:INIT()
     self:FLog("Initiating Rubber Turtle: %s", self.name)
-    local rtData = self:GetRTData()
+    local rtData = self.turtleData.data --[[@as GTurtle.TurtleData.Rubber.Data]]
 
     if not rtData.resourceChestPos then
-        rtData.resourceChestPos = TermUtil:ReadVector("Resource Chest Position?")
+        rtData.resourceChestPos = TermUtil:ReadGVector("Resource Chest Position?")
     end
     if not rtData.produceChestPos then
-        rtData.produceChestPos = TermUtil:ReadVector("Produce Chest Position?")
+        rtData.produceChestPos = TermUtil:ReadGVector("Produce Chest Position?")
     end
 
     if not rtData.fenceCorners then
         rtData.fenceCorners = rtData.fenceCorners or {}
-        rtData.fenceCorners[1] = TermUtil:ReadVector("Fence #1")
-        rtData.fenceCorners[2] = TermUtil:ReadVector("Fence #2")
-        rtData.fenceCorners[3] = TermUtil:ReadVector("Fence #3")
-        rtData.fenceCorners[4] = TermUtil:ReadVector("Fence #4")
+        rtData.fenceCorners[1] = TermUtil:ReadGVector("Fence #1")
+        rtData.fenceCorners[2] = TermUtil:ReadGVector("Fence #2")
+        rtData.fenceCorners[3] = TermUtil:ReadGVector("Fence #3")
+        rtData.fenceCorners[4] = TermUtil:ReadGVector("Fence #4")
     end
-
-    rtData.treePositions = rtData.treePositions or {}
 
     self:WriteTurtleData()
 
     self.tnav:SetGeoFence(rtData.fenceCorners)
 
-    self.resourceGN = self.tnav.gridMap:GetGridNode(VUtil:Deserialize(rtData.resourceChestPos))
+    self.resourceGN = self.tnav.gridMap:GetGridNode(rtData.resourceChestPos)
     self.resourceGN.unknown = false
-    self.produceGN = self.tnav.gridMap:GetGridNode(VUtil:Deserialize(rtData.produceChestPos))
+    self.produceGN = self.tnav.gridMap:GetGridNode(rtData.produceChestPos)
     self.produceGN.unknown = false
     self.treeGNs =
         TUtil:Map(
         rtData.treePositions,
-        function(serializedPos)
-            return self.tnav.gridMap:GetGridNode(VUtil:Deserialize(serializedPos))
+        function(treePositionGV)
+            return self.tnav.gridMap:GetGridNode(treePositionGV)
         end
     )
 
