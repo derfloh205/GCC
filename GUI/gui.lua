@@ -1,10 +1,18 @@
 local Object = require("GCC/Util/classics")
 local GLogAble = require("GCC/Util/glog")
+local GWindow = require("GCC/GUI/gwindow")
+local MUtil = require("GCC/Util/mutil")
+
 ---@class GUI
 local GUI = {}
 
 ---@class GUI.Clickable.Options
 ---@field frontend GUI.Frontend
+---@field parent? table
+---@field posX number
+---@field posY number
+---@field sizeX number
+---@field sizeY number
 ---@field clickCallback fun(self: GUI.Clickable)
 
 ---@class GUI.Clickable : Object
@@ -14,16 +22,35 @@ GUI.Clickable = Object:extend()
 ---@param options GUI.Clickable.Options
 function GUI.Clickable:new(options)
     options = options or {}
+    self.window =
+        GWindow {
+        monitor = self.frontend.monitor,
+        parent = options.parent or term.native(),
+        sizeX = options.sizeX,
+        sizeY = options.sizeY,
+        x = options.posX,
+        y = options.posY
+    }
     self.frontend = options.frontend
+    self.clickCallback = options.clickCallback
     self.frontend:RegisterClickable(self)
+end
+
+---@param x number
+---@param y number
+---@return boolean clicked
+function GUI.Clickable:IsClicked(x, y)
+    local posX, posY = self.window:GetPosition()
+    local sizeX, sizeY = self.window:GetSize()
+    local inX = MUtil:InRange(x, posX, sizeX)
+    local inY = MUtil:InRange(y, posY, sizeY)
+    return inX and inY
 end
 
 ---@class GUI.Button.Options : GUI.Clickable.Options
 ---@field backgroundColor? number
 ---@field textColor? number
 ---@field label string
----@field sizeX number
----@field sizeY number
 
 ---@class GUI.Button : GUI.Clickable
 ---@overload fun(options: GUI.Button.Options) : GUI.Button
@@ -34,9 +61,20 @@ function GUI.Button:new(options)
     options = options or {}
     ---@diagnostic disable-next-line: redundant-parameter
     GUI.Button.super.new(self, options)
+    if options.backgroundColor then
+        self.window:SetBackgroundColor(options.backgroundColor)
+    end
+    if options.textColor then
+        self.window:SetTextColor(options.textColor)
+    end
+    if options.label then
+        self.window:Print(options.label)
+    end
 end
 
 ---@class GUI.Frontend.Options
+---@field touchscreen? boolean
+---@field monitor table wrapped monitor or terminal
 
 ---@class GUI.Frontend : GLogAble
 ---@overload fun(options: GUI.Frontend.Options) : GUI.Frontend
@@ -45,12 +83,48 @@ GUI.Frontend = GLogAble:extend()
 ---@param options GUI.Frontend.Options
 function GUI.Frontend:new(options)
     options = options or {}
+    self.touchscreen = options.touchscreen
+    self.monitor = options.monitor
+    if self.monitor ~= term.current() then
+        term.redirect(self.monitor)
+    end
+
     ---@type GUI.Clickable[]
     self.clickables = {}
 end
 
 function GUI.Frontend:RegisterClickable(clickable)
     table.insert(self.clickables, clickable)
+end
+
+--- Listens for Click Events for each clickable
+function GUI.Frontend:Run()
+    local clickHandlers = {}
+
+    for _, clickable in ipairs(self.clickables) do
+        table.insert(
+            clickHandlers,
+            function()
+                while true do
+                    if self.touchscreen then
+                        local _, _, x, y = os.pullEvent("monitor_touch")
+                        if clickable:IsClicked(x, y) then
+                            clickable.clickCallback(clickable)
+                        end
+                    else
+                        local _, _, x, y = os.pullEvent("mouse_click")
+                        if clickable:IsClicked(x, y) then
+                            clickable.clickCallback(clickable)
+                        end
+                    end
+                end
+            end
+        )
+    end
+
+    if #clickHandlers > 0 then
+        parallel.waitForAll(table.unpack(clickHandlers))
+    end
 end
 
 return GUI

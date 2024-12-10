@@ -1,6 +1,7 @@
 local Object = require("GCC/Util/classics")
 
 ---@class GWindow.Options
+---@field monitor table
 ---@field parent table Window or terminal
 ---@field backgroundColor number?
 ---@field textColor number?
@@ -18,14 +19,26 @@ local GWindow = Object:extend()
 ---@param options GWindow.Options
 function GWindow:new(options)
     options = options or {}
+    self.monitor = options.monitor
     self.window = window.create(options.parent, options.x, options.y, options.sizeX, options.sizeY, options.visible)
     if options.backgroundColor then
-        self.window.setBackgroundColor(options.backgroundColor)
-        self:DrawFilledBox(0, 0, options.sizeX, options.sizeY, options.backgroundColor)
+        self:SetBackgroundColor(options.backgroundColor)
     end
     if options.textColor then
         self.window.setTextColor(options.backgroundColor)
     end
+end
+
+---@param color number
+function GWindow:SetBackgroundColor(color)
+    self.window.setBackgroundColor(color)
+    local x, y = self.window:GetSize()
+    self:DrawFilledBox(0, 0, x, y, color)
+end
+
+---@param color number
+function GWindow:SetTextColor(color)
+    self.window.setTextColor(color)
 end
 
 ---@param startX number
@@ -34,23 +47,33 @@ end
 ---@param endY number
 ---@param color number?
 function GWindow:DrawFilledBox(startX, startY, endX, endY, color)
-    local t = term.current()
-    term.redirect(self.window)
+    self:LockRedirect()
     paintutils.drawFilledBox(startX, startY, endX, endY, color)
-    term.redirect(t)
+    self:FreeRedirect()
 end
 
 ---@param txt string
 function GWindow:Print(txt)
-    local t = term.current()
-    term.redirect(self.window)
+    self:LockRedirect()
     print(txt)
-    term.redirect(t)
+    self:FreeRedirect()
 end
 
 function GWindow:Clear()
     local x, y = self.window:GetSize()
     self:DrawFilledBox(0, 0, x, y, colors.black)
+end
+
+function GWindow:LockRedirect()
+    if self.window ~= term.current() then
+        term.redirect(self.window)
+    end
+end
+
+function GWindow:FreeRedirect()
+    if term.current() ~= self.monitor then
+        term.redirect(self.monitor)
+    end
 end
 
 return GWindow
