@@ -1,3 +1,4 @@
+local Object = require("GCC/Util/classics")
 local GVector = require("GCC/GNav/gvector")
 local TUtil = require("GCC/Util/tutil")
 local MUtil = require("GCC/Util/mutil")
