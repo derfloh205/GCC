@@ -489,3 +489,5 @@ function GNAV.GridArea:IsUnknown()
     end
     return false
 end
+
+return GNAV
