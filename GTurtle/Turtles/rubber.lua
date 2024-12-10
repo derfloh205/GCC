@@ -220,7 +220,16 @@ function RubberTurtle:GetTreePositionCandidate()
                     local areaInFence = self.tnav.geoFence:IsAreaWithin(area)
 
                     if areaEmpty and areaInFence then
-                        return {gridNode = gridNode, area = area}
+                        local noTreeNeighbors =
+                            TUtil:Every(
+                            area.nodeList,
+                            function(gn)
+                                return not TUtil:tContains(self.treeGNs, gn)
+                            end
+                        )
+                        if noTreeNeighbors then
+                            return {gridNode = gridNode, area = area}
+                        end
                     else
                         table.insert(self.invalidTreeGNs, gridNode)
                     end
