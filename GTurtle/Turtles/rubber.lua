@@ -11,12 +11,14 @@ local f = string.format
 ---@field produceChestPos GVector.Serialized
 ---@field treePositions GVector.Serialized[]
 ---@field fenceCorners GVector.Serialized[]
+---@field treeCount number
 
 ---@class GTurtle.TurtleData.Rubber.Data
 ---@field resourceChestPos GVector
 ---@field produceChestPos GVector
 ---@field treePositions GVector[]
 ---@field fenceCorners GVector[]
+---@field treeCount number
 
 ---@class GTurtle.TurtleData.Rubber : GTurtle.TurtleData
 ---@field data GTurtle.TurtleData.Rubber.Data
@@ -99,7 +101,20 @@ function RubberTurtle:INIT()
         rtData.fenceCorners[4] = TermUtil:ReadGVector("Fence #4")
     end
 
+    if not rtData.treeCount then
+        rtData.treeCount = TermUtil:ReadNumber("Tree Count?")
+        self.treeCount = rtData.treeCount
+    end
+
     rtData.treePositions = rtData.treePositions or {}
+
+    self.invalidTreeGNs =
+        TUtil:Map(
+        rtData.treePositions,
+        function(gvector)
+            return self.tnav.gridMap:GetGridNode(gvector)
+        end
+    )
 
     self:WriteTurtleData()
 
