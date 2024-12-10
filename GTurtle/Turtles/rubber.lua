@@ -99,6 +99,8 @@ function RubberTurtle:INIT()
         rtData.fenceCorners[4] = TermUtil:ReadGVector("Fence #4")
     end
 
+    rtData.treePositions = rtData.treePositions or {}
+
     self:WriteTurtleData()
 
     self.tnav:SetGeoFence(rtData.fenceCorners)
