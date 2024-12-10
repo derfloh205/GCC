@@ -318,7 +318,7 @@ function TNAV.GridNav:UpdateSurroundings()
         end
     end
 
-    self.gTurtle:FLog("ScanLog: %s", scanLog)
+    self.gTurtle:FLog("Updated Surroundings: %s", scanLog)
     self.gridMap:WriteFile()
 end
 
