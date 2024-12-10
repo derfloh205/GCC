@@ -475,7 +475,7 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
     self:FLog("Trying to navigate to position: %s", goalPos)
     local function RecalculatePath()
         -- Recalculate Path Based on new Grid Info
-        self:Log("Recalculating Path..")
+        self:FLog("Recalculating Path: %s", path)
         local path = self.tnav:CalculatePathToPosition(goalPos, flat)
         if path then
             self.tnav:SetActivePath(path)
