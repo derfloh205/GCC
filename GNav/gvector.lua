@@ -73,8 +73,11 @@ function GVector:Serialize()
 end
 
 ---@param serializedList GVector.Serialized[]
----@return GVector
+---@return GVector?
 function GVector:DeserializeList(serializedList)
+    if not serializedList then
+        return
+    end
     return TUtil:Map(
         serializedList,
         function(serialized)
