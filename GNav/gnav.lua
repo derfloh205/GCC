@@ -151,7 +151,7 @@ end
 
 function GNAV.GridNode:__tostring()
     local typeChar = self:GetDrawString()
-    return f("(%s)[%s] ", tostring(self.pos), typeChar)
+    return f("%s[%s] ", tostring(self.pos), typeChar)
 end
 
 function GNAV.GridNode:GetDrawString()
