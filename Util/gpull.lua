@@ -82,7 +82,7 @@ function GPull:GetConfig()
         file.close()
     end
     local configFile = fs.open(GPull.CONFIG_FILE, "r")
-    local config = textutils.unserialiseJSON(configFile.readAll())
+    local config = textutils.unserialiseJSON(configFile.readAll()) or {}
     configFile.close()
     config.shaMap = config.shaMap or {}
     return config
