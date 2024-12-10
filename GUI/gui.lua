@@ -107,7 +107,6 @@ function GUI.Frontend:Run()
     local clickHandlers = {}
 
     for i, clickable in ipairs(self.clickables) do
-        term.native().write("Register Clickable #" .. i)
         table.insert(
             clickHandlers,
             function()
