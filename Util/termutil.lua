@@ -38,7 +38,7 @@ function TermUtil:ReadNumber(prompt)
     local number
     repeat
         print(prompt)
-        number = read()
+        number = tonumber(read())
     until type(number) == "number"
     return number
 end
