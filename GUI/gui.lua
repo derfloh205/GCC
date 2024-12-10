@@ -23,7 +23,7 @@ GUI.Clickable = Object:extend()
 function GUI.Clickable:new(options)
     options = options or {}
     self.frontend = options.frontend
-    self.window =
+    self.gWindow =
         GWindow {
         monitor = self.frontend.monitor,
         parent = options.parent or term.native(),
@@ -40,8 +40,8 @@ end
 ---@param y number
 ---@return boolean clicked
 function GUI.Clickable:IsClicked(x, y)
-    local posX, posY = self.window:getPosition()
-    local sizeX, sizeY = self.window:getSize()
+    local posX, posY = self.gWindow:GetPosition()
+    local sizeX, sizeY = self.gWindow:GetSize()
     local inX = MUtil:InRange(x, posX, sizeX)
     local inY = MUtil:InRange(y, posY, sizeY)
     return inX and inY
@@ -62,13 +62,13 @@ function GUI.Button:new(options)
     ---@diagnostic disable-next-line: redundant-parameter
     GUI.Button.super.new(self, options)
     if options.backgroundColor then
-        self.window:SetBackgroundColor(options.backgroundColor)
+        self.gWindow:SetBackgroundColor(options.backgroundColor)
     end
     if options.textColor then
-        self.window:SetTextColor(options.textColor)
+        self.gWindow:SetTextColor(options.textColor)
     end
     if options.label then
-        self.window:Print(options.label)
+        self.gWindow:Print(options.label)
     end
 end
 

@@ -76,4 +76,16 @@ function GWindow:FreeRedirect()
     end
 end
 
+---@return number posX
+---@return number posY
+function GWindow:GetPosition()
+    return self.window.getPosition()
+end
+
+---@return number sizeX
+---@return number sizeY
+function GWindow:GetSize()
+    return self.window.getSize()
+end
+
 return GWindow
