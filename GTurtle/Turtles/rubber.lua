@@ -2,7 +2,7 @@ local GTurtle = require("GCC/GTurtle/gturtle")
 local GState = require("GCC/Util/gstate")
 local TUtil = require("GCC/Util/tutil")
 local TermUtil = require("GCC/Util/termutil")
-local GVector = require("GCC/Util/gvector")
+local GVector = require("GCC/GNav/gvector")
 local CONST = require("GCC/Util/const")
 local f = string.format
 
@@ -164,8 +164,8 @@ function RubberTurtle:FETCH_SAPLINGS()
     self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
 end
 
----@return GTurtle.TNAV.GridNode? candidateGN
----@return GTurtle.TNAV.GridArea? candidateArea
+---@return GNAV.GridNode? candidateGN
+---@return GNAV.GridArea? candidateArea
 function RubberTurtle:GetTreePositionCandidate()
     local requiredRadius = 1
     local z = self.tnav.currentGN.pos.z
@@ -176,7 +176,7 @@ function RubberTurtle:GetTreePositionCandidate()
 
     for x, xData in pairs(self.tnav.gridMap.grid) do
         for y, _ in pairs(xData) do
-            local gridNode = self.tnav.gridMap:GetGridNode(vector.new(x, y, z))
+            local gridNode = self.tnav.gridMap:GetGridNode(GVector(x, y, z))
             self:FLog("Tree Pos? %s", gridNode)
             local inFence = self.tnav.geoFence and self.tnav.geoFence:IsWithin(gridNode)
             self:FLog("- In Fence: %s", inFence)

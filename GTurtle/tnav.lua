@@ -1,8 +1,8 @@
 local Object = require("GCC/Util/classics")
-local GVector = require("GCC/Util/gvector")
+local GNAV = require("GCC/GNav/gnav")
+local GVector = require("GCC/GNav/gvector")
 local TUtil = require("GCC/Util/tutil")
 local MUtil = require("GCC/Util/mutil")
-local CONST = require("GCC/Util/const")
 local f = string.format
 
 ---@class GTurtle.TNAV
@@ -10,14 +10,6 @@ local TNAV = {}
 
 TNAV.CALCULATIONS_PER_YIELD = 150
 
---- Possible Look Directions
----@enum GTurtle.TNAV.HEAD
-TNAV.HEAD = {
-    N = "N", -- North
-    S = "S", -- South
-    W = "W", -- West
-    E = "E" -- East
-}
 --- Possible Turn Directions
 ---@enum GTurtle.TNAV.TURN
 TNAV.TURN = {
@@ -25,55 +17,14 @@ TNAV.TURN = {
     R = "R" -- Right
 }
 
---- Possible Movement Directions
----@enum GTurtle.TNAV.MOVE
-TNAV.MOVE = {
-    F = "F", -- Forward
-    B = "B", -- Back
-    U = "U", -- Up
-    D = "D" -- Down
-}
+---@class TNAV.GeoFence.Options
+---@field corners GNAV.GridNode
 
--- Absolute Vector Diffs based on Heading
-TNAV.M_VEC = {
-    [TNAV.HEAD.N] = GVector(0, 1, 0),
-    [TNAV.HEAD.S] = GVector(0, 1, 0),
-    [TNAV.HEAD.W] = GVector(1, 0, 0),
-    [TNAV.HEAD.E] = GVector(1, 0, 0),
-    [TNAV.MOVE.U] = GVector(0, 0, 1),
-    [TNAV.MOVE.D] = GVector(0, 0, 1)
-}
-
--- Relative Heading by Vector Diff between adjacent positions
-TNAV.M_HEAD = {
-    [0] = {
-        [0] = {
-            [-1] = TNAV.MOVE.U,
-            [1] = TNAV.MOVE.D
-        },
-        [-1] = {[0] = TNAV.HEAD.S},
-        [1] = {[0] = TNAV.HEAD.N}
-    },
-    [1] = {
-        [0] = {
-            [0] = TNAV.HEAD.W
-        }
-    },
-    [-1] = {
-        [0] = {
-            [0] = TNAV.HEAD.E
-        }
-    }
-}
-
----@class GTurtle.TNAV.GeoFence.Options
----@field corners GTurtle.TNAV.GridNode
-
----@class GTurtle.TNAV.GeoFence : Object
----@overload fun(options: GTurtle.TNAV.GeoFence.Options) : GTurtle.TNAV.GeoFence
+---@class TNAV.GeoFence : Object
+---@overload fun(options: TNAV.GeoFence.Options) : TNAV.GeoFence
 TNAV.GeoFence = Object:extend()
 
----@param options GTurtle.TNAV.GeoFence.Options
+---@param options TNAV.GeoFence.Options
 function TNAV.GeoFence:new(options)
     self.corners = options.corners or {}
     self.boundaries = {
@@ -93,7 +44,7 @@ function TNAV.GeoFence:new(options)
     end
 end
 
----@param gridNode GTurtle.TNAV.GridNode
+---@param gridNode GNAV.GridNode
 ---@return boolean IsWithin
 function TNAV.GeoFence:IsWithin(gridNode)
     local inX = MUtil:InRange(gridNode.pos.x, self.boundaries.x.min, self.boundaries.x.max)
@@ -103,445 +54,16 @@ function TNAV.GeoFence:IsWithin(gridNode)
     return inX and inY and inZ
 end
 
----@class GTurtle.TNAV.GridNode.Options
----@field gridMap GTurtle.TNAV.GridMap
----@field pos GVector
----@field blockData table?
----@field unknown? boolean
+---@class TNAV.Path.Options
+---@field initGN GNAV.GridNode
+---@field goalGN GNAV.GridNode
+---@field nodeList GNAV.GridNode[]
 
----@class GTurtle.TNAV.GridNode : Object
----@overload fun(options: GTurtle.TNAV.GridNode.Options) : GTurtle.TNAV.GridNode
-TNAV.GridNode = Object:extend()
-
----@param options GTurtle.TNAV.GridNode.Options
-function TNAV.GridNode:new(options)
-    options = options or {}
-    self.gridMap = options.gridMap
-    self.pos = options.pos
-    self:SetBlockData(options.blockData)
-    self.unknown = options.unknown or false
-    self.visited = false
-end
-
-function TNAV.GridNode:SetBlockData(blockData)
-    self.blockData = blockData
-    self.unknown = false
-end
-
-function TNAV.GridNode:IsVisited()
-    return self.visited
-end
-
-function TNAV.GridNode:SetEmpty()
-    self:SetBlockData(nil)
-end
-
----@return boolean isChest
-function TNAV.GridNode:IsChest()
-    if self:IsEmpty() or self:IsUnknown() then
-        return false
-    end
-    return TUtil:tContains(CONST.CHEST_BLOCKS, self.blockData.name)
-end
-
----@return boolean isEmpty
-function TNAV.GridNode:IsEmpty()
-    return self.blockData == nil
-end
-
----@return boolean isUnknown
-function TNAV.GridNode:IsUnknown()
-    return self.unknown
-end
-
---- Using ManhattanDistance
----@param gridNode GTurtle.TNAV.GridNode
----@return number distance
-function TNAV.GridNode:GetDistance(gridNode)
-    return self.pos:ManhattanDistance(gridNode.pos)
-end
-
----@param gridNode GTurtle.TNAV.GridNode
----@return boolean equalPos
-function TNAV.GridNode:EqualPos(gridNode)
-    return self.pos:Equal(gridNode.pos)
-end
-
----@param gridNode GTurtle.TNAV.GridNode
----@return GTurtle.TNAV.HEAD
-function TNAV.GridNode:GetRelativeHeading(gridNode)
-    local vecDiff = self.pos:Sub(gridNode.pos)
-
-    return TNAV.M_HEAD[vecDiff.x][vecDiff.y][vecDiff.z]
-end
-
---- get relative pos by given heading and direction to look at
----@param head GTurtle.TNAV.HEAD
----@param dir GTurtle.TNAV.MOVE
-function TNAV.GridNode:GetRelativeNode(head, dir)
-    -- use the z diff vector if dir is up or down else use the x/y vector
-    local relVec = TNAV.M_VEC[dir] or TNAV.M_VEC[head]
-
-    -- possible movement directions that cause coordination subtraction
-    if
-        dir == TNAV.MOVE.D or (head == TNAV.HEAD.W and dir == TNAV.MOVE.F) or
-            (head == TNAV.HEAD.E and dir == TNAV.MOVE.B) or
-            (head == TNAV.HEAD.N and dir == TNAV.MOVE.F) or
-            (head == TNAV.HEAD.S and dir == TNAV.MOVE.B)
-     then
-        relVec = relVec:Mul(-1)
-    end
-
-    return self.gridMap:GetGridNode(self.pos + relVec)
-end
-
-function TNAV.GridNode:__tostring()
-    local typeChar = self:GetDrawString()
-    return f("(%s)[%s] ", tostring(self.pos), typeChar)
-end
-
-function TNAV.GridNode:GetDrawString()
-    local mapFunc = self.gridMap.gridNodeMapFunc
-
-    local c = ""
-    if self:IsUnknown() then
-        c = " ? "
-    elseif self:IsEmpty() then
-        c = "   "
-    else
-        c = " X "
-    end
-
-    if mapFunc then
-        c = mapFunc(self) or c
-    end
-
-    return c
-end
-
----@class GTurtle.TNAV.GridMap.Options
----@field logger GLogAble
----@field gridNodeMapFunc? fun(gridNode: GTurtle.TNAV.GridNode): string?
----@field saveFile? string if set save grid to file continously
----@field loadFile? string if set attempt to load data from file at initialization
-
----@class GTurtle.TNAV.GridMap : Object
----@overload fun(options: GTurtle.TNAV.GridMap.Options) : GTurtle.TNAV.GridMap
-TNAV.GridMap = Object:extend()
-
----@param options GTurtle.TNAV.GridMap.Options
-function TNAV.GridMap:new(options)
-    options = options or {}
-    self.logger = options.logger
-    self.boundaries = nil
-    -- 3D Array
-    ---@type table<number, table<number, table<number, GTurtle.TNAV.GridNode>>>
-    self.grid = {}
-    self.gridNodeMapFunc = options.gridNodeMapFunc
-
-    self.saveFile = options.saveFile
-    self.loadFile = options.loadFile
-
-    if self.loadFile and fs.exists(self.loadFile) then
-        local loadFile = fs.open(self.loadFile, "r")
-        -- serialized -> no functions or metatables, only base types (table, number, string ...)
-        local serializedGridMap = textutils.unserialiseJSON(loadFile.readAll())
-        self:LoadSerializedData(serializedGridMap)
-        loadFile.close()
-    end
-end
-
----@param serializedGridMap table
-function TNAV.GridMap:LoadSerializedData(serializedGridMap)
-    for x, xData in pairs(serializedGridMap.grid) do
-        for y, yData in pairs(xData) do
-            for z, serializedGN in pairs(yData) do
-                local gridNode = self:GetGridNode(GVector(x, y, z))
-                gridNode.unknown = serializedGN.unknown
-                gridNode.blockData = serializedGN.blockData
-            end
-        end
-    end
-end
-
-function TNAV.GridMap:WriteFile()
-    if not self.saveFile then
-        return
-    end
-    local serializedGridMap = textutils.serialiseJSON(self)
-    local saveFile = fs.open(self.saveFile, "w")
-    saveFile.write(serializedGridMap)
-    saveFile.close()
-end
-
----@param gridNode GTurtle.TNAV.GridNode
-function TNAV.GridMap:UpdateBoundaries(gridNode)
-    -- init with gridNode positions
-    self.boundaries =
-        self.boundaries or
-        {
-            x = {max = gridNode.pos.x, min = gridNode.pos.x},
-            y = {max = gridNode.pos.y, min = gridNode.pos.y},
-            z = {max = gridNode.pos.z, min = gridNode.pos.z}
-        }
-    self.boundaries.x.min = math.min(self.boundaries.x.min, gridNode.pos.x)
-    self.boundaries.y.min = math.min(self.boundaries.y.min, gridNode.pos.y)
-    self.boundaries.z.min = math.min(self.boundaries.z.min, gridNode.pos.z)
-
-    self.boundaries.x.max = math.max(self.boundaries.x.max, gridNode.pos.x)
-    self.boundaries.y.max = math.max(self.boundaries.y.max, gridNode.pos.y)
-    self.boundaries.z.max = math.max(self.boundaries.z.max, gridNode.pos.z)
-end
-
--- creates a new gridnode at pos or returns an existing one
----@param pos GVector
----@return GTurtle.TNAV.GridNode
-function TNAV.GridMap:GetGridNode(pos)
-    local x, y, z = pos.x, pos.y, pos.z
-    self.grid[x] = self.grid[x] or {}
-    self.grid[x][y] = self.grid[x][y] or {}
-    local gridNode = self.grid[x][y][z]
-    if not gridNode then
-        gridNode =
-            TNAV.GridNode(
-            {
-                gridMap = self,
-                pos = pos
-            }
-        )
-        gridNode.unknown = true
-        self.grid[x][y][z] = gridNode
-    end
-    self:UpdateBoundaries(gridNode)
-    return gridNode
-end
-
----@param gridNode GTurtle.TNAV.GridNode
----@param blockRadius number
----@param height number? default: 0
----@return GTurtle.TNAV.GridArea area
-function TNAV.GridMap:GetAreaAround(gridNode, blockRadius, height)
-    height = height or 0
-    local areaNodes = {}
-
-    for x = gridNode.pos.x - blockRadius, gridNode.pos.x + blockRadius do
-        for y = gridNode.pos.y - blockRadius, gridNode.pos.y + blockRadius do
-            for z = gridNode.pos.z, gridNode.pos.z + height do
-                table.insert(areaNodes, self:GetGridNode(GVector(x, y, z)))
-            end
-        end
-    end
-
-    return TNAV.GridArea {nodeList = areaNodes, gridMap = self}
-end
-
----@return number x
----@return number y
----@return number z
-function TNAV.GridMap:GetGridSize()
-    local sizeX = self.boundaries.x.max - self.boundaries.x.min
-    local sizeY = self.boundaries.y.max - self.boundaries.y.min
-    local sizeZ = self.boundaries.z.max - self.boundaries.z.min
-
-    return sizeX, sizeY, sizeZ
-end
-
----@param z number
----@param boundaries table
----@return string gridString
-function TNAV.GridMap:GetGridStringByBoundary(z, boundaries)
-    local minX = boundaries.x.min
-    local minY = boundaries.y.min
-    local maxX = boundaries.x.max
-    local maxY = boundaries.y.max
-    local gridString = ""
-
-    for y = minY, maxY do
-        for x = minX, maxX do
-            local gridNode = self:GetGridNode(GVector(x, y, z))
-            local c = gridNode:GetDrawString()
-
-            if x == minX then
-                c = "|" .. c
-            end
-            if x == maxX then
-                c = c .. "|"
-            end
-            gridString = gridString .. c
-        end
-        gridString = gridString .. "\n"
-    end
-    return gridString
-end
-
----@param z number
----@return string
-function TNAV.GridMap:GetFullGridString(z)
-    return self:GetGridStringByBoundary(z, self.boundaries)
-end
-
----@param centerPos GVector
----@param sizeX number
----@param sizeY? number
----@return string gridString
-function TNAV.GridMap:GetCenteredGridString(centerPos, sizeX, sizeY)
-    sizeY = sizeY or sizeX
-    local boundaries = {
-        x = {
-            min = centerPos.x - math.floor(sizeX / 2),
-            max = centerPos.x + math.ceil(sizeX / 2)
-        },
-        y = {
-            min = centerPos.y - math.floor(sizeY / 2),
-            max = centerPos.y + math.ceil(sizeY / 2)
-        }
-    }
-    return self:GetGridStringByBoundary(centerPos.z, boundaries)
-end
-
-function TNAV.GridMap:Log(txt)
-    if self.logger then
-        self.logger:Log(txt)
-    end
-end
-function TNAV.GridMap:FLog(...)
-    if self.logger then
-        self.logger:FLog(...)
-    end
-end
-
-function TNAV.GridMap:IncreaseGridSize(incX, incY, incZ)
-    self:Log("Increasing Grid Size..")
-    for x = self.boundaries.x.min - incX, self.boundaries.x.max + incX do
-        if not MUtil:InRange(x, self.boundaries.x.min, self.boundaries.x.max) then
-            for y = self.boundaries.y.min - incY, self.boundaries.y.max + incY do
-                if not MUtil:InRange(y, self.boundaries.y.min, self.boundaries.y.max) then
-                    for z = self.boundaries.z.min - incZ, self.boundaries.z.max + incZ do
-                        if not MUtil:InRange(z, self.boundaries.z.min, self.boundaries.z.max) then
-                            self:GetGridNode(GVector(x, y, z))
-                        end
-                    end
-                end
-            end
-        end
-    end
-    self:Log("Increased")
-end
-
----@param gridNode GTurtle.TNAV.GridNode
----@param flat? boolean
----@param filterFunc fun(gridNode: GTurtle.TNAV.GridNode) : boolean
-function TNAV.GridMap:GetNeighborsOf(gridNode, flat, filterFunc)
-    ---@type GTurtle.TNAV.GridNode[]
-    local neighbors = {}
-
-    table.insert(neighbors, self:GetGridNode(GVector(gridNode.pos.x + 1, gridNode.pos.y, gridNode.pos.z)))
-    table.insert(neighbors, self:GetGridNode(GVector(gridNode.pos.x - 1, gridNode.pos.y, gridNode.pos.z)))
-    table.insert(neighbors, self:GetGridNode(GVector(gridNode.pos.x, gridNode.pos.y + 1, gridNode.pos.z)))
-    table.insert(neighbors, self:GetGridNode(GVector(gridNode.pos.x, gridNode.pos.y - 1, gridNode.pos.z)))
-    if not flat then
-        table.insert(neighbors, self:GetGridNode(GVector(gridNode.pos.x, gridNode.pos.y, gridNode.pos.z + 1)))
-        table.insert(neighbors, self:GetGridNode(GVector(gridNode.pos.x, gridNode.pos.y, gridNode.pos.z - 1)))
-    end
-
-    if filterFunc then
-        neighbors =
-            TUtil:Filter(
-            neighbors,
-            function(gridNode)
-                return filterFunc(gridNode)
-            end
-        )
-    end
-
-    return neighbors
-end
-
----@class GTurtle.TNAV.GridArea.Options
----@field nodeList GTurtle.TNAV.GridNode[]
----@field gridMap GTurtle.TNAV.GridMap
-
----@class GTurtle.TNAV.GridArea
----@overload fun(options: GTurtle.TNAV.GridArea.Options) : GTurtle.TNAV.GridArea
-TNAV.GridArea = Object:extend()
-
----@param options GTurtle.TNAV.GridArea.Options
-function TNAV.GridArea:new(options)
-    self.gridMap = options.gridMap
-    self.nodeList = options.nodeList
-    self.boundaries = {
-        x = {min = 0, max = 0},
-        y = {min = 0, max = 0},
-        z = {min = 0, max = 0}
-    }
-
-    for _, gridNode in ipairs(self.nodeList) do
-        self.boundaries.x.min = math.min(self.boundaries.x.min, gridNode.pos.x)
-        self.boundaries.y.min = math.min(self.boundaries.y.min, gridNode.pos.y)
-        self.boundaries.z.min = math.min(self.boundaries.z.min, gridNode.pos.z)
-
-        self.boundaries.x.max = math.max(self.boundaries.x.max, gridNode.pos.x)
-        self.boundaries.y.max = math.max(self.boundaries.y.max, gridNode.pos.y)
-        self.boundaries.z.max = math.max(self.boundaries.z.max, gridNode.pos.z)
-    end
-
-    self.sizeX = self.boundaries.x.max - self.boundaries.x.min
-    self.sizeY = self.boundaries.y.max - self.boundaries.y.min
-    self.sizeZ = self.boundaries.z.max - self.boundaries.z.min
-end
-
----@param z number? optional Z to get 4 corners
----@return GTurtle.TNAV.GridNode[]
-function TNAV.GridArea:GetCorners(z)
-    if z then
-        return {
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.min, z)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.max, z)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.max, z)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.min, z))
-        }
-    else
-        return {
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.min, self.boundaries.z.min)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.max, self.boundaries.z.max)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.min, self.boundaries.z.max)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.max, self.boundaries.z.min)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.max, self.boundaries.z.max)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.min, self.boundaries.z.min)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.min, self.boundaries.z.max)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.max, self.boundaries.z.min))
-        }
-    end
-end
-
-function TNAV.GridArea:IsEmpty()
-    for _, gridNode in ipairs(self.nodeList) do
-        if not gridNode:IsEmpty() then
-            return false
-        end
-    end
-    return true
-end
-
-function TNAV.GridArea:IsUnknown()
-    for _, gridNode in ipairs(self.nodeList) do
-        if gridNode:IsUnknown() then
-            return true
-        end
-    end
-    return false
-end
-
----@class GTurtle.TNAV.Path.Options
----@field initGN GTurtle.TNAV.GridNode
----@field goalGN GTurtle.TNAV.GridNode
----@field nodeList GTurtle.TNAV.GridNode[]
-
----@class GTurtle.TNAV.Path : Object
----@overload fun(options: GTurtle.TNAV.Path.Options) : GTurtle.TNAV.Path
+---@class TNAV.Path : Object
+---@overload fun(options: TNAV.Path.Options) : TNAV.Path
 TNAV.Path = Object:extend()
 
----@param options GTurtle.TNAV.Path.Options
+---@param options TNAV.Path.Options
 function TNAV.Path:new(options)
     options = options or {}
     self.nodeList = options.nodeList or {}
@@ -549,8 +71,8 @@ function TNAV.Path:new(options)
     self.goalGN = options.goalGN
 end
 
----@param currentGN GTurtle.TNAV.GridNode
----@return GTurtle.TNAV.GridNode?
+---@param currentGN GNAV.GridNode
+---@return GNAV.GridNode?
 function TNAV.Path:GetNextNode(currentGN)
     local _, index =
         TUtil:Find(
@@ -567,7 +89,7 @@ function TNAV.Path:GetNextNode(currentGN)
     return self.nodeList[index + 1]
 end
 
----@param gridNode GTurtle.TNAV.GridNode
+---@param gridNode GNAV.GridNode
 function TNAV.Path:IsOnPath(gridNode)
     local pathNode =
         TUtil:Find(
@@ -579,7 +101,7 @@ function TNAV.Path:IsOnPath(gridNode)
     return pathNode ~= nil
 end
 
----@param gridNode GTurtle.TNAV.GridNode
+---@param gridNode GNAV.GridNode
 function TNAV.Path:IsGoal(gridNode)
     local goalNode = self.nodeList[#self.nodeList]
     if not goalNode then
@@ -597,20 +119,20 @@ function TNAV.Path:__tostring()
     return txt
 end
 
----@class GTurtle.TNAV.GridNav.Options
+---@class TNAV.GridNav.Options
 ---@field gTurtle GTurtle.Base
----@field initialHead? GTurtle.TNAV.HEAD
+---@field initialHead? GNAV.HEAD
 ---@field avoidUnknown? boolean
 ---@field avoidAllBlocks? boolean true: avoid all blocks, false: only avoid blocks in blacklist
 ---@field blockBlacklist? string[] -- used if avoidBlocks is false
 ---@field gridFile? string
 ---@field fenceCorners? GVector[]
 
----@class GTurtle.TNAV.GridNav : Object
----@overload fun(options: GTurtle.TNAV.GridNav.Options) : GTurtle.TNAV.GridNav
+---@class TNAV.GridNav : Object
+---@overload fun(options: TNAV.GridNav.Options) : TNAV.GridNav
 TNAV.GridNav = Object:extend()
 
----@param options GTurtle.TNAV.GridNav.Options
+---@param options TNAV.GridNav.Options
 function TNAV.GridNav:new(options)
     options = options or {}
     self.gTurtle = options.gTurtle
@@ -622,7 +144,7 @@ function TNAV.GridNav:new(options)
     self.gpsEnabled = gpsPos ~= nil
 
     self.gridMap =
-        TNAV.GridMap(
+        GNAV.GridMap(
         {
             logger = self.gTurtle,
             saveFile = self.gridFile,
@@ -647,7 +169,7 @@ function TNAV.GridNav:new(options)
     self.currentGN = self.initGN
 
     self.avoidUnknown = options.avoidUnknown or false
-    ---@type GTurtle.TNAV.Path?
+    ---@type TNAV.Path?
     self.activePath = nil
 
     if not options.initialHead and self.gpsEnabled then
@@ -657,7 +179,7 @@ function TNAV.GridNav:new(options)
             return false
         end
     else
-        self.head = options.initialHead or TNAV.HEAD.N
+        self.head = options.initialHead or GNAV.HEAD.N
     end
 
     self.gTurtle:Log(f("Initial Heading: %s", self.head))
@@ -742,31 +264,31 @@ end
 function TNAV.GridNav:OnTurn(turn)
     local h = self.head
     if turn == TNAV.TURN.L then
-        if h == TNAV.HEAD.N then
-            self.head = TNAV.HEAD.W
-        elseif h == TNAV.HEAD.W then
-            self.head = TNAV.HEAD.S
-        elseif h == TNAV.HEAD.S then
-            self.head = TNAV.HEAD.E
-        elseif h == TNAV.HEAD.E then
-            self.head = TNAV.HEAD.N
+        if h == GNAV.HEAD.N then
+            self.head = GNAV.HEAD.W
+        elseif h == GNAV.HEAD.W then
+            self.head = GNAV.HEAD.S
+        elseif h == GNAV.HEAD.S then
+            self.head = GNAV.HEAD.E
+        elseif h == GNAV.HEAD.E then
+            self.head = GNAV.HEAD.N
         end
     elseif turn == TNAV.TURN.R then
-        if h == TNAV.HEAD.N then
-            self.head = TNAV.HEAD.E
-        elseif h == TNAV.HEAD.E then
-            self.head = TNAV.HEAD.S
-        elseif h == TNAV.HEAD.S then
-            self.head = TNAV.HEAD.W
-        elseif h == TNAV.HEAD.W then
-            self.head = TNAV.HEAD.N
+        if h == GNAV.HEAD.N then
+            self.head = GNAV.HEAD.E
+        elseif h == GNAV.HEAD.E then
+            self.head = GNAV.HEAD.S
+        elseif h == GNAV.HEAD.S then
+            self.head = GNAV.HEAD.W
+        elseif h == GNAV.HEAD.W then
+            self.head = GNAV.HEAD.N
         end
     end
 
     self:UpdateSurroundings()
 end
 
----@param dir GTurtle.TNAV.MOVE
+---@param dir GNAV.DIR
 function TNAV.GridNav:OnMove(dir)
     self.currentGN = self.currentGN:GetRelativeNode(self.head, dir)
     self.currentGN.visited = true
@@ -801,8 +323,8 @@ function TNAV.GridNav:UpdateSurroundings()
 end
 
 ---@param flat boolean? ignores neighbors of different Z
----@param filterFunc? fun(gn: GTurtle.TNAV.GridNode): boolean
----@return GTurtle.TNAV.GridNode[]
+---@param filterFunc? fun(gn: GNAV.GridNode): boolean
+---@return GNAV.GridNode[]
 function TNAV.GridNav:GetNeighbors(flat, filterFunc)
     return self.gridMap:GetNeighborsOf(self.currentGN, flat, filterFunc)
 end
@@ -811,9 +333,9 @@ end
 
 --- Reconstruct the path from start to goal
 --- Yes it uses table refs as keys *_*
----@param came_from table<GTurtle.TNAV.GridNode, GTurtle.TNAV.GridNode>
----@param current GTurtle.TNAV.GridNode
----@return GTurtle.TNAV.Path path
+---@param came_from table<GNAV.GridNode, GNAV.GridNode>
+---@param current GNAV.GridNode
+---@return TNAV.Path path
 function TNAV.GridNav:ReconstructPathNodeList(came_from, current)
     local nodeList = {}
     while current do
@@ -824,11 +346,11 @@ function TNAV.GridNav:ReconstructPathNodeList(came_from, current)
 end
 
 -- Get valid neighbors in 3D space - Used in A*
----@param gridNode GTurtle.TNAV.GridNode
+---@param gridNode GNAV.GridNode
 ---@param flat? boolean
----@return GTurtle.TNAV.GridNode[]
+---@return GNAV.GridNode[]
 function TNAV.GridNav:GetValidPathNeighbors(gridNode, flat)
-    ---@type GTurtle.TNAV.GridNode[]
+    ---@type GNAV.GridNode[]
     local neighbors = {}
 
     neighbors =
@@ -863,14 +385,14 @@ function TNAV.GridNav:GetValidPathNeighbors(gridNode, flat)
 end
 
 --- A* algorithm
----@param startGN GTurtle.TNAV.GridNode
----@param goalGN GTurtle.TNAV.GridNode
+---@param startGN GNAV.GridNode
+---@param goalGN GNAV.GridNode
 ---@param flat? boolean
----@return GTurtle.TNAV.Path? path
+---@return TNAV.Path? path
 function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
     self.gTurtle:FLog("Calculating Path: %s -> %s", startGN, goalGN)
 
-    ---@type GTurtle.TNAV.GridNode[]
+    ---@type GNAV.GridNode[]
     local openSet = {startGN}
     local cameFromGN = {}
 
@@ -923,7 +445,7 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
                 return GetFScore(aGN) < GetFScore(bGN)
             end
         )
-        ---@type GTurtle.TNAV.GridNode
+        ---@type GNAV.GridNode
         local currentGN = table.remove(openSet, 1)
 
         -- If goal is reached
@@ -962,7 +484,7 @@ end
 
 ---@param goalPos GVector
 ---@param flat? boolean
----@return GTurtle.TNAV.Path? path
+---@return TNAV.Path? path
 function TNAV.GridNav:CalculatePathToPosition(goalPos, flat)
     local goalGN = self.gridMap:GetGridNode(goalPos)
 
@@ -973,12 +495,12 @@ function TNAV.GridNav:CalculatePathToPosition(goalPos, flat)
     return self:CalculatePath(self.currentGN, goalGN, flat)
 end
 
----@param path GTurtle.TNAV.Path
+---@param path TNAV.Path
 function TNAV.GridNav:SetActivePath(path)
     self.activePath = path
 end
 
----@return (GTurtle.TNAV.MOVE | GTurtle.TNAV.HEAD | nil) move?
+---@return (GNAV.DIR | GNAV.HEAD | nil) move?
 ---@return boolean? isGoal
 function TNAV.GridNav:GetNextMoveAlongPath()
     self.gTurtle:Log("GetNextMoveAlongPath")
@@ -1014,12 +536,12 @@ function TNAV.GridNav:GetNextMoveAlongPath()
         self.gTurtle:FLog("- %s -> %s", currentGN, nextGN)
 
         -- if the next pos is up or below directly return it as next move (no heading required)
-        if requiredHead == TNAV.MOVE.U or requiredHead == TNAV.MOVE.D then
+        if requiredHead == GNAV.DIR.U or requiredHead == GNAV.DIR.D then
             return requiredHead
         end
 
         -- otherwise forward movement is sufficient
-        return TNAV.MOVE.F
+        return GNAV.DIR.F
     end
 
     self.gTurtle:Log("- Could not determine next move on active path!")

@@ -24,12 +24,12 @@ GTurtle.TYPES = {
 ---@field minimumFuel? number
 ---@field term? table
 ---@field visualizeGridOnMove? boolean
----@field initialHead? GTurtle.TNAV.HEAD
+---@field initialHead? GNAV.HEAD
 ---@field avoidUnknown? boolean
 ---@field avoidAllBlocks? boolean otherwise the turtle will dig its way
 ---@field digBlacklist? string[] if not all blocks are avoided it uses the digBlacklist
 ---@field cacheGrid? boolean
----@field fenceCorners? Vector[]
+---@field fenceCorners? GVector[]
 
 ---@class GTurtle.Base : GState.StateMachine
 ---@overload fun(options: GTurtle.Base.Options) : GTurtle.Base
@@ -83,7 +83,7 @@ function GTurtle.Base:new(options)
         self:Log(f("Using GPS Position: %s", tostring(self.tnav.currentGN.pos)))
     end
 
-    if not self.tnav.head then
+    if not self.GNAV.HEAD then
         error("Turtle not able to determine initial heading")
     end
 
@@ -261,7 +261,7 @@ function GTurtle.Base:Refuel()
     return self.minimumFuel <= fuel
 end
 
----@param dir GTurtle.TNAV.MOVE
+---@param dir GNAV.DIR
 ---@return boolean success
 ---@return string? errormsg
 function GTurtle.Base:Move(dir)
@@ -291,7 +291,7 @@ function GTurtle.Base:Move(dir)
     end
 end
 
----@param dir GTurtle.TNAV.MOVE
+---@param dir GNAV.DIR
 function GTurtle.Base:MoveUntilBlocked(dir)
     local blocked
     repeat
@@ -354,7 +354,7 @@ function GTurtle.Base:IsBlockBlacklistedForDigging(blockData)
 end
 
 --- U | D | F
----@param dir GTurtle.TNAV.MOVE
+---@param dir GNAV.DIR
 ---@param side? "left" | "right"
 ---@return boolean success
 ---@return string? err
@@ -387,7 +387,7 @@ function GTurtle.Base:Dig(dir, side)
     end
 end
 
----@return table<GTurtle.TNAV.MOVE, table?>
+---@return table<GNAV.DIR, table?>
 function GTurtle.Base:ScanBlocks()
     local scanData = {}
     local isF, dataF = self:Scan(TNav.MOVE.F)
@@ -399,7 +399,7 @@ function GTurtle.Base:ScanBlocks()
     return scanData
 end
 
----@param dir GTurtle.TNAV.MOVE
+---@param dir GNAV.DIR
 ---@return boolean isBlock
 ---@return table? blockData
 function GTurtle.Base:Scan(dir)
@@ -422,53 +422,53 @@ function GTurtle.Base:VisualizeGrid()
     print(gridString)
 end
 
----@param reqHead GTurtle.TNAV.HEAD
+---@param reqHead GNAV.HEAD
 function GTurtle.Base:TurnToHead(reqHead)
-    local head = self.tnav.head
+    local head = self.GNAV.HEAD
     if head == reqHead then
         return
     end
 
-    if reqHead == TNav.HEAD.N then
-        if head == TNav.HEAD.W then
+    if reqHead == GNAV.HEAD.N then
+        if head == GNAV.HEAD.W then
             self:Turn("R")
-        elseif head == TNav.HEAD.E then
+        elseif head == GNAV.HEAD.E then
             self:Turn("L")
-        elseif head == TNav.HEAD.S then
+        elseif head == GNAV.HEAD.S then
             self:Turn("R")
             self:Turn("R")
         end
-    elseif reqHead == TNav.HEAD.S then
-        if head == TNav.HEAD.W then
+    elseif reqHead == GNAV.HEAD.S then
+        if head == GNAV.HEAD.W then
             self:Turn("L")
-        elseif head == TNav.HEAD.E then
+        elseif head == GNAV.HEAD.E then
             self:Turn("R")
-        elseif head == TNav.HEAD.N then
+        elseif head == GNAV.HEAD.N then
             self:Turn("R")
             self:Turn("R")
         end
-    elseif reqHead == TNav.HEAD.W then
-        if head == TNav.HEAD.N then
+    elseif reqHead == GNAV.HEAD.W then
+        if head == GNAV.HEAD.N then
             self:Turn("L")
-        elseif head == TNav.HEAD.S then
+        elseif head == GNAV.HEAD.S then
             self:Turn("R")
-        elseif head == TNav.HEAD.E then
+        elseif head == GNAV.HEAD.E then
             self:Turn("R")
             self:Turn("R")
         end
-    elseif reqHead == TNav.HEAD.E then
-        if head == TNav.HEAD.N then
+    elseif reqHead == GNAV.HEAD.E then
+        if head == GNAV.HEAD.N then
             self:Turn("R")
-        elseif head == TNav.HEAD.S then
+        elseif head == GNAV.HEAD.S then
             self:Turn("L")
-        elseif head == TNav.HEAD.W then
+        elseif head == GNAV.HEAD.W then
             self:Turn("R")
             self:Turn("R")
         end
     end
 end
 
----@param goalPos Vector
+---@param goalPos GVector
 ---@param flat? boolean only allow navigation in current Z
 function GTurtle.Base:NavigateToPosition(goalPos, flat)
     self:FLog("Trying to navigate to position: %s", tostring(goalPos))
@@ -490,7 +490,7 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
         repeat
             local nextMove, isGoal = self.tnav:GetNextMoveAlongPath()
             if nextMove then
-                if TNav.HEAD[nextMove] then
+                if GNAV.HEAD[nextMove] then
                     -- dig first if needed and allowed
                     self:TurnToHead(nextMove)
                 else

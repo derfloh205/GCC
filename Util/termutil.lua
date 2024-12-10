@@ -1,5 +1,5 @@
 local SUtil = require("GCC/Util/sutil")
-local GVector = require("GCC/Util/gvector")
+local GVector = require("GCC/GNav/gvector")
 local f = string.format
 --- Terminal Utils
 ---@class TermUtil

@@ -1,7 +1,7 @@
 local GLogAble = require("GCC/Util/glog")
 local GNet = require("GCC/GNet/gnet")
 local TUtil = require("GCC/Util/tutil")
-local VUtil = require("GCC/Util/vutil")
+local GVector = require("GCC/GNav/gvector")
 local TNav = require("GCC/GTurtle/tnav")
 local f = string.format
 
@@ -10,7 +10,7 @@ local TurtleNet = {}
 
 ---@class TurtleNet.TurtleHost.TurtleData
 ---@field id number
----@field pos Vector
+---@field pos GVector
 
 ---@class TurtleNet.TurtleHost.Options : GNet.Server.Options
 
@@ -79,7 +79,7 @@ function TurtleNet.TurtleHost:new(options)
         logger = self,
         gridNodeMapFunc = function(gridNode)
             for id, turtleData in pairs(self.turtleData) do
-                if VUtil:Equal(turtleData.pos, gridNode.pos) then
+                if turtleData.pos:Equal(gridNode.pos) then
                     return f("[%d]", id)
                 end
             end
@@ -90,12 +90,12 @@ function TurtleNet.TurtleHost:new(options)
 end
 
 ---@param id number
----@param serializedPos Vector
-function TurtleNet.TurtleHost:OnTurtleHostSearch(id, serializedPos)
+---@param serializedGV GVector.Serialized
+function TurtleNet.TurtleHost:OnTurtleHostSearch(id, serializedGV)
     self:Log(f("Received Host Search Broadcast from [%d]", id))
     self.turtleData[id] = {
         id = id,
-        pos = vector.new(serializedPos.x, serializedPos.y, serializedPos.z)
+        pos = GVector:Deserialize(serializedGV)
     }
 
     rednet.send(id, "Host Search Response", TurtleNet.TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
@@ -115,17 +115,19 @@ function TurtleNet.TurtleHost:OnReplace(id, msg)
     print(msg)
 end
 
-function TurtleNet.TurtleHost:OnTurtlePosUpdate(id, serializedPos)
+---@param id number
+---@param serializedGV GVector.Serialized
+function TurtleNet.TurtleHost:OnTurtlePosUpdate(id, serializedGV)
     self:FLog("Received TURTLE_POS_UPDATE from [%d]", id)
     local turtleData = self.turtleData[id]
     if not turtleData then
         return
     end
-    turtleData.pos = vector.new(serializedPos.x, serializedPos.y, serializedPos.z)
+    turtleData.pos = GVector:Deserialize(serializedGV)
 end
 
 ---@param turtleID number
----@return Vector? pos
+---@return GVector? pos
 function TurtleNet.TurtleHost:GetTurtlePos(turtleID)
     local turtleData = self.turtleData[turtleID]
     if turtleData then
@@ -146,10 +148,10 @@ end
 ---@param msg string
 function TurtleNet.TurtleHost:OnMapUpdate(id, msg)
     self:FLog("Received MAP_UPDATE from [%d]", id)
-    local serializedGridMap = msg --[[@as GTurtle.TNAV.GridMap]]
+    local serializedGridMap = msg --[[@as GNAV.GridMap]]
     self:FLog("Boundary Test: X %d / %d", serializedGridMap.boundaries.x.min, serializedGridMap.boundaries.x.max)
 
-    self.gridMap:LoadSerializedData(serializedGridMap)
+    self.gridMap:DeserializeGrid(serializedGridMap)
 
     self:UpdateGridMapDisplay(id)
 end
