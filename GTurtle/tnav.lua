@@ -9,7 +9,7 @@ local f = string.format
 local TNAV = {}
 
 TNAV.CALCULATIONS_PER_YIELD = 150
-TNAV.MAX_CALCULATIONS = 1000
+TNAV.MAX_CALCULATIONS = 500
 
 --- Possible Turn Directions
 ---@enum GTurtle.TNAV.TURN
