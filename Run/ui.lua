@@ -16,7 +16,8 @@ local testButton =
     sizeX = 9,
     sizeY = 2,
     label = "Hello One",
-    backgroundColor = colors.write,
+    backgroundColor = colors.white,
+    textColor = colors.red,
     clickCallback = function(self)
         term.native().write("ONE")
     end
@@ -32,6 +33,7 @@ local testButton2 =
     sizeY = 2,
     label = "Hello Two",
     backgroundColor = colors.green,
+    textColor = colors.magenta,
     clickCallback = function(self)
         term.native().write("TWO")
     end
