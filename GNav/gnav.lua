@@ -5,6 +5,15 @@ local MUtil = require("GCC/Util/mutil")
 local CONST = require("GCC/Util/const")
 local f = string.format
 
+---@class GNAV.Boundary.Range
+---@field min number
+---@field max number
+
+---@class GNAV.Boundary
+---@field x GNAV.Boundary.Range
+---@field y GNAV.Boundary.Range
+---@field z GNAV.Boundary.Range
+
 ---@class GNAV
 local GNAV = {}
 
@@ -187,6 +196,7 @@ GNAV.GridMap = Object:extend()
 function GNAV.GridMap:new(options)
     options = options or {}
     self.logger = options.logger
+    ---@type GNAV.Boundary
     self.boundaries = nil
     -- 3D Array
     ---@type table<number, table<number, table<number, GNAV.GridNode>>>
@@ -451,6 +461,7 @@ GNAV.GridArea = Object:extend()
 function GNAV.GridArea:new(options)
     self.gridMap = options.gridMap
     self.nodeList = options.nodeList
+    ---@type GNAV.Boundary
     self.boundaries = {
         x = {min = 0, max = 0},
         y = {min = 0, max = 0},
