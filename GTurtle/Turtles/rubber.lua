@@ -183,7 +183,7 @@ end
 ---@return GNAV.GridNode? candidateGN
 ---@return GNAV.GridArea? candidateArea
 function RubberTurtle:GetTreePositionCandidate()
-    local requiredRadius = 1
+    local requiredRadius = 3
     local z = self.tnav.currentGN.pos.z
     self.invalidTreeGNs = self.invalidTreeGNs or {}
 
