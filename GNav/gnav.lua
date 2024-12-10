@@ -415,6 +415,30 @@ function GNAV.GridMap:GetNeighborsOf(gridNode, flat, filterFunc)
     return neighbors
 end
 
+--- iterates until something is returned
+---@generic R
+---@param iterationFunc fun(gridNode: GNAV.GridNode) : R | nil
+---@param z number? optional z coord
+function GNAV.GridMap:IterateGridNodes(iterationFunc, z)
+    local minX = self.boundaries.x.min
+    local minY = self.boundaries.y.min
+    local minZ = z or self.boundaries.z.min
+    local maxX = self.boundaries.x.max
+    local maxY = self.boundaries.y.max
+    local maxZ = z or self.boundaries.z.max
+
+    for x = minX, maxX do
+        for y = minY, maxY do
+            for z = minZ, maxZ do
+                local r = iterationFunc(self:GetGridNode(GVector(x, y, z)))
+                if r then
+                    return r
+                end
+            end
+        end
+    end
+end
+
 ---@class GNAV.GridArea.Options
 ---@field nodeList GNAV.GridNode[]
 ---@field gridMap GNAV.GridMap

@@ -172,11 +172,9 @@ function RubberTurtle:GetTreePositionCandidate()
     local maxGridSize = 15
     self.invalidTreeGNs = self.invalidTreeGNs or {}
 
-    local candidateGN, candidateArea
-
-    for x, xData in pairs(self.tnav.gridMap.grid) do
-        for y, _ in pairs(xData) do
-            local gridNode = self.tnav.gridMap:GetGridNode(GVector(x, y, z))
+    local result =
+        self.tnav.gridMap:IterateGridNodes(
+        function(gridNode)
             if gridNode:IsEmpty() then
                 self:FLog("Tree Pos? %s", gridNode)
                 local inFence = self.tnav.geoFence and self.tnav.geoFence:IsWithin(gridNode)
@@ -188,25 +186,23 @@ function RubberTurtle:GetTreePositionCandidate()
                     local areaInFence = self.tnav.geoFence:IsAreaWithin(area)
 
                     if areaEmpty and areaInFence then
-                        return gridNode, area
+                        return {gridNode = gridNode, area = area}
                     else
                         table.insert(self.invalidTreeGNs, gridNode)
                     end
                     self:FLog("Invalid Area: %s E: %s F: %s", gridNode, areaEmpty, areaInFence)
                 end
             end
-        end
-        --sleep(0)
-    end
-
-    --self:Log("Could not find empty area, Increasing Grid")
-    --self.tnav.gridMap:IncreaseGridSize(1, 1, 0)
+        end,
+        z
+    )
 
     local gridX, gridY = self.tnav.gridMap:GetGridSize()
-    --candidateGN --or (gridX > maxGridSize and gridY > maxGridSize)
 
-    if not candidateGN then
+    if not result.gridNode then
         self:FLog("Could not find candidate for tree position (Grid Size: %d %d)", gridX, gridY)
+    else
+        return result.gridNode, result.area
     end
 end
 
