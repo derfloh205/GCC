@@ -1,5 +1,6 @@
 local TUtil = require("GCC/Util/tutil")
 local TNav = require("GCC/GTurtle/tnav")
+local GNAV = require("GCC/Gnav/gnav")
 local TNet = require("GCC/GTurtle/tnet")
 local GState = require("GCC/Util/gstate")
 local f = string.format
@@ -83,7 +84,7 @@ function GTurtle.Base:new(options)
         self:Log(f("Using GPS Position: %s", tostring(self.tnav.currentGN.pos)))
     end
 
-    if not self.GNAV.HEAD then
+    if not self.tnav.head then
         error("Turtle not able to determine initial heading")
     end
 
@@ -267,13 +268,13 @@ end
 function GTurtle.Base:Move(dir)
     self:FLog("Move: %s", dir)
     local moved, err
-    if dir == TNav.MOVE.F then
+    if dir == GNAV.DIR.F then
         moved, err = turtle.forward()
-    elseif dir == TNav.MOVE.B then
+    elseif dir == GNAV.DIR.B then
         moved, err = turtle.back()
-    elseif dir == TNav.MOVE.U then
+    elseif dir == GNAV.DIR.U then
         moved, err = turtle.up()
-    elseif dir == TNav.MOVE.D then
+    elseif dir == GNAV.DIR.D then
         moved, err = turtle.down()
     end
 
@@ -369,11 +370,11 @@ function GTurtle.Base:Dig(dir, side)
         return false, f("Not Digging: %s", (digBlock and digBlock.name))
     end
 
-    if dir == TNav.MOVE.F then
+    if dir == GNAV.DIR.F then
         success, err = turtle.dig(side)
-    elseif dir == TNav.MOVE.U then
+    elseif dir == GNAV.DIR.U then
         success, err = turtle.digUp(side)
-    elseif dir == TNav.MOVE.D then
+    elseif dir == GNAV.DIR.D then
         success, err = turtle.digDown(side)
     end
 
@@ -390,12 +391,12 @@ end
 ---@return table<GNAV.DIR, table?>
 function GTurtle.Base:ScanBlocks()
     local scanData = {}
-    local isF, dataF = self:Scan(TNav.MOVE.F)
-    local isU, dataU = self:Scan(TNav.MOVE.U)
-    local isD, dataD = self:Scan(TNav.MOVE.D)
-    scanData[TNav.MOVE.F] = isF and dataF
-    scanData[TNav.MOVE.U] = isU and dataU
-    scanData[TNav.MOVE.D] = isD and dataD
+    local isF, dataF = self:Scan(GNAV.DIR.F)
+    local isU, dataU = self:Scan(GNAV.DIR.U)
+    local isD, dataD = self:Scan(GNAV.DIR.D)
+    scanData[GNAV.DIR.F] = isF and dataF
+    scanData[GNAV.DIR.U] = isU and dataU
+    scanData[GNAV.DIR.D] = isD and dataD
     return scanData
 end
 
@@ -403,11 +404,11 @@ end
 ---@return boolean isBlock
 ---@return table? blockData
 function GTurtle.Base:Scan(dir)
-    if dir == TNav.MOVE.F then
+    if dir == GNAV.DIR.F then
         return turtle.inspect()
-    elseif dir == TNav.MOVE.U then
+    elseif dir == GNAV.DIR.U then
         return turtle.inspectUp()
-    elseif dir == TNav.MOVE.D then
+    elseif dir == GNAV.DIR.D then
         return turtle.inspectDown()
     end
 
@@ -424,7 +425,7 @@ end
 
 ---@param reqHead GNAV.HEAD
 function GTurtle.Base:TurnToHead(reqHead)
-    local head = self.GNAV.HEAD
+    local head = self.tnav.head
     if head == reqHead then
         return
     end
