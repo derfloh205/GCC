@@ -146,7 +146,7 @@ function GNAV.GridNode:GetRelativeNode(head, dir)
         relVec = relVec:Mul(-1)
     end
 
-    return self.gridMap:GetGridNode(self.pos + relVec)
+    return self.gridMap:GetGridNode(self.pos:Add(relVec))
 end
 
 function GNAV.GridNode:__tostring()
