@@ -55,6 +55,17 @@ function TNAV.GeoFence:IsWithin(gridNode)
     return inX and inY and inZ
 end
 
+---@param area GNAV.GridArea
+---@return boolean isWithin
+function TNAV.GeoFence:IsAreaWithin(area)
+    return TUtil:Every(
+        area.nodeList,
+        function(gridNode)
+            return self:IsWithin(gridNode)
+        end
+    )
+end
+
 ---@class TNAV.Path.Options
 ---@field initGN GNAV.GridNode
 ---@field goalGN GNAV.GridNode

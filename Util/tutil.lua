@@ -90,4 +90,18 @@ function TUtil:Map(t, mapFunc, preserveKeys)
     return mapped
 end
 
+---@generic T
+---@generic K
+---@param t table<K, T> | T[]
+---@param conFunc fun(element: T, key: K) : boolean
+---@return boolean allTrue
+function TUtil:Every(t, conFunc)
+    for k, v in pairs(t) do
+        if not conFunc(v, k) then
+            return false
+        end
+    end
+    return true
+end
+
 return TUtil
