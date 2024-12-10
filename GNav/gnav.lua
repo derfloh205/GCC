@@ -9,13 +9,62 @@ local f = string.format
 ---@field min number
 ---@field max number
 
----@class GNAV.Boundary
----@field x GNAV.Boundary.Range
----@field y GNAV.Boundary.Range
----@field z GNAV.Boundary.Range
-
 ---@class GNAV
 local GNAV = {}
+
+---@class GNAV.Boundary : Object
+---@overload fun() : GNAV.Boundary
+GNAV.Boundary = Object:extend()
+
+function GNAV.Boundary:new()
+    ---@type  GNAV.Boundary.Range
+    self.x = nil
+    ---@type  GNAV.Boundary.Range
+    self.y = nil
+    ---@type  GNAV.Boundary.Range
+    self.z = nil
+end
+
+function GNAV.Boundary:Update(gridNode)
+    self.x = self.x or {min = gridNode.pos.x, max = gridNode.pos.x}
+    self.y = self.y or {min = gridNode.pos.x, max = gridNode.pos.x}
+    self.z = self.z or {min = gridNode.pos.x, max = gridNode.pos.x}
+
+    self.x.min = math.min(self.x.min, gridNode.pos.x)
+    self.y.min = math.min(self.y.min, gridNode.pos.y)
+    self.z.min = math.min(self.z.min, gridNode.pos.z)
+
+    self.x.max = math.max(self.x.max, gridNode.pos.x)
+    self.y.max = math.max(self.y.max, gridNode.pos.y)
+    self.z.max = math.max(self.z.max, gridNode.pos.z)
+end
+
+---@return number sizeX
+---@return number sizeY
+---@return number sizeZ
+function GNAV.Boundary:GetSize()
+    local sizeX = self.x.max - self.x.min
+    local sizeY = self.y.max - self.y.min
+    local sizeZ = self.z.max - self.z.min
+    return sizeX, sizeY, sizeZ
+end
+
+function GNAV.Boundary:Serialize()
+    return {
+        x = {min = self.x.min, max = self.x.max},
+        y = {min = self.y.min, max = self.y.max},
+        z = {min = self.z.min, max = self.z.max}
+    }
+end
+
+---@return GNAV.Boundary
+function GNAV.Boundary:Deserialize(serialized)
+    local boundary = GNAV.Boundary
+    boundary.x = {min = serialized.x.min, max = serialized.x.max}
+    boundary.x = {min = serialized.y.min, max = serialized.y.max}
+    boundary.x = {min = serialized.z.min, max = serialized.z.max}
+    return boundary
+end
 
 --- Possible Look Directions
 ---@enum GNAV.HEAD
@@ -196,8 +245,7 @@ GNAV.GridMap = Object:extend()
 function GNAV.GridMap:new(options)
     options = options or {}
     self.logger = options.logger
-    ---@type GNAV.Boundary
-    self.boundaries = nil
+    self.boundary = GNAV.Boundary()
     -- 3D Array
     ---@type table<number, table<number, table<number, GNAV.GridNode>>>
     self.grid = {}
@@ -242,25 +290,6 @@ function GNAV.GridMap:WriteFile()
     saveFile.close()
 end
 
----@param gridNode GNAV.GridNode
-function GNAV.GridMap:UpdateBoundaries(gridNode)
-    -- init with gridNode positions
-    self.boundaries =
-        self.boundaries or
-        {
-            x = {max = gridNode.pos.x, min = gridNode.pos.x},
-            y = {max = gridNode.pos.y, min = gridNode.pos.y},
-            z = {max = gridNode.pos.z, min = gridNode.pos.z}
-        }
-    self.boundaries.x.min = math.min(self.boundaries.x.min, gridNode.pos.x)
-    self.boundaries.y.min = math.min(self.boundaries.y.min, gridNode.pos.y)
-    self.boundaries.z.min = math.min(self.boundaries.z.min, gridNode.pos.z)
-
-    self.boundaries.x.max = math.max(self.boundaries.x.max, gridNode.pos.x)
-    self.boundaries.y.max = math.max(self.boundaries.y.max, gridNode.pos.y)
-    self.boundaries.z.max = math.max(self.boundaries.z.max, gridNode.pos.z)
-end
-
 -- creates a new gridnode at pos or returns an existing one
 ---@param pos GVector
 ---@return GNAV.GridNode
@@ -280,7 +309,7 @@ function GNAV.GridMap:GetGridNode(pos)
         gridNode.unknown = true
         self.grid[x][y][z] = gridNode
     end
-    self:UpdateBoundaries(gridNode)
+    self.boundary:Update(gridNode)
     return gridNode
 end
 
@@ -307,21 +336,17 @@ end
 ---@return number y
 ---@return number z
 function GNAV.GridMap:GetGridSize()
-    local sizeX = self.boundaries.x.max - self.boundaries.x.min
-    local sizeY = self.boundaries.y.max - self.boundaries.y.min
-    local sizeZ = self.boundaries.z.max - self.boundaries.z.min
-
-    return sizeX, sizeY, sizeZ
+    return self.boundary:GetSize()
 end
 
 ---@param z number
----@param boundaries table
+---@param boundary GNAV.Boundary
 ---@return string gridString
-function GNAV.GridMap:GetGridStringByBoundary(z, boundaries)
-    local minX = boundaries.x.min
-    local minY = boundaries.y.min
-    local maxX = boundaries.x.max
-    local maxY = boundaries.y.max
+function GNAV.GridMap:GetGridStringByBoundary(z, boundary)
+    local minX = boundary.x.min
+    local minY = boundary.y.min
+    local maxX = boundary.x.max
+    local maxY = boundary.y.max
     local gridString = ""
 
     for y = minY, maxY do
@@ -345,7 +370,7 @@ end
 ---@param z number
 ---@return string
 function GNAV.GridMap:GetFullGridString(z)
-    return self:GetGridStringByBoundary(z, self.boundaries)
+    return self:GetGridStringByBoundary(z, self.boundary)
 end
 
 ---@param centerPos GVector
@@ -354,17 +379,16 @@ end
 ---@return string gridString
 function GNAV.GridMap:GetCenteredGridString(centerPos, sizeX, sizeY)
     sizeY = sizeY or sizeX
-    local boundaries = {
-        x = {
-            min = centerPos.x - math.floor(sizeX / 2),
-            max = centerPos.x + math.ceil(sizeX / 2)
-        },
-        y = {
-            min = centerPos.y - math.floor(sizeY / 2),
-            max = centerPos.y + math.ceil(sizeY / 2)
-        }
+    local centeredBoundary = GNAV.Boundary()
+    centeredBoundary.x = {
+        min = centerPos.x - math.floor(sizeX / 2),
+        max = centerPos.x + math.ceil(sizeX / 2)
     }
-    return self:GetGridStringByBoundary(centerPos.z, boundaries)
+    centeredBoundary.y = {
+        min = centerPos.y - math.floor(sizeY / 2),
+        max = centerPos.y + math.ceil(sizeY / 2)
+    }
+    return self:GetGridStringByBoundary(centerPos.z, centeredBoundary)
 end
 
 function GNAV.GridMap:Log(txt)
@@ -380,12 +404,12 @@ end
 
 function GNAV.GridMap:IncreaseGridSize(incX, incY, incZ)
     self:Log("Increasing Grid Size..")
-    for x = self.boundaries.x.min - incX, self.boundaries.x.max + incX do
-        if not MUtil:InRange(x, self.boundaries.x.min, self.boundaries.x.max) then
-            for y = self.boundaries.y.min - incY, self.boundaries.y.max + incY do
-                if not MUtil:InRange(y, self.boundaries.y.min, self.boundaries.y.max) then
-                    for z = self.boundaries.z.min - incZ, self.boundaries.z.max + incZ do
-                        if not MUtil:InRange(z, self.boundaries.z.min, self.boundaries.z.max) then
+    for x = self.boundary.x.min - incX, self.boundary.x.max + incX do
+        if not MUtil:InRange(x, self.boundary.x.min, self.boundary.x.max) then
+            for y = self.boundary.y.min - incY, self.boundary.y.max + incY do
+                if not MUtil:InRange(y, self.boundary.y.min, self.boundary.y.max) then
+                    for z = self.boundary.z.min - incZ, self.boundary.z.max + incZ do
+                        if not MUtil:InRange(z, self.boundary.z.min, self.boundary.z.max) then
                             self:GetGridNode(GVector(x, y, z))
                         end
                     end
@@ -430,12 +454,12 @@ end
 ---@param iterationFunc fun(gridNode: GNAV.GridNode) : R | nil
 ---@param z number? optional z coord
 function GNAV.GridMap:IterateGridNodes(iterationFunc, z)
-    local minX = self.boundaries.x.min
-    local minY = self.boundaries.y.min
-    local minZ = z or self.boundaries.z.min
-    local maxX = self.boundaries.x.max
-    local maxY = self.boundaries.y.max
-    local maxZ = z or self.boundaries.z.max
+    local minX = self.boundary.x.min
+    local minY = self.boundary.y.min
+    local minZ = z or self.boundary.z.min
+    local maxX = self.boundary.x.max
+    local maxY = self.boundary.y.max
+    local maxZ = z or self.boundary.z.max
 
     for x = minX, maxX do
         for y = minY, maxY do
@@ -461,26 +485,18 @@ GNAV.GridArea = Object:extend()
 function GNAV.GridArea:new(options)
     self.gridMap = options.gridMap
     self.nodeList = options.nodeList
-    ---@type GNAV.Boundary
-    self.boundaries = {
-        x = {min = 0, max = 0},
-        y = {min = 0, max = 0},
-        z = {min = 0, max = 0}
-    }
+    self.boundary = GNAV.Boundary
 
     for _, gridNode in ipairs(self.nodeList) do
-        self.boundaries.x.min = math.min(self.boundaries.x.min, gridNode.pos.x)
-        self.boundaries.y.min = math.min(self.boundaries.y.min, gridNode.pos.y)
-        self.boundaries.z.min = math.min(self.boundaries.z.min, gridNode.pos.z)
-
-        self.boundaries.x.max = math.max(self.boundaries.x.max, gridNode.pos.x)
-        self.boundaries.y.max = math.max(self.boundaries.y.max, gridNode.pos.y)
-        self.boundaries.z.max = math.max(self.boundaries.z.max, gridNode.pos.z)
+        self.boundary:Update(gridNode)
     end
+end
 
-    self.sizeX = self.boundaries.x.max - self.boundaries.x.min
-    self.sizeY = self.boundaries.y.max - self.boundaries.y.min
-    self.sizeZ = self.boundaries.z.max - self.boundaries.z.min
+---@return number sizeX
+---@return number sizeY
+---@return number sizeZ
+function GNAV.GridArea:GetSize()
+    return self.boundary:GetSize()
 end
 
 ---@param z number? optional Z to get 4 corners
@@ -488,21 +504,21 @@ end
 function GNAV.GridArea:GetCorners(z)
     if z then
         return {
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.min, z)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.max, z)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.max, z)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.min, z))
+            self.gridMap:GetGridNode(GVector(self.boundary.x.min, self.boundary.y.min, z)),
+            self.gridMap:GetGridNode(GVector(self.boundary.x.max, self.boundary.y.max, z)),
+            self.gridMap:GetGridNode(GVector(self.boundary.x.min, self.boundary.y.max, z)),
+            self.gridMap:GetGridNode(GVector(self.boundary.x.max, self.boundary.y.min, z))
         }
     else
         return {
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.min, self.boundaries.z.min)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.max, self.boundaries.z.max)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.min, self.boundaries.z.max)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.max, self.boundaries.z.min)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.min, self.boundaries.y.max, self.boundaries.z.max)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.min, self.boundaries.z.min)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.min, self.boundaries.z.max)),
-            self.gridMap:GetGridNode(GVector(self.boundaries.x.max, self.boundaries.y.max, self.boundaries.z.min))
+            self.gridMap:GetGridNode(GVector(self.boundary.x.min, self.boundary.y.min, self.boundary.z.min)),
+            self.gridMap:GetGridNode(GVector(self.boundary.x.max, self.boundary.y.max, self.boundary.z.max)),
+            self.gridMap:GetGridNode(GVector(self.boundary.x.min, self.boundary.y.min, self.boundary.z.max)),
+            self.gridMap:GetGridNode(GVector(self.boundary.x.min, self.boundary.y.max, self.boundary.z.min)),
+            self.gridMap:GetGridNode(GVector(self.boundary.x.min, self.boundary.y.max, self.boundary.z.max)),
+            self.gridMap:GetGridNode(GVector(self.boundary.x.max, self.boundary.y.min, self.boundary.z.min)),
+            self.gridMap:GetGridNode(GVector(self.boundary.x.max, self.boundary.y.min, self.boundary.z.max)),
+            self.gridMap:GetGridNode(GVector(self.boundary.x.max, self.boundary.y.max, self.boundary.z.min))
         }
     end
 end

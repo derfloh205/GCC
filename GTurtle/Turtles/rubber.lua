@@ -217,6 +217,7 @@ function RubberTurtle:EXPLORE_TREE_POSITIONS()
             table.insert(self.invalidTreeGNs, candidateGN)
             return
         end
+        self:Log("Arrived at Candidate, Navigate to corners")
         local areaCorners = candidateArea:GetCorners(candidateGN.pos.z)
         -- navigate to area corners to inspect
         for _, cornerGN in ipairs(areaCorners) do

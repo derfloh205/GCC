@@ -149,7 +149,7 @@ end
 function TNet.TurtleHost:OnMapUpdate(id, msg)
     self:FLog("Received MAP_UPDATE from [%d]", id)
     local serializedGridMap = msg --[[@as GNAV.GridMap]]
-    self:FLog("Boundary Test: X %d / %d", serializedGridMap.boundaries.x.min, serializedGridMap.boundaries.x.max)
+    self:FLog("Boundary Test: X %d / %d", serializedGridMap.boundary.x.min, serializedGridMap.boundary.x.max)
 
     self.gridMap:DeserializeGrid(serializedGridMap)
 
