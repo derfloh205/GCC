@@ -22,6 +22,7 @@ GUI.Clickable = Object:extend()
 ---@param options GUI.Clickable.Options
 function GUI.Clickable:new(options)
     options = options or {}
+    self.frontend = options.frontend
     self.window =
         GWindow {
         monitor = self.frontend.monitor,
@@ -31,7 +32,6 @@ function GUI.Clickable:new(options)
         x = options.posX,
         y = options.posY
     }
-    self.frontend = options.frontend
     self.clickCallback = options.clickCallback
     self.frontend:RegisterClickable(self)
 end
