@@ -231,8 +231,9 @@ function RubberTurtle:EXPLORE_TREE_POSITIONS()
         if candidateArea:IsEmpty() then
             self:FLog("Viable Tree Position Found: %s", candidateGN)
             table.insert(self.treeGNs, candidateGN)
-            local rtData = self:GetRTData()
+            local rtData = self.turtleData.data
             table.insert(rtData.treePositions, candidateGN.pos)
+            self:WriteTurtleData()
             self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
         end
     else

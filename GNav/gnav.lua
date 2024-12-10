@@ -25,6 +25,7 @@ function GNAV.Boundary:new()
     self.z = nil
 end
 
+---@param gridNode GNAV.GridNode
 function GNAV.Boundary:Update(gridNode)
     self.x = self.x or {min = gridNode.pos.x, max = gridNode.pos.x}
     self.y = self.y or {min = gridNode.pos.x, max = gridNode.pos.x}
@@ -37,6 +38,13 @@ function GNAV.Boundary:Update(gridNode)
     self.x.max = math.max(self.x.max, gridNode.pos.x)
     self.y.max = math.max(self.y.max, gridNode.pos.y)
     self.z.max = math.max(self.z.max, gridNode.pos.z)
+end
+
+---@param gnList GNAV.GridNode[]
+function GNAV.Boundary:UpdateFromList(gnList)
+    for _, gn in ipairs(gnList) do
+        self:Update(gn)
+    end
 end
 
 ---@return number sizeX
@@ -486,10 +494,7 @@ function GNAV.GridArea:new(options)
     self.gridMap = options.gridMap
     self.nodeList = options.nodeList
     self.boundary = GNAV.Boundary
-
-    for _, gridNode in ipairs(self.nodeList) do
-        self.boundary:Update(gridNode)
-    end
+    self.boundary:UpdateFromList(self.nodeList)
 end
 
 ---@return number sizeX
