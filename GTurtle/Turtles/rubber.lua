@@ -115,6 +115,22 @@ function RubberTurtle:INIT()
         end
     )
 
+    self:FLog("Moving to Produce Chest Position %s", self.produceGN)
+    -- go to start positions
+    local success = self:NavigateToPosition(self.produceGN.pos)
+    if not success then
+        error("Could not reach Produce Chest Position")
+        self:SetState(RubberTurtle.STATE.EXIT)
+        return
+    end
+    self:FLog("Moving to Resource Chest Position %s", self.produceGN)
+    success = self:NavigateToPosition(self.resourceGN.pos)
+    if not success then
+        error("Could not reach Resource Chest Position")
+        self:SetState(RubberTurtle.STATE.EXIT)
+        return
+    end
+
     self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
 end
 
@@ -169,7 +185,6 @@ end
 function RubberTurtle:GetTreePositionCandidate()
     local requiredRadius = 1
     local z = self.tnav.currentGN.pos.z
-    local maxGridSize = 10
     self.invalidTreeGNs = self.invalidTreeGNs or {}
 
     local result =
@@ -246,10 +261,10 @@ end
 
 function RubberTurtle:DECIDE_ACTION()
     -- if no rubber sapling in inventory - fetch from resource chest
-    if false then --not self:GetInventoryItem(CONST.ITEMS.RUBBER_SAPLINGS) then
-        self:SetState(RubberTurtle.STATE.FETCH_SAPLINGS)
-    elseif #self.treeGNs < self.treeCount then
+    if #self.treeGNs < self.treeCount then
         self:SetState(RubberTurtle.STATE.EXPLORE_TREE_POSITIONS)
+    elseif not self:GetInventoryItem(CONST.ITEMS.RUBBER_SAPLINGS) then
+        self:SetState(RubberTurtle.STATE.FETCH_SAPLINGS)
     else
         self:SetState(RubberTurtle.STATE.EXIT)
     end
