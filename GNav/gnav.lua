@@ -493,7 +493,7 @@ GNAV.GridArea = Object:extend()
 function GNAV.GridArea:new(options)
     self.gridMap = options.gridMap
     self.nodeList = options.nodeList
-    self.boundary = GNAV.Boundary
+    self.boundary = GNAV.Boundary()
     self.boundary:UpdateFromList(self.nodeList)
 end
 
