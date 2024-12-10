@@ -169,7 +169,7 @@ end
 function RubberTurtle:GetTreePositionCandidate()
     local requiredRadius = 1
     local z = self.tnav.currentGN.pos.z
-    local maxGridSize = 15
+    local maxGridSize = 10
     self.invalidTreeGNs = self.invalidTreeGNs or {}
 
     local result =
