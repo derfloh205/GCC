@@ -42,10 +42,10 @@ end
 function GUI.Clickable:IsClicked(x, y)
     local posX, posY = self.gWindow:GetPosition()
     local sizeX, sizeY = self.gWindow:GetSize()
-    term.native().write("RangeCheck: " .. posX .. "/" .. sizeX)
-    term.native().write("RangeCheck: " .. posY .. "/" .. sizeY)
-    local inX = MUtil:InRange(x, posX, sizeX)
-    local inY = MUtil:InRange(y, posY, sizeY)
+    --term.native().write("RangeCheck: " .. posX .. "/" .. sizeX)
+    --term.native().write("RangeCheck: " .. posY .. "/" .. sizeY)
+    local inX = MUtil:InRange(x, posX, posX + sizeX)
+    local inY = MUtil:InRange(y, posY, posY + sizeY)
     return inX and inY
 end
 
