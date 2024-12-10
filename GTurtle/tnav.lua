@@ -9,6 +9,7 @@ local f = string.format
 local TNAV = {}
 
 TNAV.CALCULATIONS_PER_YIELD = 150
+TNAV.MAX_CALCULATIONS = 1000
 
 --- Possible Turn Directions
 ---@enum GTurtle.TNAV.TURN
@@ -389,6 +390,7 @@ end
 ---@param goalGN GNAV.GridNode
 ---@param flat? boolean
 ---@return TNAV.Path? path
+---@return string? err
 function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
     self.gTurtle:FLog("Calculating Path: %s -> %s", startGN, goalGN)
 
@@ -437,7 +439,7 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
     SetFScore(startGN, startGN:GetDistance(goalGN))
 
     local calculations = 0
-    while #openSet > 0 do
+    while #openSet > 0 and calculations < TNAV.MAX_CALCULATIONS do
         -- Find node in open_set with the lowest f_score
         table.sort(
             openSet,
@@ -479,12 +481,20 @@ function TNAV.GridNav:CalculatePath(startGN, goalGN, flat)
         end
     end
 
-    return nil -- No path found
+    local err = ""
+    if calculations >= TNAV.MAX_CALCULATIONS then
+        err = "Max Calculations reached"
+    elseif #openSet == 0 then
+        err = "No Valid Path Nodes left"
+    end
+
+    return nil, err -- No path found
 end
 
 ---@param goalPos GVector
 ---@param flat? boolean
 ---@return TNAV.Path? path
+---@return string? err
 function TNAV.GridNav:CalculatePathToPosition(goalPos, flat)
     local goalGN = self.gridMap:GetGridNode(goalPos)
 

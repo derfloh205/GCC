@@ -475,16 +475,16 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
     self:FLog("Trying to navigate to position: %s", goalPos)
     local function RecalculatePath()
         -- Recalculate Path Based on new Grid Info
-        local path = self.tnav:CalculatePathToPosition(goalPos, flat)
-        self:FLog("Recalculating Path: %s", path)
+        local path, err = self.tnav:CalculatePathToPosition(goalPos, flat)
+        self:FLog("Recalculating Path\n%s", path)
         if path then
             self.tnav:SetActivePath(path)
         else
-            self:Log("Navigation: No Path Available After Recalculation")
+            self:FLog("No Path Found: %s", err)
         end
         return path
     end
-    local path = self.tnav:CalculatePathToPosition(goalPos, flat)
+    local path, err = self.tnav:CalculatePathToPosition(goalPos, flat)
     self:FLog("Calculated Path:\n%s", path)
     if path then
         self.tnav:SetActivePath(path)
@@ -520,7 +520,7 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
         self:FLog("Arrived on Target Position")
         return true
     else
-        self:Log("Navigation: No Path Available")
+        self:FLog("No Path Found: %s", err)
         return false
     end
 end
