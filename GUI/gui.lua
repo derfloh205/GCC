@@ -104,18 +104,21 @@ end
 function GUI.Frontend:Run()
     local clickHandlers = {}
 
-    for _, clickable in ipairs(self.clickables) do
+    for i, clickable in ipairs(self.clickables) do
+        term.native("Register Clickable #" .. i)
         table.insert(
             clickHandlers,
             function()
                 while true do
                     if self.touchscreen then
                         local _, _, x, y = os.pullEvent("monitor_touch")
+                        term.native().write("touched: " .. x .. "/" .. y)
                         if clickable:IsClicked(x, y) then
                             clickable.clickCallback(clickable)
                         end
                     else
                         local _, _, x, y = os.pullEvent("mouse_click")
+                        term.native().write("clicked: " .. x .. "/" .. y)
                         if clickable:IsClicked(x, y) then
                             clickable.clickCallback(clickable)
                         end
