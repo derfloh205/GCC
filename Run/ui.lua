@@ -15,10 +15,10 @@ local testButton =
     posY = 10,
     sizeX = 20,
     sizeY = 10,
-    label = "Hello World",
+    label = "Hello One",
     backgroundColor = colors.write,
     clickCallback = function(self)
-        term.native().write("CLICKED")
+        term.native().write("ONE")
     end
 }
 
@@ -26,14 +26,14 @@ local testButton2 =
     GUI.Button {
     parent = monitor,
     frontend = UI,
-    posX = 10,
-    posY = 30,
+    posX = 5,
+    posY = 10,
     sizeX = 20,
     sizeY = 10,
-    label = "Hello World2",
+    label = "Hello Two",
     backgroundColor = colors.green,
     clickCallback = function(self)
-        term.native().write("CLICKED2")
+        term.native().write("TWO")
     end
 }
 
