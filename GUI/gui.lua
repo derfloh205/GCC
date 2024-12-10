@@ -89,6 +89,9 @@ function GUI.Frontend:new(options)
         term.redirect(self.monitor)
     end
 
+    self.monitor.clear()
+    self.monitor.setCursorPos(1, 1)
+
     ---@type GUI.Clickable[]
     self.clickables = {}
 end
@@ -99,9 +102,6 @@ end
 
 --- Listens for Click Events for each clickable
 function GUI.Frontend:Run()
-    self.monitor.clear()
-    self.monitor.setCursorPos(1, 1)
-
     local clickHandlers = {}
 
     for _, clickable in ipairs(self.clickables) do
