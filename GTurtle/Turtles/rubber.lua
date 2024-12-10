@@ -91,7 +91,7 @@ function RubberTurtle:INIT()
         rtData.produceChestPos = TermUtil:ReadGVector("Produce Chest Position?")
     end
 
-    if not rtData.fenceCorners then
+    if not rtData.fenceCorners or #rtData.fenceCorners < 4 then
         rtData.fenceCorners = rtData.fenceCorners or {}
         rtData.fenceCorners[1] = TermUtil:ReadGVector("Fence #1")
         rtData.fenceCorners[2] = TermUtil:ReadGVector("Fence #2")
