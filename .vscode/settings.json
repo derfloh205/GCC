@@ -12,6 +12,9 @@
         "sleep",
         "gps",
         "shell",
-        "read"
+        "read",
+        "window",
+        "paintutils",
+        "colors"
     ]
 }
