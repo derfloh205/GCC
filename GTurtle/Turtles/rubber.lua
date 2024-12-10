@@ -242,7 +242,7 @@ function RubberTurtle:GetTreePositionCandidate()
 
     local gridX, gridY = self.tnav.gridMap:GetGridSize()
 
-    if not result.gridNode then
+    if not result then
         self:FLog("Could not find candidate for tree position (Grid Size: %d %d)", gridX, gridY)
     else
         return result.gridNode, result.area
