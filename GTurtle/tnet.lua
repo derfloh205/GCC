@@ -320,6 +320,7 @@ function TNet.TurtleHostClient:SearchTurtleHost()
 
     if self.hostID then
         self.gTurtle:Log(string.format("Found Turtle Host [%d]", self.hostID))
+        self:SendTurtleDataUpdate()
     else
         self.gTurtle:Log("No Turtle Host Found")
     end

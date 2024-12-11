@@ -14,7 +14,7 @@ GTurtle.TYPES = {
     RUBBER = "RUBBER"
 }
 
----@class GTurtle.TurtleData
+---@class GTurtle.TurtleDB
 ---@field data table
 ---@field id number
 
@@ -51,9 +51,9 @@ function GTurtle.Base:new(options)
     self.fuelBlacklist = options.fuelBlacklist
     self.visualizeGridOnMove = options.visualizeGridOnMove
     self.minimumFuel = options.minimumFuel or 100
-    self.tdFile = f("%d_td.json", self.id)
-    ---@type GTurtle.TurtleData
-    self.turtleData = self:LoadTurtleData()
+    self.turtleDBFile = f("turtleDB_%d.json", self.id)
+    ---@type GTurtle.TurtleDB
+    self.turtleDB = self:LoadTurtleDB()
     ---@type GTurtle.TYPES
     self.type = GTurtle.TYPES.BASE
     self.term = options.term or term
@@ -97,10 +97,10 @@ function GTurtle.Base:new(options)
     }
 end
 
----@return GTurtle.TurtleData turtleData
-function GTurtle.Base:LoadTurtleData()
-    if self.tdFile and fs.exists(self.tdFile) then
-        local file = fs.open(self.tdFile, "r")
+---@return GTurtle.TurtleDB turtleData
+function GTurtle.Base:LoadTurtleDB()
+    if self.turtleDBFile and fs.exists(self.turtleDBFile) then
+        local file = fs.open(self.turtleDBFile, "r")
         local fileData = textutils.unserialiseJSON(file.readAll())
         fileData.data = self:DeserializeTurtleData(fileData.data)
         file.close()
@@ -123,18 +123,18 @@ end
 --- to be overridden by child turtle types
 ---@param data table
 ---@return table
-function GTurtle.Base:SerializeTurtleData(data)
+function GTurtle.Base:SerializeTurtleDB(data)
     return data
 end
 
-function GTurtle.Base:WriteTurtleData()
-    if self.turtleData and self.tdFile then
-        local file = fs.open(self.tdFile, "w")
-        local writeData = {
-            id = self.turtleData.id,
-            data = self:SerializeTurtleData(self.turtleData.data)
+function GTurtle.Base:PersistTurtleDB()
+    if self.turtleDB and self.turtleDBFile then
+        local file = fs.open(self.turtleDBFile, "w")
+        local dbData = {
+            id = self.turtleDB.id,
+            data = self:SerializeTurtleDB(self.turtleDB.data)
         }
-        file.write(textutils.serialiseJSON(writeData))
+        file.write(textutils.serialiseJSON(dbData))
         file.close()
     end
 end

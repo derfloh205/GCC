@@ -6,22 +6,22 @@ local GVector = require("GCC/GNav/gvector")
 local CONST = require("GCC/Util/const")
 local f = string.format
 
----@class GTurtle.TurtleData.Rubber.Data.Serialized
+---@class GTurtle.TurtleB.Rubber.Data.Serialized
 ---@field resourceChestPos GVector.Serialized
 ---@field produceChestPos GVector.Serialized
 ---@field treePositions GVector.Serialized[]
 ---@field fenceCorners GVector.Serialized[]
 ---@field treeCount number
 
----@class GTurtle.TurtleData.Rubber.Data
+---@class GTurtle.TurtleDB.Rubber.Data
 ---@field resourceChestPos GVector
 ---@field produceChestPos GVector
 ---@field treePositions GVector[]
 ---@field fenceCorners GVector[]
 ---@field treeCount number
 
----@class GTurtle.TurtleData.Rubber : GTurtle.TurtleData
----@field data GTurtle.TurtleData.Rubber.Data
+---@class GTurtle.TurtleDB.Rubber : GTurtle.TurtleDB
+---@field data GTurtle.TurtleDB.Rubber.Data
 
 ---@class GTurtle.RubberTurtle.Options : GTurtle.Base.Options
 
@@ -55,14 +55,14 @@ function RubberTurtle:new(options)
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
     self.type = GTurtle.TYPES.RUBBER
-    ---@type GTurtle.TurtleData.Rubber
-    self.turtleData = self.turtleData
+    ---@type GTurtle.TurtleDB.Rubber
+    self.turtleDB = self.turtleDB
     self.treeCount = 1
 end
 
----@param data GTurtle.TurtleData.Rubber.Data
----@return GTurtle.TurtleData.Rubber.Data.Serialized
-function RubberTurtle:SerializeTurtleData(data)
+---@param data GTurtle.TurtleDB.Rubber.Data
+---@return GTurtle.TurtleB.Rubber.Data.Serialized
+function RubberTurtle:SerializeTurtleDB(data)
     return {
         resourceChestPos = data.resourceChestPos:Serialize(),
         produceChestPos = data.produceChestPos:Serialize(),
@@ -71,9 +71,9 @@ function RubberTurtle:SerializeTurtleData(data)
     }
 end
 
----@param data GTurtle.TurtleData.Rubber.Data.Serialized
----@return GTurtle.TurtleData.Rubber.Data
-function RubberTurtle:DeserializeTurtleData(data)
+---@param data GTurtle.TurtleB.Rubber.Data.Serialized
+---@return GTurtle.TurtleDB.Rubber.Data
+function RubberTurtle:DeserializeTurtleDB(data)
     return {
         resourceChestPos = GVector:Deserialize(data.resourceChestPos),
         produceChestPos = GVector:Deserialize(data.produceChestPos),
@@ -84,49 +84,49 @@ end
 
 function RubberTurtle:INIT()
     self:FLog("Initiating Rubber Turtle: %s", self.name)
-    local rtData = self.turtleData.data --[[@as GTurtle.TurtleData.Rubber.Data]]
+    local turtleDB = self.turtleDB.data --[[@as GTurtle.TurtleDB.Rubber.Data]]
 
-    if not rtData.resourceChestPos then
-        rtData.resourceChestPos = TermUtil:ReadGVector("Resource Chest Position?")
+    if not turtleDB.resourceChestPos then
+        turtleDB.resourceChestPos = TermUtil:ReadGVector("Resource Chest Position?")
     end
-    if not rtData.produceChestPos then
-        rtData.produceChestPos = TermUtil:ReadGVector("Produce Chest Position?")
-    end
-
-    if not rtData.fenceCorners or #rtData.fenceCorners < 4 then
-        rtData.fenceCorners = rtData.fenceCorners or {}
-        rtData.fenceCorners[1] = TermUtil:ReadGVector("Fence #1")
-        rtData.fenceCorners[2] = TermUtil:ReadGVector("Fence #2")
-        rtData.fenceCorners[3] = TermUtil:ReadGVector("Fence #3")
-        rtData.fenceCorners[4] = TermUtil:ReadGVector("Fence #4")
+    if not turtleDB.produceChestPos then
+        turtleDB.produceChestPos = TermUtil:ReadGVector("Produce Chest Position?")
     end
 
-    if not rtData.treeCount then
-        rtData.treeCount = TermUtil:ReadNumber("Tree Count?")
-        self.treeCount = rtData.treeCount
+    if not turtleDB.fenceCorners or #turtleDB.fenceCorners < 4 then
+        turtleDB.fenceCorners = turtleDB.fenceCorners or {}
+        turtleDB.fenceCorners[1] = TermUtil:ReadGVector("Fence #1")
+        turtleDB.fenceCorners[2] = TermUtil:ReadGVector("Fence #2")
+        turtleDB.fenceCorners[3] = TermUtil:ReadGVector("Fence #3")
+        turtleDB.fenceCorners[4] = TermUtil:ReadGVector("Fence #4")
     end
 
-    rtData.treePositions = rtData.treePositions or {}
+    if not turtleDB.treeCount then
+        turtleDB.treeCount = TermUtil:ReadNumber("Tree Count?")
+        self.treeCount = turtleDB.treeCount
+    end
+
+    turtleDB.treePositions = turtleDB.treePositions or {}
 
     self.invalidTreeGNs =
         TUtil:Map(
-        rtData.treePositions,
+        turtleDB.treePositions,
         function(gvector)
             return self.tnav.gridMap:GetGridNode(gvector)
         end
     )
 
-    self:WriteTurtleData()
+    self:PersistTurtleDB()
 
-    self.tnav:SetGeoFence(rtData.fenceCorners)
+    self.tnav:SetGeoFence(turtleDB.fenceCorners)
 
-    self.resourceGN = self.tnav.gridMap:GetGridNode(rtData.resourceChestPos)
+    self.resourceGN = self.tnav.gridMap:GetGridNode(turtleDB.resourceChestPos)
     self.resourceGN.unknown = false
-    self.produceGN = self.tnav.gridMap:GetGridNode(rtData.produceChestPos)
+    self.produceGN = self.tnav.gridMap:GetGridNode(turtleDB.produceChestPos)
     self.produceGN.unknown = false
     self.treeGNs =
         TUtil:Map(
-        rtData.treePositions,
+        turtleDB.treePositions,
         function(treePositionGV)
             return self.tnav.gridMap:GetGridNode(treePositionGV)
         end
@@ -274,9 +274,9 @@ function RubberTurtle:EXPLORE_TREE_POSITIONS()
         if candidateArea:IsEmpty() then
             self:FLog("Viable Tree Position Found: %s", candidateGN)
             table.insert(self.treeGNs, candidateGN)
-            local rtData = self.turtleData.data
+            local rtData = self.turtleDB.data
             table.insert(rtData.treePositions, candidateGN.pos)
-            self:WriteTurtleData()
+            self:PersistTurtleDB()
             self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
         end
     else
