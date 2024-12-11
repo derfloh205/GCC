@@ -13,6 +13,9 @@ local TNet = {}
 ---@class TNet.TurtleHost.TurtleData
 ---@field id number
 ---@field pos GVector
+---@field state GState.STATE
+---@field type GTurtle.TYPES
+---@field fuel number
 
 ---@class TNet.TurtleHost.Options : GNet.Server.Options
 
@@ -190,14 +193,10 @@ function TNet.TurtleHost:OnReplace(id, msg)
 end
 
 ---@param id number
----@param serializedGV GVector.Serialized
-function TNet.TurtleHost:OnTurtlePosUpdate(id, serializedGV)
+---@param serializedTurtleData TNet.TurtleHost.TurtleData
+function TNet.TurtleHost:OnTurtleDataUpdate(id, serializedTurtleData)
     self:FLog("Received TURTLE_POS_UPDATE from [%d]", id)
-    local turtleData = self.turtleData[id]
-    if not turtleData then
-        return
-    end
-    turtleData.pos = GVector:Deserialize(serializedGV)
+    self.turtleData[id] = textutils.unserialiseJSON(serializedTurtleData)
 end
 
 ---@param turtleID number
@@ -213,10 +212,6 @@ end
 function TNet.TurtleHost:UpdateGridMapDisplay(turtleID)
     local turtlePos = self:GetTurtlePos(turtleID)
     self.ui.ggrid:Update(turtlePos)
-    -- local gridString = self.gridMap:GetCenteredGridString(turtlePos, 10, 10)
-    -- term.clear()
-    -- term.setCursorPos(1, 1)
-    -- print(gridString)
 end
 
 ---@param id number
@@ -274,11 +269,19 @@ function TNet.TurtleHostClient:SendReplace(msg)
     rednet.send(self.hostID, msg, TNet.TurtleHost.PROTOCOL.REPLACE)
 end
 
-function TNet.TurtleHostClient:SendPosUpdate()
+function TNet.TurtleHostClient:SendTurtleDataUpdate()
     if not self.hostID then
         return
     end
-    rednet.send(self.hostID, self.gTurtle.tnav.currentGN.pos, TNet.TurtleHost.PROTOCOL.TURTLE_POS_UPDATE)
+    ---@type TNet.TurtleHost.TurtleData
+    local turtleData = {
+        id = self.gTurtle.id,
+        type = self.gTurtle.type,
+        pos = self.gTurtle.tnav.currentGN.pos,
+        fuel = turtle.getFuelLevel(),
+        state = self.gTurtle.state
+    }
+    rednet.send(self.hostID, turtleData, TNet.TurtleHost.PROTOCOL.TURTLE_POS_UPDATE)
 end
 
 function TNet.TurtleHostClient:SendGridMap()
