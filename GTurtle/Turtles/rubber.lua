@@ -34,13 +34,21 @@ RubberTurtle.STATE = {
     EXPLORE_TREE_POSITIONS = "EXPLORE_TREE_POSITIONS",
     FETCH_SAPLINGS = "FETCH_SAPLINGS",
     SEARCH_TREE = "",
-    DECIDE_ACTION = "DECIDE_ACTION"
+    DECIDE_ACTION = "DECIDE_ACTION",
+    REFUEL = "REFUEL",
+    REQUEST_FUEL = "REQUEST_FUEL"
 }
 TUtil:Inject(RubberTurtle.STATE, GState.STATE)
 
-RubberTurtle.INVENTORY_WHITELIST = {
-    CONST.ITEMS.RUBBER_SAPLINGS,
-    CONST.ITEMS.RUBBER_WOOD
+RubberTurtle.RESOURCE_CHEST_ITEMS = {
+    CONST.ITEMS.COAL,
+    CONST.ITEMS.BONE_MEAL,
+    CONST.ITEMS.RUBBER_SAPLINGS
+}
+
+RubberTurtle.PRODUCE_CHEST_ITEMS = {
+    CONST.ITEMS.RUBBER_WOOD,
+    CONST.ITEMS.RESIN
 }
 
 RubberTurtle.FUEL_BLACKLIST = {
@@ -155,46 +163,17 @@ end
 
 function RubberTurtle:FETCH_SAPLINGS()
     self:NavigateToPosition(self.resourceGN.pos)
-    -- search for chest
-    local chests =
-        self.tnav:GetNeighbors(
-        true,
-        function(gn)
-            return gn:IsChest()
-        end
-    )
+    local success = self:TurnToChest()
 
-    self:Log("Chest found? " .. tostring(#chests))
-
-    if #chests == 0 then
-        -- dance once to scan surroundings
-        self:ExecuteMovement("RRRR")
-        self:Log("Danced")
-        chests =
-            self.tnav:GetNeighbors(
-            true,
-            function(gn)
-                return gn:IsChest()
-            end
-        )
-    end
-
-    local chestGN = chests[1]
-
-    -- if still nothing here then user lied to us!
-    if not chestGN then
+    if not success then
         self:Log("Error: Resource Chest not found!")
         self:SetState(RubberTurtle.STATE.EXIT)
         return
     end
 
-    -- otherwise fetch saplings..
-    self:Log("Turn to Chest")
-    local relativeHead = self.tnav.currentGN:GetRelativeHeading(chestGN)
-    self:TurnToHead(relativeHead)
     self:Log("Get Saplings..")
     self:SuckFromChest(CONST.ITEMS.RUBBER_SAPLINGS)
-    self:DropExcept(self.INVENTORY_WHITELIST)
+    self:DropItems(self.RESOURCE_CHEST_ITEMS)
 
     self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
 end
@@ -287,9 +266,44 @@ function RubberTurtle:EXPLORE_TREE_POSITIONS()
     end
 end
 
+function RubberTurtle:REFUEL()
+    if not self:Refuel() then
+        self:Log("Fetching Fuel..")
+        if not self:NavigateToPosition(self.resourceGN.pos) then
+            self:Log("Error: Cannot reach Resources")
+            self:SetState(RubberTurtle.STATE.EXIT)
+            return
+        end
+
+        if not self:TurnToChest() then
+            self:Log("Error: No Resource Chest Found")
+            self:SetState(RubberTurtle.STATE.EXIT)
+            return
+        end
+
+        if not self:RefuelFromChest() then
+            self:DropItems(self.RESOURCE_CHEST_ITEMS)
+            self:SetState(RubberTurtle.STATE.REQUEST_FUEL)
+            return
+        end
+    end
+end
+
+function RubberTurtle:REQUEST_FUEL()
+    repeat
+        term.clear()
+        term.setCursorPos(1, 1)
+        print(f("Please Insert Fuel: %d / %d", turtle.getFuelLevel(), self.minimumFuel))
+        os.pullEvent("turtle_inventory")
+        local refueled = self:Refuel()
+    until refueled
+    self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
+end
+
 function RubberTurtle:DECIDE_ACTION()
-    -- if no rubber sapling in inventory - fetch from resource chest
-    if #self.treeGNs < self.treeCount then
+    if turtle.getFuelLevel() < self.minimumFuel then
+        self:SetState(RubberTurtle.STATE.REFUEL)
+    elseif #self.treeGNs < self.treeCount then
         self:SetState(RubberTurtle.STATE.EXPLORE_TREE_POSITIONS)
     elseif not self:GetInventoryItem(CONST.ITEMS.RUBBER_SAPLINGS) then
         self:SetState(RubberTurtle.STATE.FETCH_SAPLINGS)

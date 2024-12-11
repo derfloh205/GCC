@@ -3,6 +3,7 @@ local TNav = require("GCC/GTurtle/tnav")
 local GNAV = require("GCC/GNav/gnav")
 local TNet = require("GCC/GTurtle/tnet")
 local GState = require("GCC/Util/gstate")
+local CONST = require("GCC/Util/const")
 local f = string.format
 
 ---@class GTurtle
@@ -21,7 +22,6 @@ GTurtle.TYPES = {
 ---@class GTurtle.Base.Options : GState.StateMachine.Options
 ---@field name string
 ---@field fuelWhitelist? string[]
----@field fuelBlacklist? string[]
 ---@field minimumFuel? number
 ---@field term? table
 ---@field visualizeGridOnMove? boolean
@@ -47,8 +47,7 @@ function GTurtle.Base:new(options)
     os.setComputerLabel(self.name)
     self.digBlacklist = options.digBlacklist
     self.avoidAllBlocks = options.avoidAllBlocks == nil or options.avoidAllBlocks -- -> defaults to true
-    self.fuelWhitelist = options.fuelWhitelist
-    self.fuelBlacklist = options.fuelBlacklist
+    self.fuelWhitelist = options.fuelWhitelist or CONST.DEFAULT_FUEL_ITEMS
     self.visualizeGridOnMove = options.visualizeGridOnMove
     self.minimumFuel = options.minimumFuel or 100
     self.turtleDBFile = f("turtleDB_%d.json", self.id)
@@ -176,14 +175,46 @@ function GTurtle.Base:SuckFromChest(name, requestedCount)
     return success, err
 end
 
+---@return boolean success
+---@return string? err
+function GTurtle.Base:RefuelFromChest()
+    local success, err
+    repeat
+        success, err = turtle.suck()
+        local refueled = self:Refuel()
+    until not success or refueled
+
+    return success, err
+end
+
 ---@param itemNames string[]
-function GTurtle.Base:DropExcept(itemNames)
+---@param keepFuel boolean?
+function GTurtle.Base:DropExcept(itemNames, keepFuel)
     local selectedSlotID = turtle.getSelectedSlot()
     local dropItems =
         TUtil:Filter(
         self:GetInventoryItems(),
         function(itemData)
-            return not TUtil:tContains(itemNames, itemData.name)
+            return not TUtil:tContains(itemNames, itemData.name) or (keepFuel and self:IsFuel(itemData))
+        end,
+        true
+    )
+
+    for slotID, _ in pairs(dropItems) do
+        turtle.select(slotID)
+        turtle.drop()
+    end
+    turtle.select(selectedSlotID)
+end
+
+---@param itemNames string[]
+function GTurtle.Base:DropItems(itemNames)
+    local selectedSlotID = turtle.getSelectedSlot()
+    local dropItems =
+        TUtil:Filter(
+        self:GetInventoryItems(),
+        function(itemData)
+            return TUtil:tContains(itemNames, itemData.name)
         end,
         true
     )
@@ -198,18 +229,19 @@ end
 ---@return boolean isFuelSelected
 function GTurtle.Base:SelectFuel()
     local itemMap = self:GetInventoryItems()
-    local preSlotID = turtle.getSelectedSlot()
-
-    for slotID, itemData in pairs(itemMap) do
-        turtle.select(slotID)
-        if self:IsFuel(itemData) then
-            return true
-        end
+    local fuelItems =
+        TUtil:Filter(
+        itemMap,
+        function(itemData)
+            return self:IsFuel(itemData)
+        end,
+        true
+    )
+    if #fuelItems == 0 then
+        return false
     end
 
-    if preSlotID ~= turtle.getSelectedSlot() then
-        turtle.select(preSlotID)
-    end
+    turtle.select(next(fuelItems))
 
     return false
 end
@@ -217,20 +249,6 @@ end
 ---@param itemData table
 ---@return boolean isFuel
 function GTurtle.Base:IsFuel(itemData)
-    local isFuel = turtle.refuel(0)
-
-    if not isFuel then
-        return false
-    end
-
-    if self.fuelBlacklist then
-        return not TUtil:tContains(self.fuelBlacklist, itemData.name)
-    end
-
-    if not self.fuelWhitelist then
-        return true
-    end
-
     return TUtil:tContains(self.fuelWhitelist, itemData.name)
 end
 
@@ -243,18 +261,22 @@ function GTurtle.Base:Refuel()
     end
 
     local preSlotID = turtle.getSelectedSlot()
-    local fuelFound = self:SelectFuel()
+    local fuelSelected
+    repeat
+        local fuelSelected = self:SelectFuel()
+        if fuelSelected then
+            repeat
+                local ok = turtle.refuel(1)
+            until not ok or self.minimumFuel <= turtle.getFuelLevel()
+        end
+    until not fuelSelected or self.minimumFuel <= turtle.getFuelLevel()
 
-    if not fuelFound then
+    turtle.select(preSlotID)
+
+    if not fuelSelected then
         self:Log("No valid fuel in inventory..")
         return false
     end
-
-    repeat
-        local ok = turtle.refuel(1)
-    until not ok or self.minimumFuel <= turtle.getFuelLevel()
-
-    turtle.select(preSlotID)
 
     fuel = turtle.getFuelLevel()
     self:FLog("Refueled: %d/%d", fuel, self.minimumFuel)
@@ -467,6 +489,40 @@ function GTurtle.Base:TurnToHead(reqHead)
             self:Turn("R")
         end
     end
+end
+
+---@return boolean success
+function GTurtle.Base:TurnToChest()
+    -- search for chest
+    local chests =
+        self.tnav:GetNeighbors(
+        true,
+        function(gn)
+            return gn:IsChest()
+        end
+    )
+
+    if #chests == 0 then
+        -- dance once to scan surroundings then try again
+        self:ExecuteMovement("RRRR")
+        chests =
+            self.tnav:GetNeighbors(
+            true,
+            function(gn)
+                return gn:IsChest()
+            end
+        )
+    end
+
+    local chestGN = chests[1]
+
+    if not chestGN then
+        return false
+    end
+
+    local relativeHead = self.tnav.currentGN:GetRelativeHeading(chestGN)
+    self:TurnToHead(relativeHead)
+    return true
 end
 
 ---@param goalPos GVector
