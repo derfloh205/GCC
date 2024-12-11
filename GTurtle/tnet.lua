@@ -1,3 +1,4 @@
+local Object = require("GCC/Util/classics")
 local GLogAble = require("GCC/Util/glog")
 local GNet = require("GCC/GNet/gnet")
 local TUtil = require("GCC/Util/tutil")
@@ -10,12 +11,55 @@ local f = string.format
 ---@class TNet
 local TNet = {}
 
----@class TNet.TurtleHost.TurtleData
+---@class TNet.TurtleData.Options
 ---@field id number
 ---@field pos GVector
 ---@field state GState.STATE
 ---@field type GTurtle.TYPES
 ---@field fuel number
+
+---@class TNet.TurtleData.Serialized
+---@field id number
+---@field pos GVector.Serialized
+---@field state GState.STATE
+---@field type GTurtle.TYPES
+---@field fuel number
+
+---@class TNet.TurtleData
+---@overload fun(options: TNet.TurtleData.Options) : TNet.TurtleData
+TNet.TurtleData = Object:extend()
+
+---@param options TNet.TurtleData.Options
+function TNet.TurtleData:new(options)
+    options = options or {}
+    self.id = options.id
+    self.pos = options.pos
+    self.state = options.state
+    self.type = options.type
+    self.fuel = options.fuel
+end
+
+---@return TNet.TurtleData.Serialized
+function TNet.TurtleData:Serialize()
+    return {
+        id = self.id,
+        pos = self.pos:Serialize(),
+        state = self.state,
+        type = self.type,
+        fuel = self.fuel
+    }
+end
+
+---@return TNet.TurtleData
+function TNet.TurtleData:Deserialize(serialized)
+    return TNet.TurtleData {
+        id = serialized.id,
+        pos = GVector:Deserialize(serialized),
+        state = serialized.state,
+        type = serialized.type,
+        fuel = serialized.fuel
+    }
+end
 
 ---@class TNet.TurtleHost.Options : GNet.Server.Options
 
@@ -77,7 +121,7 @@ function TNet.TurtleHost:new(options)
     term:clear()
     peripheral.find("modem", rednet.open)
 
-    ---@type table<TurtleID, TNet.TurtleHost.TurtleData>
+    ---@type table<TurtleID, TNet.TurtleData>
     self.turtleData = {}
     self.gridMap =
         GNAV.GridMap {
@@ -218,10 +262,10 @@ function TNet.TurtleHost:OnReplace(id, msg)
 end
 
 ---@param id number
----@param serializedTurtleData TNet.TurtleHost.TurtleData
+---@param serializedTurtleData TNet.TurtleData.Serialized
 function TNet.TurtleHost:OnTurtleDataUpdate(id, serializedTurtleData)
     self:FLog("Received TURTLE_POS_UPDATE from [%d]", id)
-    self.turtleData[id] = serializedTurtleData
+    self.turtleData[id] = TNet.TurtleData:Deserialize(serializedTurtleData)
     self:UpdateTurtleStatusDisplay(id)
 end
 
@@ -299,15 +343,15 @@ function TNet.TurtleHostClient:SendTurtleDataUpdate()
     if not self.hostID then
         return
     end
-    ---@type TNet.TurtleHost.TurtleData
-    local turtleData = {
+    local turtleData =
+        TNet.TurtleData {
         id = self.gTurtle.id,
         type = self.gTurtle.type,
         pos = self.gTurtle.tnav.currentGN.pos,
         fuel = turtle.getFuelLevel(),
         state = self.gTurtle.state
     }
-    rednet.send(self.hostID, turtleData, TNet.TurtleHost.PROTOCOL.TURTLE_DATA_UPDATE)
+    rednet.send(self.hostID, turtleData:Serialize(), TNet.TurtleHost.PROTOCOL.TURTLE_DATA_UPDATE)
 end
 
 function TNet.TurtleHostClient:SendGridMap()
