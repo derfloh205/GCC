@@ -24,7 +24,7 @@ end
 ---@param pixels GBox.Pixel[]
 function GBox:Draw(pixels)
     for _, pixel in ipairs(pixels) do
-        self.box.canvas[pixel.x][pixel.y] = pixel.c
+        self.box.canvas[pixel.y][pixel.x] = pixel.c
     end
     self.box:render()
 end
