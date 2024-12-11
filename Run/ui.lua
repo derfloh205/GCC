@@ -45,7 +45,7 @@ local icon =
     GUI.Icon {
     parent = monitor,
     sizeX = 6,
-    sizeY = 6,
+    sizeY = 2,
     x = 15,
     y = 15,
     monitor = monitor,
