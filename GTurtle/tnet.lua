@@ -97,7 +97,9 @@ function TNet.TurtleHost:new(options)
             monitor = term.current()
         },
         ---@type GGrid
-        ggrid = nil
+        ggrid = nil,
+        ---@type GUI.Text
+        turtleStatusSummary = nil
     }
 
     self:InitFrontend()
@@ -185,6 +187,8 @@ Pos: %s
         turtleData.fuel,
         turtleData.pos
     )
+
+    self.ui.turtleStatusSummary:SetText(statusText)
 end
 
 ---@param id number
