@@ -206,7 +206,7 @@ function TNet.TurtleHost:InitFrontend()
         parent = monitor,
         sizeX = mX / 2,
         sizeY = mY / 2,
-        x = 3,
+        x = 2,
         y = monitorMidY / 2,
         text = " - Turtle Status -"
     }
@@ -219,7 +219,7 @@ function TNet.TurtleHost:UpdateTurtleStatusDisplay(turtleID)
     end
     local statusText =
         f(
-        [[- Turtle [%d] -
+        [[  - Turtle [%d] -
 Type:  %s
 State: %s
 Fuel:  %d
