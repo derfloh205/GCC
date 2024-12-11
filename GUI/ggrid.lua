@@ -42,7 +42,9 @@ function GGrid:Update(centerPosition)
         for y = minY, maxY do
             local gridNode = self.gridMap:GetGridNode(GVector(x, y, z))
             local color = self.colorMapFunc(gridNode)
-            table.insert(pixels, {x = x, y = y, c = color})
+            local pixelX = x - minX
+            local pixelY = y - minY
+            table.insert(pixels, {x = pixelX, y = pixelY, c = color})
         end
     end
 
