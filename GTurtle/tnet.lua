@@ -110,8 +110,8 @@ function TNet.TurtleHost:InitFrontend()
         parent = self.ui.frontend.monitor,
         sizeX = 11,
         sizeY = 11,
-        x = 5,
-        y = 5,
+        x = 1,
+        y = 1,
         colorMapFunc = function(gridNode)
             local isTurtlePos =
                 TUtil:Some(
