@@ -19,7 +19,9 @@ function GBox:new(options)
     options = options or {}
 
     --- translate to gwindow size
-    options.sizeY = math.ceil(3 / options.sizeY)
+    local pixelCount = options.sizeY / 2 -- bixelCount / 2
+    local requiredWindowSizeY = math.ceil(pixelCount / 3)
+    options.sizeY = requiredWindowSizeY
     ---@diagnostic disable-next-line: redundant-parameter
     GBox.super.new(self, options)
 
