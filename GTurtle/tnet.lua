@@ -155,8 +155,8 @@ function TNet.TurtleHost:InitFrontend()
         GUI.Text {
         monitor = monitor,
         parent = monitor,
-        sizeX = monitorMidX / 3,
-        sizeY = monitorMidY / 3,
+        sizeX = mX / 3,
+        sizeY = mY / 3,
         x = 2,
         y = 4,
         text = "Turtle Status\nTest 1:\nTest 2:"
