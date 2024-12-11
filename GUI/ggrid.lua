@@ -25,8 +25,8 @@ end
 
 ---@param centerPosition GVector
 function GGrid:Update(centerPosition)
-    local halfX = (self.box.width - 1) / 2
-    local halfY = (self.box.height - 1) / 2
+    local halfX = (self.box.width - (self.box.width % 2)) / 2
+    local halfY = (self.box.height - (self.box.height % 2)) / 2
     local minX = centerPosition.x - halfX
     local maxX = centerPosition.x + halfX
     local minY = centerPosition.y - halfY
