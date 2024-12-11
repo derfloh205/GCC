@@ -29,7 +29,7 @@ TNet.TurtleHost.PROTOCOL = {
     LOG = "LOG",
     REPLACE = "REPLACE",
     MAP_UPDATE = "MAP_UPDATE",
-    TURTLE_POS_UPDATE = "TURTLE_POS_UPDATE"
+    TURTLE_DATA_UPDATE = "TURTLE_DATA_UPDATE"
 }
 
 ---@alias TurtleID number
@@ -56,8 +56,8 @@ function TNet.TurtleHost:new(options)
             callback = self.OnMapUpdate
         },
         {
-            protocol = self.PROTOCOL.TURTLE_POS_UPDATE,
-            callback = self.OnTurtlePosUpdate
+            protocol = self.PROTOCOL.TURTLE_DATA_UPDATE,
+            callback = self.OnTurtleDataUpdate
         }
     }
 
@@ -307,7 +307,7 @@ function TNet.TurtleHostClient:SendTurtleDataUpdate()
         fuel = turtle.getFuelLevel(),
         state = self.gTurtle.state
     }
-    rednet.send(self.hostID, turtleData, TNet.TurtleHost.PROTOCOL.TURTLE_POS_UPDATE)
+    rednet.send(self.hostID, turtleData, TNet.TurtleHost.PROTOCOL.TURTLE_DATA_UPDATE)
 end
 
 function TNet.TurtleHostClient:SendGridMap()
