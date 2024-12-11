@@ -39,4 +39,20 @@ local testButton2 =
     end
 }
 
+local icon =
+    GUI.Icon {
+    parent = monitor,
+    sizeX = 2,
+    sizeY = 2,
+    x = 15,
+    y = 15,
+    monitor = monitor,
+    pixels = {
+        {x = 1, y = 1, c = colors.red},
+        {x = 1, y = 2, c = colors.blue},
+        {x = 2, y = 1, c = colors.magenta},
+        {x = 2, y = 2, c = colors.purple}
+    }
+}
+
 UI:Run()

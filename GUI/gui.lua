@@ -2,9 +2,28 @@ local Object = require("GCC/Util/classics")
 local GLogAble = require("GCC/Util/glog")
 local GWindow = require("GCC/GUI/gwindow")
 local MUtil = require("GCC/Util/mutil")
+local GBox = require("GCC/GUI/gbox")
 
 ---@class GUI
 local GUI = {}
+
+---@class GUI.Icon.Options : GBox.Options
+---@field pixels? GBox.Pixel[]
+
+---@class GUI.Icon : GBox
+---@overload fun(options: GUI.Icon.Options) : GUI.Icon
+GUI.Icon = GBox:extend()
+
+---@param options GUI.Icon.Options
+function GUI.Icon:new(options)
+    options = options or {}
+    ---@diagnostic disable-next-line: redundant-parameter
+    GUI.Icon.super.new(self, options)
+
+    if options.pixels then
+        self:Draw(options.pixels)
+    end
+end
 
 ---@class GUI.Clickable.Options
 ---@field frontend GUI.Frontend
