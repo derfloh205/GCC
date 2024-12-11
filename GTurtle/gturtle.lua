@@ -102,7 +102,7 @@ function GTurtle.Base:LoadTurtleDB()
     if self.turtleDBFile and fs.exists(self.turtleDBFile) then
         local file = fs.open(self.turtleDBFile, "r")
         local fileData = textutils.unserialiseJSON(file.readAll())
-        fileData.data = self:DeserializeTurtleData(fileData.data)
+        fileData.data = self:DeserializeTurtleDB(fileData.data)
         file.close()
         return fileData
     else
@@ -116,7 +116,7 @@ end
 --- to be overridden by child turtle types
 ---@param data table
 ---@return table
-function GTurtle.Base:DeserializeTurtleData(data)
+function GTurtle.Base:DeserializeTurtleDB(data)
     return data
 end
 
