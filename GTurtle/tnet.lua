@@ -103,16 +103,17 @@ function TNet.TurtleHost:new(options)
 end
 
 function TNet.TurtleHost:InitFrontend()
-    local mX, mY = self.ui.frontend.monitor.getSize()
+    local monitor = self.ui.frontend.monitor
+    local mX, mY = monitor.getSize()
     local monitorMidX = math.floor(mX / 2)
     local monitorMidY = math.floor(mY / 2)
     self.ui.ggrid =
         GGrid {
         gridMap = self.gridMap,
-        monitor = self.ui.frontend.monitor,
-        parent = self.ui.frontend.monitor,
-        sizeX = math.floor(mX / 3) * 2,
-        sizeY = math.floor(mY / 3) * 3,
+        monitor = monitor,
+        parent = monitor,
+        sizeX = math.floor(mX / 4) * 2,
+        sizeY = math.floor(mY / 4) * 3,
         x = monitorMidX,
         y = monitorMidY / 2,
         colorMapFunc = function(gridNode)
@@ -141,13 +142,24 @@ function TNet.TurtleHost:InitFrontend()
 
     self.ui.title =
         GUI.Text {
-        monitor = self.ui.frontend.monitor,
-        parent = self.ui.frontend.monitor,
+        monitor = monitor,
+        parent = monitor,
         sizeX = 15,
         sizeY = 2,
         x = monitorMidX - 7,
         y = 2,
         text = "Turtle Host UI"
+    }
+
+    self.ui.turtleStatusSummary =
+        GUI.Text {
+        monitor = monitor,
+        parent = monitor,
+        sizeX = monitorMidX / 3,
+        sizeY = monitorMidY / 3,
+        x = 2,
+        y = 4,
+        text = "Turtle Status\nTest 1:\nTest 2:"
     }
 end
 
