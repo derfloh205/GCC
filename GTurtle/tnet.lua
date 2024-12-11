@@ -111,8 +111,8 @@ function TNet.TurtleHost:InitFrontend()
         gridMap = self.gridMap,
         monitor = self.ui.frontend.monitor,
         parent = self.ui.frontend.monitor,
-        sizeX = math.floor(mX / 3),
-        sizeY = math.floor(mY / 3),
+        sizeX = math.floor(mX / 3) * 2,
+        sizeY = math.floor(mY / 3) * 3,
         x = monitorMidX,
         y = monitorMidY / 2,
         colorMapFunc = function(gridNode)
