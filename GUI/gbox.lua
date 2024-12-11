@@ -1,4 +1,4 @@
-local pixelbox = require("GCC/Lib/pixelbox_lite")
+local pixelbox = require("GCC/Lib/bixelbox_lite")
 local GWindow = require("GCC/GUI/gwindow")
 
 ---@class GBox.Pixel
