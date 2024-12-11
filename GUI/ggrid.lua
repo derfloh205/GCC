@@ -36,7 +36,7 @@ function GGrid:Update(centerPosition)
     ---@type GBox.Pixel[]
     local pixels = {}
 
-    term.native().write("Grid Update: (%d,%d) (%d,%d)", minX, maxX, minY, maxY)
+    term.native().write(f("Grid Update: (%d,%d) (%d,%d)", minX, maxX, minY, maxY))
 
     for x = minX, maxX do
         for y = minY, maxY do
