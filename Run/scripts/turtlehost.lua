@@ -5,6 +5,8 @@ if monitor then
     term.redirect(monitor)
 end
 
+monitor.setTextScale(1)
+
 local THost =
     TNet.TurtleHost {
     log = true,

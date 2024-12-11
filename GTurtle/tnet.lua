@@ -140,9 +140,9 @@ function TNet.TurtleHost:InitFrontend()
         GUI.Text {
         monitor = self.ui.frontend.monitor,
         parent = self.ui.frontend.monitor,
-        sizeX = 5,
+        sizeX = 10,
         sizeY = 2,
-        x = 5,
+        x = 1,
         y = 1,
         text = "Turtle Host UI"
     }
