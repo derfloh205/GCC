@@ -48,10 +48,14 @@ local icon =
     y = 15,
     monitor = monitor,
     pixels = {
-        {x = 1, y = 1, c = colors.red},
-        {x = 2, y = 2, c = colors.cyan},
-        {x = 3, y = 3, c = colors.magenta},
-        {x = 4, y = 4, c = colors.purple}
+        {x = 1, y = 1, c = colors.green},
+        {x = 2, y = 1, c = colors.green},
+        {x = 1, y = 2, c = colors.green},
+        {x = 1, y = 3, c = colors.green},
+        {x = 2, y = 2, c = colors.green},
+        {x = 2, y = 3, c = colors.green},
+        {x = 1, y = 3, c = colors.green},
+        {x = 2, y = 3, c = colors.green}
     }
 }
 
