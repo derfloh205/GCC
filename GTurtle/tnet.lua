@@ -221,7 +221,7 @@ end
 ---@param serializedTurtleData TNet.TurtleHost.TurtleData
 function TNet.TurtleHost:OnTurtleDataUpdate(id, serializedTurtleData)
     self:FLog("Received TURTLE_POS_UPDATE from [%d]", id)
-    self.turtleData[id] = textutils.unserialiseJSON(serializedTurtleData)
+    self.turtleData[id] = serializedTurtleData
     self:UpdateTurtleStatusDisplay(id)
 end
 
