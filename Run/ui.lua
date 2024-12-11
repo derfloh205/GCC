@@ -45,7 +45,7 @@ local icon =
     GUI.Icon {
     parent = monitor,
     sizeX = 6,
-    sizeY = 2,
+    sizeY = 3,
     x = 15,
     y = 15,
     monitor = monitor,
@@ -61,7 +61,13 @@ local icon =
         {x = 4, y = 2, c = colors.magenta},
         {x = 3, y = 2, c = colors.blue},
         {x = 2, y = 2, c = colors.cyan},
-        {x = 1, y = 2, c = colors.pink}
+        {x = 1, y = 2, c = colors.pink},
+        {x = 1, y = 3, c = colors.red},
+        {x = 2, y = 3, c = colors.green},
+        {x = 3, y = 3, c = colors.magenta},
+        {x = 4, y = 3, c = colors.blue},
+        {x = 5, y = 3, c = colors.cyan},
+        {x = 6, y = 3, c = colors.pink}
     }
 }
 
