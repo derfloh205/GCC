@@ -1,6 +1,8 @@
 local GUI = require("GCC/GUI/gui")
 local monitor = peripheral.find("monitor")
 
+monitor.setTextScale(0.5)
+
 local UI =
     GUI.Frontend {
     touchscreen = true,
