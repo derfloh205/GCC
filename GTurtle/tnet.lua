@@ -204,11 +204,11 @@ function TNet.TurtleHost:InitFrontend()
         GUI.Text {
         monitor = monitor,
         parent = monitor,
-        sizeX = mX / 3,
-        sizeY = mY / 3,
+        sizeX = mX / 2,
+        sizeY = mY / 2,
         x = 3,
         y = monitorMidY / 2,
-        text = "Turtle Status\nTest 1:\nTest 2:"
+        text = " - Turtle Status -"
     }
 end
 
