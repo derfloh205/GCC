@@ -3,6 +3,8 @@ local GNet = require("GCC/GNet/gnet")
 local TUtil = require("GCC/Util/tutil")
 local GVector = require("GCC/GNav/gvector")
 local GNAV = require("GCC/GNav/gnav")
+local GUI = require("GCC/GUI/gui")
+local GGrid = require("GCC/GUI/ggrid")
 local f = string.format
 
 ---@class TNet
@@ -86,7 +88,53 @@ function TNet.TurtleHost:new(options)
         end
     }
 
+    self.ui = {
+        frontend = GUI.Frontend {
+            touchscreen = true,
+            monitor = term.current()
+        },
+        ---@type GGrid
+        ggrid = nil
+    }
+
+    self:InitFrontend()
+
     self:FLog("Initializing %s", self.name)
+end
+
+function TNet.TurtleHost:InitFrontend()
+    self.ui.ggrid =
+        GGrid {
+        gridMap = self.gridMap,
+        monitor = self.ui.frontend.monitor,
+        parent = self.ui.frontend.monitor,
+        sizeX = 11,
+        sizeY = 11,
+        x = 5,
+        y = 5,
+        colorMapFunc = function(gridNode)
+            local isTurtlePos =
+                TUtil:Some(
+                self.turtleData,
+                function(turtleData)
+                    return gridNode.pos:Equal(turtleData.pos)
+                end
+            )
+            if isTurtlePos then
+                return colors.green
+            end
+
+            if gridNode:IsUnknown() then
+                return colors.gray
+            end
+
+            if gridNode:IsEmpty() then
+                return colors.black
+            end
+
+            return colors.lightGray
+        end
+    }
 end
 
 ---@param id number
@@ -138,10 +186,11 @@ end
 
 function TNet.TurtleHost:UpdateGridMapDisplay(turtleID)
     local turtlePos = self:GetTurtlePos(turtleID)
-    local gridString = self.gridMap:GetCenteredGridString(turtlePos, 10, 10)
-    term.clear()
-    term.setCursorPos(1, 1)
-    print(gridString)
+    self.ui.ggrid:Update(turtlePos)
+    -- local gridString = self.gridMap:GetCenteredGridString(turtlePos, 10, 10)
+    -- term.clear()
+    -- term.setCursorPos(1, 1)
+    -- print(gridString)
 end
 
 ---@param id number

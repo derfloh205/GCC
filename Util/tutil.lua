@@ -104,4 +104,18 @@ function TUtil:Every(t, conFunc)
     return true
 end
 
+---@generic T
+---@generic K
+---@param t table<K, T> | T[]
+---@param conFunc fun(element: T, key: K) : boolean
+---@return boolean oneTrue
+function TUtil:Some(t, conFunc)
+    for k, v in pairs(t) do
+        if conFunc(v, k) then
+            return true
+        end
+    end
+    return false
+end
+
 return TUtil
