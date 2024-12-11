@@ -166,6 +166,27 @@ function TNet.TurtleHost:InitFrontend()
     }
 end
 
+function TNet.TurtleHost:UpdateTurtleStatusDisplay(turtleID)
+    local turtleData = self.turtleData[turtleID]
+    if not turtleData then
+        return
+    end
+    local statusText =
+        f(
+        [[- Turtle [%d] -
+Type: %s
+State: %s
+Fuel: %d
+Pos: %s
+]],
+        turtleData.id,
+        turtleData.type,
+        turtleData.state,
+        turtleData.fuel,
+        turtleData.pos
+    )
+end
+
 ---@param id number
 ---@param serializedGV GVector.Serialized
 function TNet.TurtleHost:OnTurtleHostSearch(id, serializedGV)
@@ -197,6 +218,7 @@ end
 function TNet.TurtleHost:OnTurtleDataUpdate(id, serializedTurtleData)
     self:FLog("Received TURTLE_POS_UPDATE from [%d]", id)
     self.turtleData[id] = textutils.unserialiseJSON(serializedTurtleData)
+    self:UpdateTurtleStatusDisplay(id)
 end
 
 ---@param turtleID number
