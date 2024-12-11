@@ -97,7 +97,7 @@ function GTurtle.Base:new(options)
     }
 end
 
----@return GTurtle.TurtleDB turtleData
+---@return GTurtle.TurtleDB turtleDB
 function GTurtle.Base:LoadTurtleDB()
     if self.turtleDBFile and fs.exists(self.turtleDBFile) then
         local file = fs.open(self.turtleDBFile, "r")

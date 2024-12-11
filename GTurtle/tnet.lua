@@ -269,19 +269,11 @@ function TNet.TurtleHost:OnTurtleDataUpdate(id, serializedTurtleData)
     self:UpdateTurtleStatusDisplay(id)
 end
 
----@param turtleID number
----@return GVector? pos
-function TNet.TurtleHost:GetTurtlePos(turtleID)
+function TNet.TurtleHost:UpdateGridMapDisplay(turtleID)
     local turtleData = self.turtleData[turtleID]
     if turtleData then
-        return turtleData.pos
+        self.ui.ggrid:Update(turtleData.pos)
     end
-    self:FLog("Error: Could not get pos for [%d]", turtleID)
-end
-
-function TNet.TurtleHost:UpdateGridMapDisplay(turtleID)
-    local turtlePos = self:GetTurtlePos(turtleID)
-    self.ui.ggrid:Update(turtlePos)
 end
 
 ---@param id number
