@@ -157,8 +157,8 @@ function TNet.TurtleHost:InitFrontend()
         parent = monitor,
         sizeX = mX / 3,
         sizeY = mY / 3,
-        x = 2,
-        y = 4,
+        x = 3,
+        y = monitorMidY / 2,
         text = "Turtle Status\nTest 1:\nTest 2:"
     }
 end
