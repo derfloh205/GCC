@@ -36,6 +36,8 @@ function GGrid:Update(centerPosition)
     ---@type GBox.Pixel[]
     local pixels = {}
 
+    term.native().write("Grid Update: (%d,%d) (%d,%d)", minX, maxX, minY, maxY)
+
     for x = minX, maxX do
         for y = minY, maxY do
             local gridNode = self.gridMap:GetGridNode(GVector(x, y, z))
