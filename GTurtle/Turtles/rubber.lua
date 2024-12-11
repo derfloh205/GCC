@@ -31,12 +31,14 @@ local RubberTurtle = GTurtle.Base:extend()
 
 ---@class GTurtle.RubberTurtle.STATE : GState.STATE
 RubberTurtle.STATE = {
-    EXPLORE_TREE_POSITIONS = "EXPLORE_TREE_POSITIONS",
+    INIT_TREE_POSITIONS = "INIT_TREE_POSITIONS",
     FETCH_SAPLINGS = "FETCH_SAPLINGS",
     SEARCH_TREE = "",
     DECIDE_ACTION = "DECIDE_ACTION",
     REFUEL = "REFUEL",
-    REQUEST_FUEL = "REQUEST_FUEL"
+    REQUEST_FUEL = "REQUEST_FUEL",
+    DROP_PRODUCTS = "DROP_PRODUCTS",
+    FARM_TREES = "FARM_TREES"
 }
 TUtil:Inject(RubberTurtle.STATE, GState.STATE)
 
@@ -153,7 +155,7 @@ function RubberTurtle:INIT()
     self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
 end
 
-function RubberTurtle:FETCH_SAPLINGS()
+function RubberTurtle:FetchResources()
     self:NavigateToPosition(self.resourceGN.pos)
     local success = self:TurnToChest()
 
@@ -166,7 +168,22 @@ function RubberTurtle:FETCH_SAPLINGS()
     self:Log("Get Saplings..")
     self:SuckFromChest(CONST.ITEMS.RUBBER_SAPLINGS)
     self:DropItems(self.RESOURCE_CHEST_ITEMS)
+end
 
+function RubberTurtle:DROP_PRODUCTS()
+    if not self:NavigateToPosition(self.produceGN.pos) then
+        self:Log("Could not reach produce chest")
+        self:SetState(RubberTurtle.STATE.EXIT)
+        return
+    end
+
+    if not self:TurnToChest() then
+        self:Log("Could not find produce chest")
+        self:SetState(RubberTurtle.STATE.EXIT)
+        return
+    end
+
+    self:DropItems(self.PRODUCE_CHEST_ITEMS)
     self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
 end
 
@@ -222,7 +239,7 @@ function RubberTurtle:GetTreePositionCandidate()
     end
 end
 
-function RubberTurtle:EXPLORE_TREE_POSITIONS()
+function RubberTurtle:INIT_TREE_POSITIONS()
     local candidateGN, candidateArea = self:GetTreePositionCandidate()
 
     if candidateGN and candidateArea then
@@ -292,15 +309,26 @@ function RubberTurtle:REQUEST_FUEL()
     self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
 end
 
+function RubberTurtle:FuelCheck()
+    return turtle.getFuelLevel() >= self.minimumFuel
+end
+
+function RubberTurtle:FARM_TREES()
+    if not self:FuelCheck() then
+        self:SetState(RubberTurtle.STATE.REFUEL)
+        return
+    end
+end
+
 function RubberTurtle:DECIDE_ACTION()
-    if turtle.getFuelLevel() < self.minimumFuel then
+    if not self:FuelCheck() then
         self:SetState(RubberTurtle.STATE.REFUEL)
     elseif #self.treeGNs < self.treeCount then
-        self:SetState(RubberTurtle.STATE.EXPLORE_TREE_POSITIONS)
-    elseif not self:GetInventoryItem(CONST.ITEMS.RUBBER_SAPLINGS) then
-        self:SetState(RubberTurtle.STATE.FETCH_SAPLINGS)
+        self:SetState(RubberTurtle.STATE.INIT_TREE_POSITIONS)
+    elseif self:GetInventoryItem(CONST.ITEMS.RESIN) or self:GetInventoryItem(CONST.ITEMS.RUBBER_WOOD) then
+        self:SetState(RubberTurtle.STATE.DROP_PRODUCTS)
     else
-        self:SetState(RubberTurtle.STATE.EXIT)
+        self:SetState(RubberTurtle.STATE.FARM_TREES)
     end
 end
 
