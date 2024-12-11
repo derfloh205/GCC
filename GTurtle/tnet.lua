@@ -229,7 +229,7 @@ Pos:   %s
         turtleData.type,
         turtleData.state,
         turtleData.fuel,
-        turtleData.pos
+        tostring(turtleData.pos)
     )
 
     self.ui.turtleStatusSummary:SetText(statusText)
