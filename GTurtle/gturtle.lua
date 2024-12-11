@@ -534,4 +534,10 @@ function GTurtle.Base:INIT()
     self:SetState(GState.STATE.EXIT)
 end
 
+function GTurtle.Base:EXIT()
+    self.tNetClient:SendTurtleDataUpdate()
+    self:Log("Terminating..")
+    return false
+end
+
 return GTurtle
