@@ -67,7 +67,8 @@ function RubberTurtle:SerializeTurtleDB(data)
         resourceChestPos = data.resourceChestPos:Serialize(),
         produceChestPos = data.produceChestPos:Serialize(),
         fenceCorners = GVector:SerializeList(data.fenceCorners),
-        treePositions = GVector:SerializeList(data.treePositions)
+        treePositions = GVector:SerializeList(data.treePositions),
+        treeCount = data.treeCount
     }
 end
 
@@ -78,7 +79,8 @@ function RubberTurtle:DeserializeTurtleDB(data)
         resourceChestPos = GVector:Deserialize(data.resourceChestPos),
         produceChestPos = GVector:Deserialize(data.produceChestPos),
         fenceCorners = GVector:DeserializeList(data.fenceCorners),
-        treePositions = GVector:DeserializeList(data.treePositions)
+        treePositions = GVector:DeserializeList(data.treePositions),
+        treeCount = data.treeCount
     }
 end
 
