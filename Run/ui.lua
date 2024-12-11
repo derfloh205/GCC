@@ -50,12 +50,12 @@ local icon =
     y = 15,
     monitor = monitor,
     pixels = {
-        {x = 1, y = 1, c = colors.green},
+        {x = 1, y = 1, c = colors.red},
         {x = 2, y = 1, c = colors.green},
-        {x = 3, y = 1, c = colors.green},
-        {x = 4, y = 1, c = colors.green},
-        {x = 5, y = 1, c = colors.green},
-        {x = 6, y = 1, c = colors.green}
+        {x = 3, y = 1, c = colors.magenta},
+        {x = 4, y = 1, c = colors.blue},
+        {x = 5, y = 1, c = colors.cyan},
+        {x = 6, y = 1, c = colors.pink}
     }
 }
 
