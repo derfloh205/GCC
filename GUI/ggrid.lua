@@ -1,6 +1,7 @@
 local GBox = require("GCC/GUI/gbox")
 local GNAV = require("GCC/GNav/gnav")
 local GVector = require("GCC/GNav/gvector")
+local f = string.format
 
 ---@class GGrid.Options : GBox.Options
 ---@field gridMap GNAV.GridMap
@@ -15,6 +16,8 @@ function GGrid:new(options)
     options = options or {}
     ---@diagnostic disable-next-line: redundant-parameter
     GGrid.super.new(self, options)
+
+    term.native().write(f("GBox Pixel Size: %d, %d", self.box.width, self.box.height))
 
     self.gridMap = options.gridMap
     self.colorMapFunc = options.colorMapFunc
