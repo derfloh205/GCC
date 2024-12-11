@@ -49,9 +49,9 @@ local icon =
     monitor = monitor,
     pixels = {
         {x = 1, y = 1, c = colors.red},
-        {x = 1, y = 2, c = colors.blue},
-        {x = 2, y = 1, c = colors.magenta},
-        {x = 2, y = 2, c = colors.purple}
+        {x = 2, y = 2, c = colors.blue},
+        {x = 3, y = 3, c = colors.magenta},
+        {x = 4, y = 4, c = colors.purple}
     }
 }
 
