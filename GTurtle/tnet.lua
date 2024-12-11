@@ -219,7 +219,7 @@ function TNet.TurtleHost:UpdateTurtleStatusDisplay(turtleID)
     end
     local statusText =
         f(
-        [[  - Turtle [%d] -
+        [[    - Turtle [%d] -
         
 Type:  %s
 State: %s
