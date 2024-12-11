@@ -17,8 +17,6 @@ function GGrid:new(options)
     ---@diagnostic disable-next-line: redundant-parameter
     GGrid.super.new(self, options)
 
-    term.native().write(f("GBox Pixel Size: %d, %d", self.box.width, self.box.height))
-
     self.gridMap = options.gridMap
     self.colorMapFunc = options.colorMapFunc
 end
@@ -35,8 +33,6 @@ function GGrid:Update(centerPosition)
 
     ---@type GBox.Pixel[]
     local pixels = {}
-
-    term.native().write(f("Grid Update: (%d,%d) (%d,%d)", minX, maxX, minY, maxY))
 
     for x = minX, maxX do
         for y = minY, maxY do
