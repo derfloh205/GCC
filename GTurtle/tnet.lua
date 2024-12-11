@@ -103,15 +103,18 @@ function TNet.TurtleHost:new(options)
 end
 
 function TNet.TurtleHost:InitFrontend()
+    local mX, mY = self.ui.frontend.monitor.getSize()
+    local monitorMidX = math.floor(mX / 2)
+    local monitorMidY = math.floor(mY / 2)
     self.ui.ggrid =
         GGrid {
         gridMap = self.gridMap,
         monitor = self.ui.frontend.monitor,
         parent = self.ui.frontend.monitor,
-        sizeX = 11,
-        sizeY = 11,
-        x = 15,
-        y = 10,
+        sizeX = math.floor(mX / 3),
+        sizeY = math.floor(mY / 3),
+        x = monitorMidX,
+        y = monitorMidY / 2,
         colorMapFunc = function(gridNode)
             local isTurtlePos =
                 TUtil:Some(
@@ -142,7 +145,7 @@ function TNet.TurtleHost:InitFrontend()
         parent = self.ui.frontend.monitor,
         sizeX = 15,
         sizeY = 2,
-        x = math.floor(self.ui.frontend.monitor.getSize() / 2) - 7,
+        x = monitorMidX - 7,
         y = 2,
         text = "Turtle Host UI"
     }
