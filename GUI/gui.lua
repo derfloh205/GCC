@@ -25,6 +25,52 @@ function GUI.Icon:new(options)
     end
 end
 
+---@class GUI.Text.Options : GWindow.Options
+---@field text? string
+
+---@class GUI.Text : GWindow
+---@overload fun(options: GUI.Text.Options) : GUI.Text
+GUI.Text = GBox:extend()
+
+---@param options GUI.Text.Options
+function GUI.Text:new(options)
+    options = options or {}
+    ---@diagnostic disable-next-line: redundant-parameter
+    GUI.Text.super.new(self, options)
+    self.text = options.text or ""
+
+    if self.text then
+        self:SetText(self.text)
+    end
+end
+
+---@param text string
+---@param textColor? number
+---@param bgColor? number
+function GUI.Text:SetText(text, textColor, bgColor)
+    self.window.clear()
+    self.window.setCursorPos(1, 1)
+    local pTxtColor = self.window.getTextColor()
+    local pBgColor = self.window.getBackgroundColor()
+
+    if textColor then
+        self.window.setTextColor(textColor)
+    end
+    if bgColor then
+        self.window.setBackgroundColor(bgColor)
+    end
+    self:LockRedirect()
+    print(text)
+    self:FreeRedirect()
+
+    if textColor then
+        self.window.setTextColor(pTxtColor)
+    end
+    if bgColor then
+        self.window.setBackgroundColor(pBgColor)
+    end
+end
+
 ---@class GUI.Clickable.Options
 ---@field frontend GUI.Frontend
 ---@field parent? table

@@ -135,6 +135,17 @@ function TNet.TurtleHost:InitFrontend()
             return colors.lightGray
         end
     }
+
+    self.ui.title =
+        GUI.Text {
+        monitor = self.ui.frontend.monitor,
+        parent = self.ui.frontend.monitor,
+        sizeX = 5,
+        sizeY = 2,
+        x = 5,
+        y = 1,
+        text = "Turtle Host UI"
+    }
 end
 
 ---@param id number
