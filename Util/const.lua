@@ -7,6 +7,7 @@ CONST.ITEMS = {
     RUBBER_WOOD = "ic2:blockrubwood",
     -- loot / drops
     RUBBER_SAPLINGS = "ic2:blockrubsapling",
+    RUBBER_LEAVES = "ic2:leaves",
     RESIN = "ic2:itemharz",
     COAL = "minecraft:coal", -- also charcoal
     BONE_MEAL = "minecraft:dye" -- ??
