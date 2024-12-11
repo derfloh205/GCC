@@ -1,7 +1,7 @@
 local GUI = require("GCC/GUI/gui")
 local monitor = peripheral.find("monitor")
 
-monitor.setTextScale(0.5)
+monitor.setTextScale(1)
 
 local UI =
     GUI.Frontend {
