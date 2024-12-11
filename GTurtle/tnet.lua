@@ -54,7 +54,7 @@ end
 function TNet.TurtleData:Deserialize(serialized)
     return TNet.TurtleData {
         id = serialized.id,
-        pos = GVector:Deserialize(serialized),
+        pos = GVector:Deserialize(serialized.pos),
         state = serialized.state,
         type = serialized.type,
         fuel = serialized.fuel
@@ -220,10 +220,10 @@ function TNet.TurtleHost:UpdateTurtleStatusDisplay(turtleID)
     local statusText =
         f(
         [[- Turtle [%d] -
-Type: %s
+Type:  %s
 State: %s
-Fuel: %d
-Pos: %s
+Fuel:  %d
+Pos:   %s
 ]],
         turtleData.id,
         turtleData.type,
