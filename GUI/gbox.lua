@@ -7,6 +7,8 @@ local GWindow = require("GCC/GUI/gwindow")
 ---@field c number
 
 ---@class GBox.Options : GWindow.Options
+---@field sizeX number pixels (multiple of 2)
+---@field sizeY number pixels (multiple of 3)
 
 ---@class GBox : GWindow
 ---@overload fun(options:GBox.Options) : GBox
@@ -15,6 +17,14 @@ local GBox = GWindow:extend()
 ---@param options GBox.Options
 function GBox:new(options)
     options = options or {}
+
+    if options.sizeX % 2 ~= 0 or options.sizeY % 3 ~= 0 then
+        error("GBox: X and Y needs to be multiples of 2 and 3 respectively")
+    end
+
+    --- translate to gwindow size
+    options.sizeX = options.sizeX / 2
+    options.sizeY = options.sizeY / 3
     ---@diagnostic disable-next-line: redundant-parameter
     GBox.super.new(self, options)
 

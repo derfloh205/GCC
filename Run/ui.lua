@@ -42,8 +42,8 @@ local testButton2 =
 local icon =
     GUI.Icon {
     parent = monitor,
-    sizeX = 1,
-    sizeY = 1,
+    sizeX = 6, -- 6
+    sizeY = 6, -- 6
     x = 15,
     y = 15,
     monitor = monitor,
@@ -52,7 +52,8 @@ local icon =
         {x = 2, y = 1, c = colors.green},
         {x = 3, y = 1, c = colors.green},
         {x = 4, y = 1, c = colors.green},
-        {x = 5, y = 1, c = colors.green}
+        {x = 5, y = 1, c = colors.green},
+        {x = 6, y = 1, c = colors.green}
     }
 }
 
