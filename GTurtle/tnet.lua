@@ -142,8 +142,8 @@ function TNet.TurtleHost:InitFrontend()
         parent = self.ui.frontend.monitor,
         sizeX = 15,
         sizeY = 2,
-        x = 1,
-        y = 1,
+        x = math.floor(self.ui.frontend.monitor.getSize() / 2) - 7,
+        y = 2,
         text = "Turtle Host UI"
     }
 end
