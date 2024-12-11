@@ -18,7 +18,7 @@ function GBox:new(options)
     ---@diagnostic disable-next-line: redundant-parameter
     GBox.super.new(self, options)
 
-    self.box = pixelbox:new(self.window)
+    self.box = pixelbox.new(self.window)
 end
 
 ---@param pixels GBox.Pixel[]
