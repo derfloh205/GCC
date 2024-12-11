@@ -18,12 +18,11 @@ local GBox = GWindow:extend()
 function GBox:new(options)
     options = options or {}
 
-    if options.sizeX % 2 ~= 0 or options.sizeY % 3 ~= 0 then
+    if options.sizeY % 3 ~= 0 then
         error("GBox: X and Y needs to be multiples of 2 and 3 respectively")
     end
 
     --- translate to gwindow size
-    options.sizeX = options.sizeX / 2
     options.sizeY = options.sizeY / 3
     ---@diagnostic disable-next-line: redundant-parameter
     GBox.super.new(self, options)
