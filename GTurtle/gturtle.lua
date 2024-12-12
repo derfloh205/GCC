@@ -195,6 +195,12 @@ function GTurtle.Base:SuckFromChest(name, requestedCount)
     end
 end
 
+function GTurtle.Base:CollectNearbyItems()
+    turtle.suckUp()
+    turtle.suckDown()
+    turtle.suck()
+end
+
 function GTurtle.Base:SuckEverythingFromChest()
     local success
     repeat

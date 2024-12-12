@@ -399,15 +399,18 @@ function RubberTurtle:HarvestTree(treeBaseGN)
             end
             self:TurnTo(CONST.ITEMS.RUBBER_WOOD)
             self:LogFeed("Harvesting Resin..")
-            if not self:UseItem(CONST.TOOLS.ELECTRIC_TREE_TAP) then
-                if not self:UseItem(CONST.TOOLS.TREE_TAP) then
+            local usedTreeTap = false
+            repeat
+                usedTreeTap = self:UseItem(CONST.TOOLS.ELECTRIC_TREE_TAP) or self:UseItem(CONST.TOOLS.TREE_TAP)
+                if not usedTreeTap then
                     self:LogFeed("Requesting Tree Tap..")
                     self:RequestOneOfItem(
                         {CONST.TOOLS.ELECTRIC_TREE_TAP, CONST.TOOLS.TREE_TAP},
                         "Tree Tap required.. Please insert!"
                     )
                 end
-            end
+            until usedTreeTap
+            self:CollectNearbyItems()
         end
 
         self:LogFeed("Harvesting Wood..")
