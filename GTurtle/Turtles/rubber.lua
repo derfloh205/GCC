@@ -377,40 +377,44 @@ function RubberTurtle:GetResinHead(treeGN)
     end
 end
 
----@param treeGN GNAV.GridNode
-function RubberTurtle:HarvestTree(treeGN)
+---@param treeBaseGN GNAV.GridNode
+function RubberTurtle:HarvestTree(treeBaseGN)
     self:LogFeed("Harvesting..")
-    if not treeGN:IsItem(CONST.ITEMS.RUBBER_WOOD) then
-        self:LogFeed("No Wood to Harvest..")
-        return
-    end
-    local resinHead = self:GetResinHead(treeGN)
-    if resinHead then
-        self:FLogFeed("Resin: %s", resinHead)
-        local harvestGN = treeGN:GetRelativeNode(resinHead, GNAV.DIR.F)
-        if not self:NavigateToPosition(harvestGN.pos) then
-            self:LogFeed("Resin Unreachable..")
-            return
+    local startHeight = treeBaseGN.pos.z
+    local maxHeight = startHeight + 10
+    repeat
+        local woodGN = self.tnav.currentGN:GetRelativeNode(self.tnav.head, GNAV.DIR.F)
+        if not woodGN:IsItem(CONST.ITEMS.RUBBER_WOOD) then
+            self:LogFeed("No Wood to Harvest..")
+            break
         end
-        self:TurnTo(CONST.ITEMS.RUBBER_WOOD)
-        self:LogFeed("Harvesting Resin..")
-        if not self:UseItem(CONST.TOOLS.ELECTRIC_TREE_TAP) then
-            if not self:UseItem(CONST.TOOLS.TREE_TAP) then
-                self:LogFeed("Requesting Tree Tap..")
-                self:RequestOneOfItem(
-                    {CONST.TOOLS.ELECTRIC_TREE_TAP, CONST.TOOLS.TREE_TAP},
-                    "Tree Tap required.. Please insert!"
-                )
+
+        local resinHead = self:GetResinHead(woodGN)
+        if resinHead then
+            self:FLogFeed("Resin: %s", resinHead)
+            local harvestGN = woodGN:GetRelativeNode(resinHead, GNAV.DIR.F)
+            if not self:NavigateToPosition(harvestGN.pos) then
+                self:LogFeed("Resin Unreachable..")
+                break
+            end
+            self:TurnTo(CONST.ITEMS.RUBBER_WOOD)
+            self:LogFeed("Harvesting Resin..")
+            if not self:UseItem(CONST.TOOLS.ELECTRIC_TREE_TAP) then
+                if not self:UseItem(CONST.TOOLS.TREE_TAP) then
+                    self:LogFeed("Requesting Tree Tap..")
+                    self:RequestOneOfItem(
+                        {CONST.TOOLS.ELECTRIC_TREE_TAP, CONST.TOOLS.TREE_TAP},
+                        "Tree Tap required.. Please insert!"
+                    )
+                end
             end
         end
-    end
 
-    self:LogFeed("Harvesting Wood..")
-    self:Dig("F")
-    if self:Move("U") == GTurtle.RETURN_CODE.SUCCESS then
+        self:LogFeed("Harvesting Wood..")
+        self:Dig("F")
         self:LogFeed("Climbing..")
-        self:HarvestTree(treeGN)
-    end
+        local climbResponse = self:Move("U")
+    until maxHeight <= self.tnav.currentGN.pos.z or climbResponse == GTurtle.RETURN_CODE.BLOCKED
 end
 
 ---@param treeGN GNAV.GridNode
