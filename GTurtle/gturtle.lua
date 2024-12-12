@@ -139,21 +139,26 @@ function GTurtle.Base:PersistTurtleDB()
 end
 
 ---@return table<number, table>
-function GTurtle.Base:GetInventoryItems()
+---@param detailed? boolean
+function GTurtle.Base:GetInventoryItems(detailed)
     local itemMap = {}
     for i = 1, 16 do
-        itemMap[i] = turtle.getItemDetail(i)
+        itemMap[i] = turtle.getItemDetail(i, detailed)
     end
     return itemMap
 end
 
 ---@param name string
+---@param detailed? boolean
 ---@return number? slotID
 ---@return number? amount
-function GTurtle.Base:GetInventoryItem(name)
+function GTurtle.Base:GetInventoryItem(name, detailed)
     local itemMap = self:GetInventoryItems()
     for slot, itemData in pairs(itemMap) do
         if itemData and name == itemData.name then
+            if detailed then
+                itemData = turtle.getItemDetail(slot, true)
+            end
             return slot, itemData.count
         end
     end
