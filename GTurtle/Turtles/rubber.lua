@@ -455,7 +455,8 @@ function RubberTurtle:WAIT_FOR_TREES_GROWING()
     local maxGrowTime = math.max(table.unpack(saplingGrowTimes))
 
     if maxGrowTime < self.MAX_GROW_TIME then
-        self:LogFeed("Awaiting Grow..")
+        self.tNetClient:SendTurtleDataUpdate()
+        self:FLogFeed("Awaiting Grow: %d", self.MAX_GROW_TIME - maxGrowTime)
         sleep(1) -- yield back to state scheduler
         return
     end
