@@ -385,24 +385,23 @@ function RubberTurtle:HarvestTree(treeGN)
         return
     end
     local resinHead = self:GetResinHead(treeGN)
-    if not resinHead then
-        return
-    end
-    self:FLogFeed("Resin: %s", resinHead)
-    local harvestGN = treeGN:GetRelativeNode(resinHead, GNAV.DIR.F)
-    if not self:NavigateToPosition(harvestGN.pos) then
-        self:LogFeed("Resin Unreachable..")
-        return
-    end
-    self:TurnTo(CONST.ITEMS.RUBBER_WOOD)
-    self:LogFeed("Harvesting Resin..")
-    if not self:UseItem(CONST.TOOLS.ELECTRIC_TREE_TAP) then
-        if not self:UseItem(CONST.TOOLS.TREE_TAP) then
-            self:LogFeed("Requesting Tree Tap..")
-            self:RequestOneOfItem(
-                {CONST.TOOLS.ELECTRIC_TREE_TAP, CONST.TOOLS.TREE_TAP},
-                "Tree Tap required.. Please insert!"
-            )
+    if resinHead then
+        self:FLogFeed("Resin: %s", resinHead)
+        local harvestGN = treeGN:GetRelativeNode(resinHead, GNAV.DIR.F)
+        if not self:NavigateToPosition(harvestGN.pos) then
+            self:LogFeed("Resin Unreachable..")
+            return
+        end
+        self:TurnTo(CONST.ITEMS.RUBBER_WOOD)
+        self:LogFeed("Harvesting Resin..")
+        if not self:UseItem(CONST.TOOLS.ELECTRIC_TREE_TAP) then
+            if not self:UseItem(CONST.TOOLS.TREE_TAP) then
+                self:LogFeed("Requesting Tree Tap..")
+                self:RequestOneOfItem(
+                    {CONST.TOOLS.ELECTRIC_TREE_TAP, CONST.TOOLS.TREE_TAP},
+                    "Tree Tap required.. Please insert!"
+                )
+            end
         end
     end
 
