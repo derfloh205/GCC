@@ -209,7 +209,7 @@ function TNet.TurtleHost:InitFrontend()
         monitor = monitor,
         parent = monitor,
         sizeX = mX / 2,
-        sizeY = mY / 2,
+        sizeY = mY,
         x = 2,
         y = monitorMidY / 2,
         text = " - Turtle Status -"
