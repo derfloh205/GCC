@@ -194,7 +194,7 @@ function RubberTurtle:DROP_PRODUCTS()
         not self:GetInventoryItem(CONST.ITEMS.RESIN) and not self:GetInventoryItem(CONST.ITEMS.RUBBER_WOOD) and
             not self:GetInventoryItem(CONST.ITEMS.RUBBER_LEAVES)
      then
-        self:SetState(RubberTurtle.STATE.FARM_TREES)
+        self:SetState(RubberTurtle.STATE.WAIT_FOR_TREES_GROWING)
         return
     end
 
