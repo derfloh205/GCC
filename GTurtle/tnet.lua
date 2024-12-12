@@ -49,7 +49,8 @@ function TNet.TurtleData:Serialize()
         pos = self.pos:Serialize(),
         state = self.state,
         type = self.type,
-        fuel = self.fuel
+        fuel = self.fuel,
+        logFeed = self.logFeed
     }
 end
 
