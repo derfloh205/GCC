@@ -506,7 +506,11 @@ end
 function GTurtle.Base:Dig(dir, side)
     local success, err
 
-    local _, digBlock = self:Scan(dir)
+    local isBlock, digBlock = self:Scan(dir)
+
+    if not isBlock then
+        return GTurtle.RETURN_CODE.SUCCESS
+    end
 
     if not self:IsBlockAllowedForDigging(digBlock) then
         return GTurtle.RETURN_CODE.FAILURE, f("Not Digging: %s", (digBlock and digBlock.name))
@@ -690,23 +694,19 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
             local nextMove, isGoal = self.tnav:GetNextMoveAlongPath()
             if nextMove then
                 if GNAV.HEAD[nextMove] then
-                    -- dig first if needed and allowed
                     self:TurnToHead(nextMove)
                 else
+                    -- dig first if needed and allowed
                     if not self.avoidAllBlocks then
-                        local success, err = self:Dig(nextMove)
-                        if success ~= GTurtle.RETURN_CODE.SUCCESS then
+                        if self:Dig(nextMove) ~= GTurtle.RETURN_CODE.SUCCESS then
                             self:Log("Navigating: Could not dig")
-                            self:FLog("- %s", err)
                             path = RecalculatePath()
                             if not path then
                                 return GTurtle.RETURN_CODE.NO_PATH
                             end
                         end
                     end
-                    --self:FLog("Navigating: %s", nextMove)
-                    local success = self:Move(nextMove)
-                    if success ~= GTurtle.RETURN_CODE.SUCCESS then
+                    if self:Move(nextMove) ~= GTurtle.RETURN_CODE.SUCCESS then
                         path = RecalculatePath()
                         if not path then
                             return GTurtle.RETURN_CODE.NO_PATH
