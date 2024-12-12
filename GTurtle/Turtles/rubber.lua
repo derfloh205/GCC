@@ -61,6 +61,8 @@ RubberTurtle.PRODUCE_CHEST_ITEMS = {
 ---@param options GTurtle.RubberTurtle.Options
 function RubberTurtle:new(options)
     options = options or {}
+    options.avoidAllBlocks = false
+    options.digWhitelist = {CONST.ITEMS.RUBBER_WOOD, CONST.ITEMS.RUBBER_LEAVES}
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
     self.type = GTurtle.TYPES.RUBBER

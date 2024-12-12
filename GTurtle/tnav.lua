@@ -127,8 +127,9 @@ end
 ---@field gTurtle GTurtle.Base
 ---@field initialHead? GNAV.HEAD
 ---@field avoidUnknown? boolean
----@field avoidAllBlocks? boolean true: avoid all blocks, false: only avoid blocks in blacklist
----@field blockBlacklist? string[] -- used if avoidBlocks is false
+---@field avoidAllBlocks? boolean true: avoid all blocks, false: use blockWhitelist or blockBlacklist
+---@field blockBlacklist? string[] used if avoidBlocks is false
+---@field blockWhitelist? string[] used if avoidBlocks is false
 ---@field gridFile? string
 ---@field fenceCorners? GVector[]
 
@@ -141,7 +142,8 @@ function TNAV.GridNav:new(options)
     options = options or {}
     self.gTurtle = options.gTurtle
     self.avoidAllBlocks = options.avoidAllBlocks == nil or options.avoidAllBlocks
-    self.blockBlacklist = options.blockBlacklist or {}
+    self.blockBlacklist = options.blockBlacklist
+    self.blockWhitelist = options.blockWhitelist
     self.gridFile = options.gridFile
 
     local gpsPos = self:GetGPSPos()
@@ -364,9 +366,6 @@ function TNAV.GridNav:GetValidPathNeighbors(gridNode, flat)
         function(neighborGridNode)
             local isEmpty = neighborGridNode:IsEmpty()
             local allowUnknown = not self.avoidUnknown or not neighborGridNode:IsUnknown()
-            local allBlocksAllowed = not self.avoidAllBlocks
-            local notBlacklisted =
-                (not isEmpty) and (not TUtil:tContains(self.blockBlacklist, neighborGridNode.blockData.name))
 
             if self.geoFence and not self.geoFence:IsWithin(neighborGridNode) then
                 return false
@@ -377,11 +376,17 @@ function TNAV.GridNav:GetValidPathNeighbors(gridNode, flat)
                     return true
                 end
             else
-                if allBlocksAllowed and notBlacklisted then
-                    return true
+                if self.avoidAllBlocks then
+                    return false
+                end
+                if self.blockBlacklist then
+                    return not TUtil:tContains(self.blockBlacklist, neighborGridNode.blockData.name)
+                end
+                if self.blockWhitelist then
+                    return TUtil:tContains(self.blockWhitelist, neighborGridNode.blockData.name)
                 end
             end
-            return false
+            return true
         end
     )
 

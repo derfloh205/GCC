@@ -36,8 +36,9 @@ GTurtle.RETURN_CODE = {
 ---@field visualizeGridOnMove? boolean
 ---@field initialHead? GNAV.HEAD
 ---@field avoidUnknown? boolean
----@field avoidAllBlocks? boolean otherwise the turtle will dig its way
----@field digBlacklist? string[] if not all blocks are avoided it uses the digBlacklist
+---@field avoidAllBlocks? boolean otherwise the turtle will look at digBlacklist and digWhitelist
+---@field digBlacklist? string[] if not all blocks are avoided
+---@field digWhitelist? string[] if not all blocks are avoided
 ---@field cacheGrid? boolean
 ---@field fenceCorners? GVector[]
 
@@ -55,6 +56,7 @@ function GTurtle.Base:new(options)
     GTurtle.Base.super.new(self, options)
     os.setComputerLabel(self.name)
     self.digBlacklist = options.digBlacklist
+    self.digWhitelist = options.digWhitelist
     self.avoidAllBlocks = options.avoidAllBlocks == nil or options.avoidAllBlocks -- -> defaults to true
     self.fuelWhitelist = options.fuelWhitelist or CONST.DEFAULT_FUEL_ITEMS
     self.visualizeGridOnMove = options.visualizeGridOnMove
@@ -86,6 +88,7 @@ function GTurtle.Base:new(options)
             avoidUnknown = options.avoidUnknown,
             avoidAllBlocks = self.avoidAllBlocks,
             blockBlacklist = self.digBlacklist,
+            blockWhitelist = self.digWhitelist,
             gridFile = self.cacheGrid and self.gridFile,
             fenceCorners = options.fenceCorners
         }
@@ -475,11 +478,24 @@ end
 
 ---@param blockData table
 ---@return boolean isBlacklisted
-function GTurtle.Base:IsBlockBlacklistedForDigging(blockData)
-    if not blockData or not self.digBlacklist then
+function GTurtle.Base:IsBlockAllowedForDigging(blockData)
+    if self.avoidAllBlocks then
         return false
     end
-    return TUtil:tContains(self.digBlacklist, blockData.name)
+
+    if not blockData then
+        return true
+    end
+
+    if self.digBlacklist then
+        return not TUtil:tContains(self.digBlacklist, blockData.name)
+    end
+
+    if self.digWhitelist then
+        return TUtil:tContains(self.digWhitelist, blockData.name)
+    end
+
+    return true
 end
 
 --- U | D | F
@@ -492,9 +508,7 @@ function GTurtle.Base:Dig(dir, side)
 
     local _, digBlock = self:Scan(dir)
 
-    local isBlacklisted = self:IsBlockBlacklistedForDigging(digBlock)
-
-    if isBlacklisted then
+    if not self:IsBlockAllowedForDigging(digBlock) then
         return GTurtle.RETURN_CODE.FAILURE, f("Not Digging: %s", (digBlock and digBlock.name))
     end
 
