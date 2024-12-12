@@ -145,6 +145,7 @@ function GNAV.GridNode:new(options)
 end
 
 function GNAV.GridNode:SetBlockData(blockData)
+    ---@type BlockData?
     self.blockData = blockData
     self.unknown = false
 end
@@ -159,10 +160,25 @@ end
 
 ---@return boolean isChest
 function GNAV.GridNode:IsChest()
+    return self:IsItemOf(CONST.CHEST_BLOCKS)
+end
+
+---@param blockName string
+---@return boolean isItem
+function GNAV.GridNode:IsItem(blockName)
     if self:IsEmpty() or self:IsUnknown() then
         return false
     end
-    return TUtil:tContains(CONST.CHEST_BLOCKS, self.blockData.name)
+    return self.blockData.name == blockName
+end
+
+---@param itemList string[]
+---@return boolean isItemOf
+function GNAV.GridNode:IsItemOf(itemList)
+    if self:IsEmpty() or self:IsUnknown() then
+        return false
+    end
+    return TUtil:tContains(itemList, self.blockData.name)
 end
 
 ---@return boolean isEmpty
@@ -237,6 +253,24 @@ function GNAV.GridNode:GetDrawString()
     end
 
     return c
+end
+
+---@param gridNode GNAV.GridNode
+---@param flat? boolean
+function GNAV.GridNode:GetClosestNeighbor(gridNode, flat)
+    local neighbors = self.gridMap:GetNeighborsOf(self, flat)
+    local closest = nil
+    local minDist = math.huge
+
+    for _, neighbor in ipairs(neighbors) do
+        local dist = neighbor:GetDistance(gridNode)
+        if dist < minDist then
+            minDist = dist
+            closest = neighbor
+        end
+    end
+
+    return closest
 end
 
 ---@class GNAV.GridMap.Options
@@ -430,7 +464,7 @@ end
 
 ---@param gridNode GNAV.GridNode
 ---@param flat? boolean
----@param filterFunc fun(gridNode: GNAV.GridNode) : boolean
+---@param filterFunc? fun(gridNode: GNAV.GridNode) : boolean
 function GNAV.GridMap:GetNeighborsOf(gridNode, flat, filterFunc)
     ---@type GNAV.GridNode[]
     local neighbors = {}

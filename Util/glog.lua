@@ -6,6 +6,7 @@ local f = string.format
 ---@field log boolean
 ---@field logFile? string
 ---@field clearLog? boolean
+---@field logFeedSize? number default: 0
 
 ---@class GLogAble : Object
 local GLogAble = Object:extend()
@@ -15,10 +16,24 @@ function GLogAble:new(options)
     options = options or {}
     self.log = false
     self.logFile = ""
+    ---@type string[]
+    self.logFeed = {}
+    self.logFeedSize = options.logFeedSize or 0
     self:SetLogFile(options.logFile)
     self:SetLog(options.log)
     if options.clearLog then
         self:ClearLog()
+    end
+end
+
+function GLogAble:AddLogFeed(logString)
+    if self.logFeedSize == 0 then
+        return
+    end
+
+    table.insert(self.logFeed, logString)
+    if #self.logFeed > self.logFeedSize then
+        table.remove(self.logFeed, 1)
     end
 end
 

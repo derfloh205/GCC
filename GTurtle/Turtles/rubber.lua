@@ -1,5 +1,6 @@
 local GTurtle = require("GCC/GTurtle/gturtle")
 local GState = require("GCC/Util/gstate")
+local GNAV = require("GCC/GNav/gnav")
 local TUtil = require("GCC/Util/tutil")
 local TermUtil = require("GCC/Util/termutil")
 local GVector = require("GCC/GNav/gvector")
@@ -29,6 +30,13 @@ local f = string.format
 ---@overload fun(options: GTurtle.RubberTurtle.Options) : GTurtle.RubberTurtle
 local RubberTurtle = GTurtle.Base:extend()
 
+RubberTurtle.RESIN_FACE_MAP = {
+    ["north"] = GNAV.HEAD.N,
+    ["east"] = GNAV.HEAD.E,
+    ["south"] = GNAV.HEAD.S,
+    ["west"] = GNAV.HEAD.W
+}
+
 ---@class GTurtle.RubberTurtle.STATE : GState.STATE
 RubberTurtle.STATE = {
     INIT_TREE_POSITIONS = "INIT_TREE_POSITIONS",
@@ -36,13 +44,10 @@ RubberTurtle.STATE = {
     SEARCH_TREE = "",
     DECIDE_ACTION = "DECIDE_ACTION",
     REFUEL = "REFUEL",
-    REQUEST_FUEL = "REQUEST_FUEL",
     DROP_PRODUCTS = "DROP_PRODUCTS",
-    FARM_TREES = "FARM_TREES"
+    TREE_FARMING_PROCEDURE = "TREE_FARMING_PROCEDURE"
 }
 TUtil:Inject(RubberTurtle.STATE, GState.STATE)
-
-RubberTurtle.RESOURCE_CHEST_ITEMS = {}
 
 RubberTurtle.PRODUCE_CHEST_ITEMS = {
     CONST.ITEMS.RUBBER_WOOD,
@@ -155,18 +160,20 @@ function RubberTurtle:INIT()
 end
 
 function RubberTurtle:FetchResources()
-    self:NavigateToPosition(self.resourceGN.pos)
-    local success = self:TurnToChest()
-
-    if not success then
+    local response = self:NavigateToPosition(self.resourceGN.pos)
+    if response ~= GTurtle.RETURN_CODE.SUCCESS then
         self:Log("Error: Resource Chest not found!")
-        self:SetState(RubberTurtle.STATE.EXIT)
-        return
+        return response
     end
 
-    self:Log("Get Saplings..")
-    self:SuckFromChest(CONST.ITEMS.RUBBER_SAPLINGS)
-    self:DropItems(self.RESOURCE_CHEST_ITEMS)
+    response = self:TurnToChest()
+    if response ~= GTurtle.RETURN_CODE.SUCCESS then
+        self:Log("Error: Resource Chest not found!")
+        return GTurtle.RETURN_CODE.FAILURE
+    end
+
+    self:SuckEverythingFromChest()
+    return GTurtle.RETURN_CODE.SUCCESS
 end
 
 function RubberTurtle:DROP_PRODUCTS()
@@ -277,59 +284,119 @@ end
 function RubberTurtle:REFUEL()
     if not self:Refuel() then
         self:Log("Fetching Fuel..")
-        if self:NavigateToPosition(self.resourceGN.pos) ~= GTurtle.RETURN_CODE.SUCCESS then
-            self:Log("Error: Cannot reach Resources")
-            self:SetState(RubberTurtle.STATE.EXIT)
-            return
+        local navResponse = self:NavigateToPosition(self.resourceGN.pos)
+        if navResponse == GTurtle.RETURN_CODE.SUCCESS then
+            if self:FetchResources() == GTurtle.RETURN_CODE.SUCCESS then
+                if not self:Refuel() then
+                    self:RequestFuel()
+                end
+                self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
+                return
+            end
         end
 
-        if not self:TurnToChest() then
-            self:Log("Error: No Resource Chest Found")
-            self:SetState(RubberTurtle.STATE.EXIT)
-            return
-        end
-
-        if self:RefuelFromChest() ~= GTurtle.RETURN_CODE.SUCCESS then
-            self:DropItems(self.RESOURCE_CHEST_ITEMS)
-            self:SetState(RubberTurtle.STATE.REQUEST_FUEL)
-            return
-        end
+        self:Log("Could not reach resource chest")
+        self:SetState(RubberTurtle.STATE.EXIT)
     end
 end
 
-function RubberTurtle:REQUEST_FUEL()
-    repeat
-        term.clear()
-        term.setCursorPos(1, 1)
-        print(f("Please Insert Fuel: %d / %d", turtle.getFuelLevel(), self.minimumFuel))
-        os.pullEvent("turtle_inventory")
-        local refueled = self:Refuel()
-    until refueled
-    self:SetState(RubberTurtle.STATE.DECIDE_ACTION)
+---@param treeGN GNAV.GridNode
+function RubberTurtle:NurtureTree(treeGN)
+    if treeGN:IsEmpty() and self:GetInventoryItem(CONST.ITEMS.RUBBER_SAPLINGS) then
+        self:PlaceItem(CONST.ITEMS.RUBBER_SAPLINGS)
+    end
+
+    if treeGN:IsItem(CONST.ITEMS.RUBBER_SAPLINGS) and self:GetInventoryItem(CONST.ITEMS.BONE_MEAL) then
+        self:UseItem(CONST.ITEMS.BONE_MEAL)
+    end
 end
 
-function RubberTurtle:FuelCheck()
-    return turtle.getFuelLevel() >= self.minimumFuel
-end
-
-function RubberTurtle:FARM_TREES()
-    if not self:FuelCheck() then
-        self:SetState(RubberTurtle.STATE.REFUEL)
+---@param treeGN GNAV.GridNode
+---@return GNAV.HEAD?
+function RubberTurtle:GetResinHead(treeGN)
+    if not treeGN:IsItem(CONST.ITEMS.RUBBER_WOOD) then
         return
     end
+    local state = treeGN.blockData.state --[[@as BlockState.RubberWood]]
+    if state.resin and state.collectable then
+        local facing = state.resinfacing
+        return self.RESIN_FACE_MAP[facing]
+    end
+end
 
-    -- TODO
+---@param treeGN GNAV.GridNode
+function RubberTurtle:HarvestTree(treeGN)
+    self:Log("Harvesting Tree")
+    if not treeGN:IsItem(CONST.ITEMS.RUBBER_WOOD) then
+        return
+    end
+    local resinHead = self:GetResinHead(treeGN)
+    if not resinHead then
+        return
+    end
+    self:Log("Found Resin. Navigating to Harvest Position")
+    local harvestGN = treeGN:GetRelativeNode(resinHead, GNAV.DIR.F)
+    if not self:NavigateToPosition(harvestGN.pos) then
+        self:Log("Could not reach harvest position")
+        return
+    end
+    self:Log("Harvesting Resin")
+    if not self:UseItem(CONST.TOOLS.ELECTRIC_TREE_TAP) then
+        if not self:UseItem(CONST.TOOLS.TREE_TAP) then
+            self:Log("Could not harvest resin: no tree tap")
+            self:RequestOneOfItem(
+                {CONST.TOOLS.ELECTRIC_TREE_TAP, CONST.TOOLS.TREE_TAP},
+                "Tree Tap required.. Please insert!"
+            )
+        end
+    end
+
+    self:Log("Harvesting Wood..")
+    self:Dig("F")
+    self:Move("U")
+    self:Log("Climbing Up..")
+    self:HarvestTree(treeGN)
+end
+
+function RubberTurtle:TREE_FARMING_PROCEDURE()
+    -- go to each tree, if there is wood, farm it, if not place a sapling, if there is a sapling use bone meal
+    for _, treeGN in ipairs(self.treeGNs) do
+        -- get block in front of tree
+        local targetGN = treeGN:GetClosestNeighbor(self.tnav.currentGN, true)
+
+        if not targetGN then
+            self:Log("Could not find target for tree")
+            self:SetState(RubberTurtle.STATE.EXIT)
+            return
+        end
+
+        local success = self:NavigateToPosition(targetGN.pos)
+        if success ~= GTurtle.RETURN_CODE.SUCCESS then
+            self:Log("Could not reach adjacent tree position")
+            self:SetState(RubberTurtle.STATE.EXIT)
+            return
+        end
+
+        -- turn to tree pos
+        self:TurnToHead(self.tnav.currentGN:GetRelativeHeading(treeGN))
+        self:NurtureTree(treeGN)
+        self:HarvestTree(treeGN)
+        -- climb down
+        self:Log("Climbing Down..")
+        repeat
+        until self:Move("D") == GTurtle.RETURN_CODE.BLOCKED
+    end
 end
 
 function RubberTurtle:DECIDE_ACTION()
-    if not self:FuelCheck() then
+    if not self:HasMinimumFuel() then
         self:SetState(RubberTurtle.STATE.REFUEL)
     elseif #self.treeGNs < self.treeCount then
         self:SetState(RubberTurtle.STATE.INIT_TREE_POSITIONS)
     elseif self:GetInventoryItem(CONST.ITEMS.RESIN) or self:GetInventoryItem(CONST.ITEMS.RUBBER_WOOD) then
         self:SetState(RubberTurtle.STATE.DROP_PRODUCTS)
     else
-        self:SetState(RubberTurtle.STATE.FARM_TREES)
+        self:SetState(RubberTurtle.STATE.TREE_FARMING_PROCEDURE)
     end
 end
 

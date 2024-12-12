@@ -17,6 +17,7 @@ local TNet = {}
 ---@field state GState.STATE
 ---@field type GTurtle.TYPES
 ---@field fuel number
+---@field logFeed string[]
 
 ---@class TNet.TurtleData.Serialized
 ---@field id number
@@ -24,6 +25,7 @@ local TNet = {}
 ---@field state GState.STATE
 ---@field type GTurtle.TYPES
 ---@field fuel number
+---@field logFeed string[]
 
 ---@class TNet.TurtleData
 ---@overload fun(options: TNet.TurtleData.Options) : TNet.TurtleData
@@ -37,6 +39,7 @@ function TNet.TurtleData:new(options)
     self.state = options.state
     self.type = options.type
     self.fuel = options.fuel
+    self.logFeed = options.logFeed or {}
 end
 
 ---@return TNet.TurtleData.Serialized
@@ -57,7 +60,8 @@ function TNet.TurtleData:Deserialize(serialized)
         pos = GVector:Deserialize(serialized.pos),
         state = serialized.state,
         type = serialized.type,
-        fuel = serialized.fuel
+        fuel = serialized.fuel,
+        logFeed = serialized.logFeed
     }
 end
 
@@ -225,12 +229,16 @@ Type:  %s
 State: %s
 Fuel:  %d
 Pos:   %s
+
+    - Log -
+%s
 ]],
         turtleData.id,
         turtleData.type,
         turtleData.state,
         turtleData.fuel,
-        tostring(turtleData.pos)
+        tostring(turtleData.pos),
+        table.concat(turtleData.logFeed, "\n")
     )
 
     self.ui.turtleStatusSummary:SetText(statusText)
@@ -343,7 +351,8 @@ function TNet.TurtleHostClient:SendTurtleDataUpdate()
         type = self.gTurtle.type,
         pos = self.gTurtle.tnav.currentGN.pos,
         fuel = turtle.getFuelLevel(),
-        state = self.gTurtle.state
+        state = self.gTurtle.state,
+        logFeed = self.gTurtle.logFeed
     }
     rednet.send(self.hostID, turtleData:Serialize(), TNet.TurtleHost.PROTOCOL.TURTLE_DATA_UPDATE)
 end

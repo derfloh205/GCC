@@ -1,6 +1,22 @@
 ---@class Const
 local CONST = {}
 
+---@class BlockState.RubberWood
+---@field resinfacing "north" | "east" | "south" | "west"
+---@field axis "x" | "y" | "z"
+---@field resin boolean
+---@field collectable boolean
+
+---@class BlockData.RubberWood : BlockData
+---@field state BlockState.RubberWood
+
+---@class BlockState
+
+---@class BlockData
+---@field name string
+---@field metadata number
+---@field state? BlockState
+
 CONST.ITEMS = {
     -- blocks
     QUARK_CHEST = "quark:custom_chest",
@@ -11,6 +27,11 @@ CONST.ITEMS = {
     RESIN = "ic2:itemharz",
     COAL = "minecraft:coal", -- also charcoal
     BONE_MEAL = "minecraft:dye" -- ??
+}
+
+CONST.TOOLS = {
+    ELECTRIC_TREE_TAP = "ic2:itemtreetapelectric",
+    TREE_TAP = "ic2:itemtreetap"
 }
 
 CONST.CHEST_BLOCKS = {

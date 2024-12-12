@@ -110,9 +110,9 @@ function TNAV.Path:IsGoal(gridNode)
     return goalNode:EqualPos(gridNode)
 end
 
----@return boolean
-function TNAV.Path:FuelForPath()
-    return turtle.getFuelLevel() >= #self.nodeList
+---@return number
+function TNAV.Path:GetFuelRequirement()
+    return #self.nodeList
 end
 
 function TNAV.Path:__tostring()

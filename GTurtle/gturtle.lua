@@ -190,6 +190,13 @@ function GTurtle.Base:SuckFromChest(name, requestedCount)
     end
 end
 
+function GTurtle.Base:SuckEverythingFromChest()
+    local success
+    repeat
+        success = turtle.suck()
+    until not success
+end
+
 ---@return GTurtle.RETURN_CODE returnCode
 ---@return string? err
 function GTurtle.Base:RefuelFromChest()
@@ -245,6 +252,31 @@ function GTurtle.Base:DropItems(itemNames)
     turtle.select(selectedSlotID)
 end
 
+---@param itemName string
+---@param content? string e.g. text of a sign
+---@return boolean placed
+function GTurtle.Base:PlaceItem(itemName, content)
+    --- find item in inventory and place it
+    local prevSlotID = turtle.getSelectedSlot()
+    local slotID, _ = self:GetInventoryItem(itemName)
+    if slotID then
+        turtle.select(slotID)
+        turtle.place(content)
+        turtle.select(prevSlotID)
+        self.tnav:UpdateSurroundings()
+        return true
+    else
+        return false
+    end
+end
+
+---@param itemName string
+---@param content? string e.g. text of a sign
+---@return boolean used
+function GTurtle.Base:UseItem(itemName, content)
+    return self:PlaceItem(itemName, content)
+end
+
 ---@return boolean isFuelSelected
 function GTurtle.Base:SelectFuel()
     local itemMap = self:GetInventoryItems()
@@ -273,9 +305,8 @@ end
 
 ---@return boolean refueled
 function GTurtle.Base:Refuel()
-    local fuel = turtle.getFuelLevel()
-    self:Log(f("Fuel Check: %d/%d", fuel, self.minimumFuel))
-    if fuel >= self.minimumFuel then
+    self:FLog("Fuel Check: %d/%d", turtle.getFuelLevel(), self.minimumFuel)
+    if self:HasMinimumFuel() then
         return true
     end
 
@@ -286,9 +317,9 @@ function GTurtle.Base:Refuel()
         if fuelSelected then
             repeat
                 local ok = turtle.refuel(1)
-            until not ok or self.minimumFuel <= turtle.getFuelLevel()
+            until not ok or self:HasMinimumFuel()
         end
-    until not fuelSelected or self.minimumFuel <= turtle.getFuelLevel()
+    until not fuelSelected or self:HasMinimumFuel()
 
     turtle.select(preSlotID)
 
@@ -297,10 +328,49 @@ function GTurtle.Base:Refuel()
         return false
     end
 
-    fuel = turtle.getFuelLevel()
-    self:FLog("Refueled: %d/%d", fuel, self.minimumFuel)
+    self:FLog("Refueled: %d/%d", turtle.getFuelLevel(), self.minimumFuel)
 
-    return self.minimumFuel <= fuel
+    return self:HasMinimumFuel()
+end
+
+function GTurtle.Base:HasMinimumFuel()
+    return turtle.getFuelLevel() >= self.minimumFuel
+end
+
+function GTurtle.Base:RequestFuel()
+    self:Log("Requesting Manual Refuel..")
+    repeat
+        term.clear()
+        term.setCursorPos(1, 1)
+        print(f("Please Insert Fuel: %d / %d", turtle.getFuelLevel(), self.minimumFuel))
+        os.pullEvent("turtle_inventory")
+        local refueled = self:Refuel()
+    until refueled
+end
+
+---@param itemNames string[]
+---@param prompt string?
+function GTurtle.Base:RequestOneOfItem(itemNames, prompt)
+    self:Log("Requesting Item(s)..")
+    repeat
+        term.clear()
+        term.setCursorPos(1, 1)
+        print(prompt or f("Please Insert Item:\n- %s", table.concat(itemNames, ", ")))
+        os.pullEvent("turtle_inventory")
+        local hasItem =
+            TUtil:Some(
+            self:GetInventoryItems(),
+            function(itemData)
+                return TUtil:tContains(itemNames, itemData.name)
+            end
+        )
+    until hasItem
+end
+
+---@param itemName string
+---@param prompt string?
+function GTurtle.Base:RequestItem(itemName, prompt)
+    self:RequestOneOfItem({itemName}, prompt)
 end
 
 ---@param dir GNAV.DIR
@@ -504,38 +574,58 @@ function GTurtle.Base:TurnToHead(reqHead)
     end
 end
 
----@return boolean success
+---@return GTurtle.RETURN_CODE return_code
 function GTurtle.Base:TurnToChest()
-    -- search for chest
-    local chests =
+    return self:TurnToOneOf(CONST.CHEST_BLOCKS)
+end
+
+---@param itemName string
+---@return GTurtle.RETURN_CODE return_code
+function GTurtle.Base:TurnTo(itemName)
+    return self:TurnToOneOf({itemName})
+end
+
+---@param itemNames string[]
+---@return GTurtle.RETURN_CODE return_code
+function GTurtle.Base:TurnToOneOf(itemNames)
+    -- search for item
+    local itemBlocks =
         self.tnav:GetNeighbors(
         true,
         function(gn)
-            return gn:IsChest()
+            return gn:IsItemOf(itemNames)
         end
     )
 
-    if #chests == 0 then
+    if #itemBlocks == 0 then
         -- dance once to scan surroundings then try again
         self:ExecuteMovement("RRRR")
-        chests =
+        itemBlocks =
             self.tnav:GetNeighbors(
             true,
             function(gn)
-                return gn:IsChest()
+                return gn:IsItemOf(itemNames)
             end
         )
     end
 
-    local chestGN = chests[1]
+    local itemBlockGN = itemBlocks[1]
 
-    if not chestGN then
-        return false
+    if not itemBlockGN then
+        return GTurtle.RETURN_CODE.FAILURE
     end
 
-    local relativeHead = self.tnav.currentGN:GetRelativeHeading(chestGN)
+    local relativeHead = self.tnav.currentGN:GetRelativeHeading(itemBlockGN)
     self:TurnToHead(relativeHead)
-    return true
+    return GTurtle.RETURN_CODE.SUCCESS
+end
+
+---@param path TNAV.Path
+function GTurtle.Base:SetPath(path)
+    if path:GetFuelRequirement() > turtle.getFuelLevel() and not self:Refuel() then
+        self:RequestFuel()
+    end
+    self.tnav:SetActivePath(path)
 end
 
 ---@param goalPos GVector
@@ -548,7 +638,7 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
         local path, err = self.tnav:CalculatePathToPosition(goalPos, flat)
         self:FLog("Recalculating Path\n%s", path)
         if path then
-            self.tnav:SetActivePath(path)
+            self:SetPath(path)
         else
             self:FLog("No Path Found: %s", err)
         end
@@ -558,12 +648,7 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
     self:FLog("Calculated Path:\n%s", path)
 
     if path then
-        if not path:FuelForPath() then
-            self:FLog("Not enough fuel for path: %s", err)
-            return GTurtle.RETURN_CODE.NO_FUEL
-        end
-
-        self.tnav:SetActivePath(path)
+        self:SetPath(path)
         repeat
             local nextMove, isGoal = self.tnav:GetNextMoveAlongPath()
             if nextMove then
@@ -580,11 +665,6 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
                             if not path then
                                 return GTurtle.RETURN_CODE.NO_PATH
                             end
-
-                            if not path:FuelForPath() then
-                                self:FLog("Not enough fuel for path: %s", err)
-                                return GTurtle.RETURN_CODE.NO_FUEL
-                            end
                         end
                     end
                     --self:FLog("Navigating: %s", nextMove)
@@ -593,11 +673,6 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
                         path = RecalculatePath()
                         if not path then
                             return GTurtle.RETURN_CODE.NO_PATH
-                        end
-
-                        if not path:FuelForPath() then
-                            self:FLog("Not enough fuel for path: %s", err)
-                            return GTurtle.RETURN_CODE.NO_FUEL
                         end
                     end
                 end

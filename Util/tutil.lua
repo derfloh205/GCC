@@ -75,9 +75,11 @@ end
 
 ---@generic T
 ---@generic K
+---@generic R
 ---@param t table<K, T> | T[]
----@param mapFunc fun(element: T, key: K): any
+---@param mapFunc fun(element: T, key: K): R
 ---@param preserveKeys? boolean
+---@return R[] | table<K, R>
 function TUtil:Map(t, mapFunc, preserveKeys)
     local mapped = {}
     for k, v in pairs(t) do
