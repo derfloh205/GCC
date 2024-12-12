@@ -53,7 +53,6 @@ RubberTurtle.PRODUCE_CHEST_ITEMS = {
 ---@param options GTurtle.RubberTurtle.Options
 function RubberTurtle:new(options)
     options = options or {}
-    options.fuelBlacklist = self.FUEL_BLACKLIST
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
     self.type = GTurtle.TYPES.RUBBER
@@ -139,14 +138,14 @@ function RubberTurtle:INIT()
     self:FLog("Moving to Produce Chest Position %s", self.produceGN)
     -- go to start positions
     local success = self:NavigateToPosition(self.produceGN.pos)
-    if not success then
+    if success ~= GTurtle.RETURN_CODE.SUCCESS then
         error("Could not reach Produce Chest Position")
         self:SetState(RubberTurtle.STATE.EXIT)
         return
     end
     self:FLog("Moving to Resource Chest Position %s", self.produceGN)
     success = self:NavigateToPosition(self.resourceGN.pos)
-    if not success then
+    if success ~= GTurtle.RETURN_CODE.SUCCESS then
         error("Could not reach Resource Chest Position")
         self:SetState(RubberTurtle.STATE.EXIT)
         return
@@ -171,7 +170,7 @@ function RubberTurtle:FetchResources()
 end
 
 function RubberTurtle:DROP_PRODUCTS()
-    if not self:NavigateToPosition(self.produceGN.pos) then
+    if self:NavigateToPosition(self.produceGN.pos) ~= GTurtle.RETURN_CODE.SUCCESS then
         self:Log("Could not reach produce chest")
         self:SetState(RubberTurtle.STATE.EXIT)
         return
@@ -245,7 +244,7 @@ function RubberTurtle:INIT_TREE_POSITIONS()
     if candidateGN and candidateArea then
         self:FLog("Tree Candidate Position %s", tostring(candidateGN and candidateGN.pos))
         local success = self:NavigateToPosition(candidateGN.pos, true)
-        if not success then
+        if success ~= GTurtle.RETURN_CODE.SUCCESS then
             self:Log("Not able to navigate to tree pos")
             table.insert(self.invalidTreeGNs, candidateGN)
             return
@@ -255,7 +254,7 @@ function RubberTurtle:INIT_TREE_POSITIONS()
         -- navigate to area corners to inspect
         for _, cornerGN in ipairs(areaCorners) do
             local success = self:NavigateToPosition(cornerGN.pos, true)
-            if not success then
+            if success ~= GTurtle.RETURN_CODE.SUCCESS then
                 self:Log("Not able to inspect tree area")
                 table.insert(self.invalidTreeGNs, candidateGN)
                 return
@@ -278,7 +277,7 @@ end
 function RubberTurtle:REFUEL()
     if not self:Refuel() then
         self:Log("Fetching Fuel..")
-        if not self:NavigateToPosition(self.resourceGN.pos) then
+        if self:NavigateToPosition(self.resourceGN.pos) ~= GTurtle.RETURN_CODE.SUCCESS then
             self:Log("Error: Cannot reach Resources")
             self:SetState(RubberTurtle.STATE.EXIT)
             return
@@ -290,7 +289,7 @@ function RubberTurtle:REFUEL()
             return
         end
 
-        if not self:RefuelFromChest() then
+        if self:RefuelFromChest() ~= GTurtle.RETURN_CODE.SUCCESS then
             self:DropItems(self.RESOURCE_CHEST_ITEMS)
             self:SetState(RubberTurtle.STATE.REQUEST_FUEL)
             return

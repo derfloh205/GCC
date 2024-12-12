@@ -110,6 +110,11 @@ function TNAV.Path:IsGoal(gridNode)
     return goalNode:EqualPos(gridNode)
 end
 
+---@return boolean
+function TNAV.Path:FuelForPath()
+    return turtle.getFuelLevel() >= #self.nodeList
+end
+
 function TNAV.Path:__tostring()
     local txt = ""
     for i, gridNode in ipairs(self.nodeList) do

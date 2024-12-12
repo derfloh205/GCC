@@ -15,6 +15,15 @@ GTurtle.TYPES = {
     RUBBER = "RUBBER"
 }
 
+---@enum GTurtle.RETURN_CODE
+GTurtle.RETURN_CODE = {
+    SUCCESS = "SUCCESS",
+    FAILURE = "FAILURE",
+    BLOCKED = "BLOCKED",
+    NO_FUEL = "NO_FUEL",
+    NO_PATH = "NO_PATH"
+}
+
 ---@class GTurtle.TurtleDB
 ---@field data table
 ---@field id number
@@ -139,26 +148,21 @@ function GTurtle.Base:PersistTurtleDB()
 end
 
 ---@return table<number, table>
----@param detailed? boolean
-function GTurtle.Base:GetInventoryItems(detailed)
+function GTurtle.Base:GetInventoryItems()
     local itemMap = {}
     for i = 1, 16 do
-        itemMap[i] = turtle.getItemDetail(i, detailed)
+        itemMap[i] = turtle.getItemDetail(i)
     end
     return itemMap
 end
 
 ---@param name string
----@param detailed? boolean
 ---@return number? slotID
 ---@return number? amount
-function GTurtle.Base:GetInventoryItem(name, detailed)
+function GTurtle.Base:GetInventoryItem(name)
     local itemMap = self:GetInventoryItems()
     for slot, itemData in pairs(itemMap) do
         if itemData and name == itemData.name then
-            if detailed then
-                itemData = turtle.getItemDetail(slot, true)
-            end
             return slot, itemData.count
         end
     end
@@ -168,6 +172,8 @@ end
 
 ---@param name string
 ---@param requestedCount number? if not set get all
+---@return GTurtle.RETURN_CODE returnCode
+---@return string? err
 function GTurtle.Base:SuckFromChest(name, requestedCount)
     local success, err
     repeat
@@ -177,10 +183,14 @@ function GTurtle.Base:SuckFromChest(name, requestedCount)
         local sufficient = hasItem and enoughItems
     until not success or sufficient
 
-    return success, err
+    if success then
+        return GTurtle.RETURN_CODE.SUCCESS
+    else
+        return GTurtle.RETURN_CODE.FAILURE, err
+    end
 end
 
----@return boolean success
+---@return GTurtle.RETURN_CODE returnCode
 ---@return string? err
 function GTurtle.Base:RefuelFromChest()
     local success, err
@@ -189,7 +199,11 @@ function GTurtle.Base:RefuelFromChest()
         local refueled = self:Refuel()
     until not success or refueled
 
-    return success, err
+    if success then
+        return GTurtle.RETURN_CODE.SUCCESS
+    else
+        return GTurtle.RETURN_CODE.FAILURE, err
+    end
 end
 
 ---@param itemNames string[]
@@ -290,7 +304,7 @@ function GTurtle.Base:Refuel()
 end
 
 ---@param dir GNAV.DIR
----@return boolean success
+---@return GTurtle.RETURN_CODE returnCode
 ---@return string? errormsg
 function GTurtle.Base:Move(dir)
     self:FLog("Move: %s", dir)
@@ -312,45 +326,37 @@ function GTurtle.Base:Move(dir)
             self:VisualizeGrid()
         end
         self.tNetClient:SendGridMap()
-        return true
+        return GTurtle.RETURN_CODE.SUCCESS
     else
         self:Log(f("- %s", tostring(err)))
-        return false, err
+        return GTurtle.RETURN_CODE.BLOCKED, err
     end
 end
 
----@param dir GNAV.DIR
-function GTurtle.Base:MoveUntilBlocked(dir)
-    local blocked
-    repeat
-        blocked = self:Move(dir)
-    until blocked
-end
-
 ---@param path string e.g. "FBLRUD"
----@return boolean success
+---@return GTurtle.RETURN_CODE returnCode
 ---@return string? err
 function GTurtle.Base:ExecuteMovement(path)
     for i = 1, #path do
         local move = string.sub(path, i, i)
         if TNav.TURN[move] then
             local success, err = self:Turn(move)
-            if not success then
-                return false, err
+            if success ~= GTurtle.RETURN_CODE.SUCCESS then
+                return success, err
             end
         else
             local success, err = self:Move(move)
-            if not success then
-                return false, err
+            if success ~= GTurtle.RETURN_CODE.SUCCESS then
+                return success, err
             end
         end
     end
 
-    return true
+    return GTurtle.RETURN_CODE.SUCCESS
 end
 
 ---@param turn GTurtle.TNAV.TURN
----@return boolean success
+---@return GTurtle.RETURN_CODE returnCode
 ---@return string? errormsg
 function GTurtle.Base:Turn(turn)
     local turned, err
@@ -367,13 +373,15 @@ function GTurtle.Base:Turn(turn)
             self:VisualizeGrid()
         end
         self.tNetClient:SendGridMap()
-        return true
+        return GTurtle.RETURN_CODE.SUCCESS
     else
         self:FLog("Turning Blocked: %s", err)
-        return false, err
+        return GTurtle.RETURN_CODE.BLOCKED, err
     end
 end
 
+---@param blockData table
+---@return boolean isBlacklisted
 function GTurtle.Base:IsBlockBlacklistedForDigging(blockData)
     if not blockData or not self.digBlacklist then
         return false
@@ -384,7 +392,7 @@ end
 --- U | D | F
 ---@param dir GNAV.DIR
 ---@param side? "left" | "right"
----@return boolean success
+---@return GTurtle.RETURN_CODE returnCode
 ---@return string? err
 function GTurtle.Base:Dig(dir, side)
     local success, err
@@ -394,7 +402,7 @@ function GTurtle.Base:Dig(dir, side)
     local isBlacklisted = self:IsBlockBlacklistedForDigging(digBlock)
 
     if isBlacklisted then
-        return false, f("Not Digging: %s", (digBlock and digBlock.name))
+        return GTurtle.RETURN_CODE.FAILURE, f("Not Digging: %s", (digBlock and digBlock.name))
     end
 
     if dir == GNAV.DIR.F then
@@ -408,10 +416,10 @@ function GTurtle.Base:Dig(dir, side)
     if success then
         self.tnav:UpdateSurroundings()
         self.tNetClient:SendGridMap()
-        return true
+        return GTurtle.RETURN_CODE.SUCCESS
     else
         self:FLog("Could not dig: %s", err)
-        return false, err
+        return GTurtle.RETURN_CODE.FAILURE, err
     end
 end
 
@@ -532,6 +540,7 @@ end
 
 ---@param goalPos GVector
 ---@param flat? boolean only allow navigation in current Z
+---@return GTurtle.RETURN_CODE returnCode
 function GTurtle.Base:NavigateToPosition(goalPos, flat)
     self:FLog("Trying to navigate to position: %s", goalPos)
     local function RecalculatePath()
@@ -547,7 +556,13 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
     end
     local path, err = self.tnav:CalculatePathToPosition(goalPos, flat)
     self:FLog("Calculated Path:\n%s", path)
+
     if path then
+        if not path:FuelForPath() then
+            self:FLog("Not enough fuel for path: %s", err)
+            return GTurtle.RETURN_CODE.NO_FUEL
+        end
+
         self.tnav:SetActivePath(path)
         repeat
             local nextMove, isGoal = self.tnav:GetNextMoveAlongPath()
@@ -558,36 +573,47 @@ function GTurtle.Base:NavigateToPosition(goalPos, flat)
                 else
                     if not self.avoidAllBlocks then
                         local success, err = self:Dig(nextMove)
-                        if not success then
+                        if success ~= GTurtle.RETURN_CODE.SUCCESS then
                             self:Log("Navigating: Could not dig")
                             self:FLog("- %s", err)
                             path = RecalculatePath()
                             if not path then
-                                return false
+                                return GTurtle.RETURN_CODE.NO_PATH
+                            end
+
+                            if not path:FuelForPath() then
+                                self:FLog("Not enough fuel for path: %s", err)
+                                return GTurtle.RETURN_CODE.NO_FUEL
                             end
                         end
                     end
                     --self:FLog("Navigating: %s", nextMove)
                     local success = self:Move(nextMove)
-                    if not success then
+                    if success ~= GTurtle.RETURN_CODE.SUCCESS then
                         path = RecalculatePath()
                         if not path then
-                            return false
+                            return GTurtle.RETURN_CODE.NO_PATH
+                        end
+
+                        if not path:FuelForPath() then
+                            self:FLog("Not enough fuel for path: %s", err)
+                            return GTurtle.RETURN_CODE.NO_FUEL
                         end
                     end
                 end
             end
         until isGoal
         self:FLog("Arrived on Target Position")
-        return true
+        return GTurtle.RETURN_CODE.SUCCESS
     else
         self:FLog("No Path Found: %s", err)
-        return false
+        return GTurtle.RETURN_CODE.NO_PATH
     end
 end
 
+---@return GTurtle.RETURN_CODE returnCode
 function GTurtle.Base:NavigateToInitialPosition()
-    self:NavigateToPosition(self.tnav.initGN.pos)
+    return self:NavigateToPosition(self.tnav.initGN.pos)
 end
 
 function GTurtle.Base:INIT()

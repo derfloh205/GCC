@@ -15,7 +15,10 @@ local BaseTurtle =
 --BaseTurtle.tnav:LogPos()
 local goalPos = GVector(263, -32, 46)
 
-local success = BaseTurtle:NavigateToPosition(goalPos)
-if success then
-    BaseTurtle:NavigateToInitialPosition()
+if BaseTurtle:NavigateToPosition(goalPos) == GTurtle.RETURN_CODE.SUCCESS then
+    if BaseTurtle:NavigateToInitialPosition() == GTurtle.RETURN_CODE.SUCCESS then
+        BaseTurtle:Log("Success")
+    else
+        BaseTurtle:Log("Failed to return to initial position")
+    end
 end
