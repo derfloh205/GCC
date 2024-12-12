@@ -67,7 +67,9 @@ function GTurtle.Base:new(options)
     self.term = options.term or term
     options.avoidUnknown = options.avoidUnknown or false
 
-    self:Refuel()
+    if not self:Refuel() then
+        self:RequestFuel()
+    end
 
     if term ~= self.term then
         term:redirect(self.term)

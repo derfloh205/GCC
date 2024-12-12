@@ -383,9 +383,10 @@ function RubberTurtle:HarvestTree(treeGN)
 
     self:Log("Harvesting Wood..")
     self:Dig("F")
-    self:Move("U")
-    self:Log("Climbing Up..")
-    self:HarvestTree(treeGN)
+    if self:Move("U") == GTurtle.RETURN_CODE.SUCCESS then
+        self:Log("Climbing Up..")
+        self:HarvestTree(treeGN)
+    end
 end
 
 ---@param treeGN GNAV.GridNode
