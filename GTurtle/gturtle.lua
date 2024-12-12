@@ -290,13 +290,14 @@ function GTurtle.Base:SelectFuel()
         end,
         true
     )
-    if #fuelItems == 0 then
+
+    local slotID = next(fuelItems)
+    if not slotID then
         return false
     end
 
-    turtle.select(next(fuelItems))
-
-    return false
+    turtle.select(slotID)
+    return true
 end
 
 ---@param itemData table
