@@ -345,7 +345,7 @@ function GTurtle.Base:RequestFuel()
         term.clear()
         term.setCursorPos(1, 1)
         print(f("Please Insert Fuel: %d / %d", turtle.getFuelLevel(), self.minimumFuel))
-        os.pullEvent("turtle_inventory")
+        sleep(1)
         local refueled = self:Refuel()
     until refueled
 end
@@ -384,7 +384,7 @@ function GTurtle.Base:RequestOneOfItem(itemNames, prompt)
         term.clear()
         term.setCursorPos(1, 1)
         print(prompt or f("Please Insert Item:\n- %s", table.concat(itemNames, ", ")))
-        os.pullEvent("turtle_inventory")
+        sleep(1)
         local hasItem = self:HasOneOfInventoryItems(itemNames)
     until hasItem
 end
