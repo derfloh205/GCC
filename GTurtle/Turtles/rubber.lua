@@ -369,6 +369,7 @@ function RubberTurtle:HarvestTree(treeGN)
         self:Log("Could not reach harvest position")
         return
     end
+    self:TurnTo(CONST.ITEMS.RUBBER_WOOD)
     self:Log("Harvesting Resin")
     if not self:UseItem(CONST.TOOLS.ELECTRIC_TREE_TAP) then
         if not self:UseItem(CONST.TOOLS.TREE_TAP) then
