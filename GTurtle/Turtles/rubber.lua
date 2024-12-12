@@ -416,6 +416,7 @@ function RubberTurtle:HarvestTree(treeBaseGN)
         self:LogFeed("Harvesting Wood..")
         self:Dig("F")
         self:LogFeed("Climbing..")
+        self:Dig("U") -- only leaves and wood
         local climbResponse = self:Move("U")
     until maxHeight <= self.tnav.currentGN.pos.z or climbResponse == GTurtle.RETURN_CODE.BLOCKED
 end
