@@ -54,6 +54,7 @@ end
 
 ---@param logString string?
 function GLogAble:WriteLogFile(logString)
+    self:AddLogFeed(logString)
     local logFile = fs.open(self.logFile, "a")
     logFile.write(f("[%s]: %s\n", os.date("%T"), logString or ""))
     logFile.close()

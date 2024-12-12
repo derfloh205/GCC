@@ -349,6 +349,32 @@ function GTurtle.Base:RequestFuel()
 end
 
 ---@param itemNames string[]
+---@return boolean hasItems
+function GTurtle.Base:HasInventoryItems(itemNames)
+    local hasItems =
+        TUtil:Every(
+        self:GetInventoryItems(),
+        function(itemData)
+            return TUtil:tContains(itemNames, itemData.name)
+        end
+    )
+    return hasItems
+end
+
+---@param itemNames string[]
+---@return boolean hasOneItem
+function GTurtle.Base:HasOneOfInventoryItems(itemNames)
+    local hasOneItem =
+        TUtil:Some(
+        self:GetInventoryItems(),
+        function(itemData)
+            return TUtil:tContains(itemNames, itemData.name)
+        end
+    )
+    return hasOneItem
+end
+
+---@param itemNames string[]
 ---@param prompt string?
 function GTurtle.Base:RequestOneOfItem(itemNames, prompt)
     self:Log("Requesting Item(s)..")
@@ -357,13 +383,7 @@ function GTurtle.Base:RequestOneOfItem(itemNames, prompt)
         term.setCursorPos(1, 1)
         print(prompt or f("Please Insert Item:\n- %s", table.concat(itemNames, ", ")))
         os.pullEvent("turtle_inventory")
-        local hasItem =
-            TUtil:Some(
-            self:GetInventoryItems(),
-            function(itemData)
-                return TUtil:tContains(itemNames, itemData.name)
-            end
-        )
+        local hasItem = self:HasOneOfInventoryItems(itemNames)
     until hasItem
 end
 
