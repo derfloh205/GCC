@@ -53,24 +53,31 @@ function GLogAble:SetLogFile(logFile)
 end
 
 ---@param logString string?
-function GLogAble:WriteLogFile(logString)
-    self:AddLogFeed(logString)
+---@param logFeed boolean?
+function GLogAble:WriteLogFile(logString, logFeed)
+    if logFeed then
+        self:AddLogFeed(logString)
+    end
     local logFile = fs.open(self.logFile, "a")
     logFile.write(f("[%s]: %s\n", os.date("%T"), logString or ""))
     logFile.close()
 end
 
 ---@param logString string | table
-function GLogAble:Log(logString)
+---@param addToLogFeed? boolean
+function GLogAble:Log(logString, addToLogFeed)
     if not self.log then
         return
     end
 
-    self:WriteLogFile(tostring(logString))
+    self:WriteLogFile(tostring(logString), addToLogFeed)
 end
 
----@param ... any
-function GLogAble:FLog(...)
+function GLogAble:LogFeed(logString)
+    self:Log(logString, true)
+end
+
+function GLogAble:GetFLogString(...)
     local varArgs = {...}
     local fString = varArgs[1]
     local strings = {}
@@ -80,8 +87,18 @@ function GLogAble:FLog(...)
         end
     end
 
-    local flogString = f(fString, table.unpack(strings))
-    self:WriteLogFile(flogString)
+    return f(fString, table.unpack(strings))
+end
+
+---@param ... any
+function GLogAble:FLog(...)
+    local flogString = self:GetFLogString(...)
+    self:Log(flogString)
+end
+
+function GLogAble:FLogFeed(...)
+    local flogString = self:GetFLogString(...)
+    self:LogFeed(flogString)
 end
 
 function GLogAble:LogTable(t)

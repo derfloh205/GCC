@@ -98,17 +98,19 @@ function RubberTurtle:DeserializeTurtleDB(data)
 end
 
 function RubberTurtle:INIT()
-    self:FLog("Initiating Rubber Turtle: %s", self.name)
+    self:FLogFeed("Initiating %s", self.name)
     local turtleDB = self.turtleDB.data --[[@as GTurtle.TurtleDB.Rubber.Data]]
-
     if not turtleDB.resourceChestPos then
+        self:LogFeed("Requesting Position..")
         turtleDB.resourceChestPos = TermUtil:ReadGVector("Resource Chest Position?")
     end
     if not turtleDB.produceChestPos then
+        self:LogFeed("Requesting Position..")
         turtleDB.produceChestPos = TermUtil:ReadGVector("Produce Chest Position?")
     end
 
     if not turtleDB.fenceCorners or #turtleDB.fenceCorners < 4 then
+        self:LogFeed("Requesting GeoFence..")
         turtleDB.fenceCorners = turtleDB.fenceCorners or {}
         turtleDB.fenceCorners[1] = TermUtil:ReadGVector("Fence #1")
         turtleDB.fenceCorners[2] = TermUtil:ReadGVector("Fence #2")
@@ -117,6 +119,7 @@ function RubberTurtle:INIT()
     end
 
     if not turtleDB.treeCount then
+        self:LogFeed("Requesting Tree Count..")
         turtleDB.treeCount = TermUtil:ReadNumber("Tree Count?")
         self.treeCount = turtleDB.treeCount
     end
@@ -151,6 +154,7 @@ function RubberTurtle:INIT()
 
     -- go to start
     if not self:NavigateToPosition(self.resourceGN.pos) then
+        self:LogFeed("NavError: Resources")
         self:Log("Could not reach resource chest")
         self:SetState(RubberTurtle.STATE.EXIT)
         return
@@ -165,16 +169,17 @@ function RubberTurtle:INIT()
 end
 
 function RubberTurtle:FETCH_RESOURCES()
+    self:LogFeed("Fetching Resources..")
     local response = self:NavigateToPosition(self.resourceGN.pos)
     if response ~= GTurtle.RETURN_CODE.SUCCESS then
-        self:Log("Error: Path to Resources not found!")
+        self:LogFeed("NavError: Resources")
         self:SetState(RubberTurtle.STATE.EXIT)
         return
     end
 
     response = self:TurnToChest()
     if response ~= GTurtle.RETURN_CODE.SUCCESS then
-        self:Log("Error: Resource Chest not found!")
+        self:LogFeed("ChestError: Resources")
         self:SetState(RubberTurtle.STATE.EXIT)
         return
     end
@@ -184,6 +189,7 @@ function RubberTurtle:FETCH_RESOURCES()
 end
 
 function RubberTurtle:DROP_PRODUCTS()
+    self:LogFeed("Dropping Products..")
     if
         not self:GetInventoryItem(CONST.ITEMS.RESIN) and not self:GetInventoryItem(CONST.ITEMS.RUBBER_WOOD) and
             not self:GetInventoryItem(CONST.ITEMS.RUBBER_LEAVES)
@@ -193,13 +199,13 @@ function RubberTurtle:DROP_PRODUCTS()
     end
 
     if self:NavigateToPosition(self.produceGN.pos) ~= GTurtle.RETURN_CODE.SUCCESS then
-        self:Log("Could not reach produce chest")
+        self:LogFeed("NavError: Products")
         self:SetState(RubberTurtle.STATE.EXIT)
         return
     end
 
     if not self:TurnToChest() then
-        self:Log("Could not find produce chest")
+        self:LogFeed("ChestError: Products")
         self:SetState(RubberTurtle.STATE.EXIT)
         return
     end
@@ -262,15 +268,17 @@ end
 
 function RubberTurtle:INIT_TREE_POSITIONS()
     local rtData = self.turtleDB.data
-
+    self:LogFeed("Init Tree Positions..")
     while #self.treeGNs < self.treeCount do
         local candidateGN, candidateArea = self:GetTreePositionCandidate()
 
         if candidateGN and candidateArea then
+            self:LogFeed("Visit Candidate..")
             self:FLog("Tree Candidate Position %s", tostring(candidateGN and candidateGN.pos))
             local response = self:NavigateToPosition(candidateGN.pos, true)
             if response == GTurtle.RETURN_CODE.SUCCESS then
                 self:Log("Arrived at Candidate, Navigate to corners")
+                self:LogFeed("Checking Area..")
                 local areaCorners = candidateArea:GetCorners(candidateGN.pos.z)
                 -- navigate to area corners to inspect
                 local cornersValid = true
@@ -278,12 +286,14 @@ function RubberTurtle:INIT_TREE_POSITIONS()
                     if self:NavigateToPosition(cornerGN.pos, true) ~= GTurtle.RETURN_CODE.SUCCESS then
                         cornersValid = false
                         self:Log("Not able to inspect tree area")
+                        self:LogFeed("Invalid Area..")
                         table.insert(self.invalidTreeGNs, candidateGN)
                         break
                     end
                 end
                 if cornersValid and candidateArea:IsEmpty() then
                     self:FLog("Viable Tree Position Found: %s", candidateGN)
+                    self:LogFeed("Tree Position Found!")
                     table.insert(self.treeGNs, candidateGN)
                     table.insert(rtData.treePositions, candidateGN.pos)
                     self.tnav:AddAvoidGN(candidateGN)
@@ -291,6 +301,7 @@ function RubberTurtle:INIT_TREE_POSITIONS()
                 end
             else
                 self:Log("Not able to navigate to tree pos")
+                self:LogFeed("Not Reachable..")
                 table.insert(self.invalidTreeGNs, candidateGN)
             end
         else
@@ -298,10 +309,12 @@ function RubberTurtle:INIT_TREE_POSITIONS()
             rtData.treeCount = #self.treeGNs
             if rtData.treeCount == 0 then
                 self:Log("No viable tree positions found")
+                self:LogFeed("No Valid Tree Positions..")
                 self:SetState(RubberTurtle.STATE.EXIT)
                 return
             else
                 self:FLog("Viable Tree Count Found: %d / %d", rtData.treeCount, self.treeCount)
+                self:FLogFeed("Tree Positions: %d", rtData.treeCount)
                 rtData:PersistTurtleDB()
                 self.treeCount = rtData.treeCount
                 break
@@ -321,6 +334,7 @@ function RubberTurtle:PlantSapling(treeGN)
         return
     end
 
+    self:LogFeed("Placing Sapling..")
     self:PlaceItem(CONST.ITEMS.RUBBER_SAPLINGS)
     self:SetSaplingPlantTime(treeGN)
 end
@@ -331,16 +345,21 @@ function RubberTurtle:FertilizeSapling(treeGN)
     end
 
     while self:GetInventoryItem(CONST.ITEMS.BONE_MEAL) and not treeGN:IsItem(CONST.ITEMS.RUBBER_WOOD) do
+        self:LogFeed("Fertilizing..")
         self:UseItem(CONST.ITEMS.BONE_MEAL)
     end
 
     if treeGN:IsItem(CONST.ITEMS.RUBBER_WOOD) then
+        self:LogFeed("Tree!")
         self:ResetSaplingPlantTime(treeGN)
+    else
+        self:LogFeed("No Tree Yet..")
     end
 end
 
 ---@param treeGN GNAV.GridNode
 function RubberTurtle:NurtureTree(treeGN)
+    self:LogFeed("Nurturing..")
     self:PlantSapling(treeGN)
     self:FertilizeSapling(treeGN)
 end
@@ -360,25 +379,26 @@ end
 
 ---@param treeGN GNAV.GridNode
 function RubberTurtle:HarvestTree(treeGN)
-    self:Log("Harvesting Tree")
+    self:LogFeed("Harvesting..")
     if not treeGN:IsItem(CONST.ITEMS.RUBBER_WOOD) then
+        self:LogFeed("No Wood to Harvest..")
         return
     end
     local resinHead = self:GetResinHead(treeGN)
     if not resinHead then
         return
     end
-    self:Log("Found Resin. Navigating to Harvest Position")
+    self:FLogFeed("Resin: %s", resinHead)
     local harvestGN = treeGN:GetRelativeNode(resinHead, GNAV.DIR.F)
     if not self:NavigateToPosition(harvestGN.pos) then
-        self:Log("Could not reach harvest position")
+        self:LogFeed("Resin Unreachable..")
         return
     end
     self:TurnTo(CONST.ITEMS.RUBBER_WOOD)
-    self:Log("Harvesting Resin")
+    self:LogFeed("Harvesting Resin..")
     if not self:UseItem(CONST.TOOLS.ELECTRIC_TREE_TAP) then
         if not self:UseItem(CONST.TOOLS.TREE_TAP) then
-            self:Log("Could not harvest resin: no tree tap")
+            self:LogFeed("Requesting Tree Tap..")
             self:RequestOneOfItem(
                 {CONST.TOOLS.ELECTRIC_TREE_TAP, CONST.TOOLS.TREE_TAP},
                 "Tree Tap required.. Please insert!"
@@ -386,10 +406,10 @@ function RubberTurtle:HarvestTree(treeGN)
         end
     end
 
-    self:Log("Harvesting Wood..")
+    self:LogFeed("Harvesting Wood..")
     self:Dig("F")
     if self:Move("U") == GTurtle.RETURN_CODE.SUCCESS then
-        self:Log("Climbing Up..")
+        self:LogFeed("Climbing..")
         self:HarvestTree(treeGN)
     end
 end
@@ -428,7 +448,7 @@ function RubberTurtle:WAIT_FOR_TREES_GROWING()
     local maxGrowTime = math.max(table.unpack(saplingGrowTimes))
 
     if maxGrowTime < self.MAX_GROW_TIME then
-        self:Log("Waiting for saplings to grow")
+        self:LogFeed("Awaiting Grow..")
         sleep(1) -- yield back to state scheduler
         return
     end
@@ -436,30 +456,31 @@ function RubberTurtle:WAIT_FOR_TREES_GROWING()
 end
 
 function RubberTurtle:FARM_TREES()
+    self:LogFeed("Farming Trees..")
     for _, treeGN in ipairs(self.treeGNs) do
         -- get block in front of tree
         local targetGN = treeGN:GetClosestNeighbor(self.tnav.currentGN, true)
 
         if not targetGN then
-            self:Log("Could not find target for tree")
+            self:LogFeed("NavError: Tree")
             self:SetState(RubberTurtle.STATE.EXIT)
             return
         end
 
         local success = self:NavigateToPosition(targetGN.pos)
         if success ~= GTurtle.RETURN_CODE.SUCCESS then
-            self:Log("Could not reach adjacent tree position")
+            self:LogFeed("NavError: Tree")
             self:SetState(RubberTurtle.STATE.EXIT)
             return
         end
-
+        self:LogFeed("Turning to Tree..")
         -- turn to tree pos
         self:TurnToHead(self.tnav.currentGN:GetRelativeHeading(treeGN))
         self:NurtureTree(treeGN)
         self:HarvestTree(treeGN)
         -- climb down
-        self:Log("Climbing Down..")
         repeat
+            self:LogFeed("Climbing Down..")
         until self:Move("D") == GTurtle.RETURN_CODE.BLOCKED
     end
 
