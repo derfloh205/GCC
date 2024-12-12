@@ -147,6 +147,8 @@ function RubberTurtle:INIT()
         end
     )
 
+    self.tnav:AddAvoidGNList(self.treeGNs)
+
     -- go to start
     if not self:NavigateToPosition(self.resourceGN.pos) then
         self:Log("Could not reach resource chest")
@@ -284,6 +286,7 @@ function RubberTurtle:INIT_TREE_POSITIONS()
                     self:FLog("Viable Tree Position Found: %s", candidateGN)
                     table.insert(self.treeGNs, candidateGN)
                     table.insert(rtData.treePositions, candidateGN.pos)
+                    self.tnav:AddAvoidGN(candidateGN)
                     self:PersistTurtleDB()
                 end
             else

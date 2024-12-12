@@ -132,6 +132,7 @@ end
 ---@field blockWhitelist? string[] used if avoidBlocks is false
 ---@field gridFile? string
 ---@field fenceCorners? GVector[]
+---@field avoidGNs? GNAV.GridNode[]
 
 ---@class TNAV.GridNav : Object
 ---@overload fun(options: TNAV.GridNav.Options) : TNAV.GridNav
@@ -145,6 +146,7 @@ function TNAV.GridNav:new(options)
     self.blockBlacklist = options.blockBlacklist
     self.blockWhitelist = options.blockWhitelist
     self.gridFile = options.gridFile
+    self.avoidGNs = options.avoidGNs or {}
 
     local gpsPos = self:GetGPSPos()
     self.gpsEnabled = gpsPos ~= nil
@@ -208,6 +210,20 @@ function TNAV.GridNav:SetGeoFence(corners)
             end
         )
     }
+end
+
+function TNAV.GridNav:AddAvoidGN(gn)
+    table.insert(self.avoidGNs, gn)
+end
+
+function TNAV.GridNav:AddAvoidGNList(gnList)
+    for _, gn in ipairs(gnList) do
+        table.insert(self.avoidGNs, gn)
+    end
+end
+
+function TNAV.GridNav:RemoveAvoidGN(gn)
+    TUtil:RemoveFromList(self.avoidGNs, gn)
 end
 
 ---@return boolean success
@@ -366,6 +382,10 @@ function TNAV.GridNav:GetValidPathNeighbors(gridNode, flat)
         function(neighborGridNode)
             local isEmpty = neighborGridNode:IsEmpty()
             local allowUnknown = not self.avoidUnknown or not neighborGridNode:IsUnknown()
+
+            if TUtil:tContains(self.avoidGNs, neighborGridNode) then
+                return false
+            end
 
             if self.geoFence and not self.geoFence:IsWithin(neighborGridNode) then
                 return false

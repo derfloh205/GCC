@@ -123,4 +123,19 @@ function TUtil:Some(t, conFunc)
     return false
 end
 
+---@generic T
+---@generic K
+---@param t T[]
+---@param element T
+function TUtil:RemoveFromList(t, element)
+    local index =
+        self:Find(
+        t,
+        function(v)
+            return v == element
+        end
+    )
+    table.remove(t, index)
+end
+
 return TUtil
