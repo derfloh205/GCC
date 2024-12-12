@@ -354,6 +354,7 @@ function RubberTurtle:FertilizeSapling(treeGN)
         self:ResetSaplingPlantTime(treeGN)
     else
         self:LogFeed("No Tree Yet..")
+        self:SetSaplingPlantTime(treeGN)
     end
 end
 
