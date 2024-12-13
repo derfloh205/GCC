@@ -18,18 +18,18 @@ GNAV.Boundary = Object:extend()
 
 function GNAV.Boundary:new()
     ---@type  GNAV.Boundary.Range
-    self.x = nil
+    self.x = {}
     ---@type  GNAV.Boundary.Range
-    self.y = nil
+    self.y = {}
     ---@type  GNAV.Boundary.Range
-    self.z = nil
+    self.z = {}
 end
 
 ---@param gridNode GNAV.GridNode
 function GNAV.Boundary:Update(gridNode)
-    self.x = self.x or {min = gridNode.pos.x, max = gridNode.pos.x}
-    self.y = self.y or {min = gridNode.pos.y, max = gridNode.pos.y}
-    self.z = self.z or {min = gridNode.pos.z, max = gridNode.pos.z}
+    self.x = {min = self.x.min or gridNode.pos.x, max = self.x.max or gridNode.pos.x}
+    self.y = {min = self.y.min or gridNode.pos.y, max = self.y.max or gridNode.pos.y}
+    self.z = {min = self.z.min or gridNode.pos.z, max = self.z.max or gridNode.pos.z}
 
     self.x.min = math.min(self.x.min, gridNode.pos.x)
     self.y.min = math.min(self.y.min, gridNode.pos.y)
