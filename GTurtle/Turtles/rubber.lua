@@ -5,7 +5,6 @@ local TUtil = require("GCC/Util/tutil")
 local TermUtil = require("GCC/Util/termutil")
 local GVector = require("GCC/GNav/gvector")
 local CONST = require("GCC/Util/const")
-local JsonDB = require("GCC/Util/jsondb")
 local f = string.format
 
 ---@class GTurtle.RubberTurtle.DB.Data.Serialized : GTurtle.BaseDB.Data.Serialized
