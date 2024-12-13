@@ -22,9 +22,9 @@ function FileDB:Load()
         return
     end
     if not fs.exists(self.file) then
-        fs.open(self.file, "w")
-        fs.write(textutils.serialise({data = {}}))
-        fs.close()
+        local file = fs.open(self.file, "w")
+        file.write(textutils.serialise({data = {}}))
+        file.close()
     end
 
     local file = fs.open(self.file, "r")
