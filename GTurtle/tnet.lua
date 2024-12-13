@@ -1,4 +1,3 @@
-local Object = require("GCC/Util/classics")
 local GLogAble = require("GCC/Util/glog")
 local GNet = require("GCC/GNet/gnet")
 local TUtil = require("GCC/Util/tutil")
@@ -8,6 +7,7 @@ local GUI = require("GCC/GUI/gui")
 local GGrid = require("GCC/GUI/ggrid")
 local DHook = require("GCC/Lib/discohook")
 local CONST = require("GCC/Util/const")
+local JsonDB = require("GCC/Util/jsondb")
 local f = string.format
 
 ---@class TNet
@@ -15,7 +15,7 @@ local TNet = {}
 
 ---@alias DiscordMessage string | integer | nil
 
----@class TNet.TurtleData.Options
+---@class TNet.TurtleData
 ---@field id number
 ---@field pos GVector
 ---@field state GState.STATE
@@ -31,42 +31,76 @@ local TNet = {}
 ---@field fuel number
 ---@field logFeed string[]
 
----@class TNet.TurtleData
----@overload fun(options: TNet.TurtleData.Options) : TNet.TurtleData
-TNet.TurtleData = Object:extend()
+---@class TNet.TurtleHostDB.Data.Serialized
+---@field turtleData table<TurtleID, TNet.TurtleData.Serialized>
+---@field gridMap GNAV.GridMap.Serialized
+---@field discordMsgID number
 
----@param options TNet.TurtleData.Options
-function TNet.TurtleData:new(options)
-    options = options or {}
-    self.id = options.id
-    self.pos = options.pos
-    self.state = options.state
-    self.type = options.type
-    self.fuel = options.fuel
-    self.logFeed = options.logFeed or {}
+---@class TNet.TurtleHostDB.Data
+---@field turtleData table<TurtleID, TNet.TurtleData>
+---@field gridMap GNAV.GridMap
+---@field discordMsgID number
+
+---@class TNet.TurtleHostDB : JsonDB
+---@field data TNet.TurtleHostDB.Data
+---@overload fun(options: JsonDB.Options) : TNet.TurtleHostDB
+TNet.TurtleHostDB = JsonDB:extend()
+
+function TNet.TurtleHostDB:SerializeData()
+    local serializedData = {
+        turtleData = TUtil:Map(
+            self.data.turtleData,
+            function(turtleData)
+                return self:SerializeTurtleData(turtleData)
+            end,
+            true
+        ),
+        gridMap = self.data.gridMap:Serialize(),
+        discordMsgID = self.data.discordMsgID
+    }
+    return serializedData
 end
 
----@return TNet.TurtleData.Serialized
-function TNet.TurtleData:Serialize()
+function TNet.TurtleHostDB:DeserializeData(data)
+    local turtleData =
+        TUtil:Map(
+        data.turtleData,
+        function(turtleData)
+            return self:DeserializeTurtleData(turtleData)
+        end,
+        true
+    )
+
     return {
-        id = self.id,
-        pos = self.pos:Serialize(),
-        state = self.state,
-        type = self.type,
-        fuel = self.fuel,
-        logFeed = self.logFeed
+        turtleData = turtleData,
+        gridMap = GNAV.GridMap:Deserialize(data.gridMap),
+        discordMsgID = data.discordMsgID
     }
 end
 
+---@param turtleData TNet.TurtleData
+---@return TNet.TurtleData.Serialized
+function TNet.TurtleHostDB:SerializeTurtleData(turtleData)
+    return {
+        id = turtleData.id,
+        pos = turtleData.pos:Serialize(),
+        state = turtleData.state,
+        type = turtleData.type,
+        fuel = turtleData.fuel,
+        logFeed = turtleData.logFeed
+    }
+end
+
+---@param turtleData TNet.TurtleData.Serialized
 ---@return TNet.TurtleData
-function TNet.TurtleData:Deserialize(serialized)
-    return TNet.TurtleData {
-        id = serialized.id,
-        pos = GVector:Deserialize(serialized.pos),
-        state = serialized.state,
-        type = serialized.type,
-        fuel = serialized.fuel,
-        logFeed = serialized.logFeed
+function TNet.TurtleHostDB:DeserializeTurtleData(turtleData)
+    return {
+        id = turtleData.id,
+        pos = GVector:Deserialize(turtleData.pos),
+        state = turtleData.state,
+        type = turtleData.type,
+        fuel = turtleData.fuel,
+        logFeed = turtleData.logFeed
     }
 end
 
@@ -130,11 +164,9 @@ function TNet.TurtleHost:new(options)
     term:clear()
     peripheral.find("modem", rednet.open)
 
-    ---@type table<TurtleID, TNet.TurtleData>
-    self.turtleData = {}
+    self.db = TNet.TurtleHostDB {file = "turtleHostDB.json"}
     self.gridMap =
         GNAV.GridMap {
-        logger = self,
         gridNodeMapFunc = function(gridNode)
             for id, turtleData in pairs(self.turtleData) do
                 if turtleData.pos:Equal(gridNode.pos) then
@@ -281,14 +313,8 @@ function TNet.TurtleHost:UpdateDiscordHookMessage(turtleID)
 end
 
 ---@param id number
----@param serializedGV GVector.Serialized
-function TNet.TurtleHost:OnTurtleHostSearch(id, serializedGV)
+function TNet.TurtleHost:OnTurtleHostSearch(id)
     self:Log(f("Received Host Search Broadcast from [%d]", id))
-    self.turtleData[id] = {
-        id = id,
-        pos = GVector:Deserialize(serializedGV)
-    }
-
     rednet.send(id, "Host Search Response", TNet.TurtleHost.PROTOCOL.TURTLE_HOST_SEARCH)
 end
 ---@param id number
@@ -310,13 +336,14 @@ end
 ---@param serializedTurtleData TNet.TurtleData.Serialized
 function TNet.TurtleHost:OnTurtleDataUpdate(id, serializedTurtleData)
     self:FLog("Received TURTLE_POS_UPDATE from [%d]", id)
-    self.turtleData[id] = TNet.TurtleData:Deserialize(serializedTurtleData)
+    self.db.data.turtleData[id] = self.db:DeserializeTurtleData(serializedTurtleData)
     self:UpdateTurtleStatusDisplay(id)
     self:UpdateDiscordHookMessage(id)
+    self.db:Persist()
 end
 
 function TNet.TurtleHost:UpdateGridMapDisplay(turtleID)
-    local turtleData = self.turtleData[turtleID]
+    local turtleData = self.db.data.turtleData[turtleID]
     if turtleData then
         self.ui.ggrid:Update(turtleData.pos)
     end
@@ -328,7 +355,7 @@ function TNet.TurtleHost:OnMapUpdate(id, msg)
     self:FLog("Received MAP_UPDATE from [%d]", id)
     local serializedGridMap = msg --[[@as GNAV.GridMap]]
 
-    self.gridMap:DeserializeGrid(serializedGridMap)
+    self.gridMap:MergeSerializedGrid(serializedGridMap)
 
     self:UpdateGridMapDisplay(id)
 end
@@ -382,16 +409,16 @@ function TNet.TurtleHostClient:SendTurtleDataUpdate()
     if not self.hostID then
         return
     end
-    local turtleData =
-        TNet.TurtleData {
+    ---@type TNet.TurtleData.Serialized
+    local serializedTurtleData = {
         id = self.gTurtle.id,
         type = self.gTurtle.type,
-        pos = self.gTurtle.tnav.currentGN.pos,
+        pos = self.gTurtle.tnav.currentGN.pos:Serialize(),
         fuel = turtle.getFuelLevel(),
         state = self.gTurtle.state,
         logFeed = self.gTurtle.logFeed
     }
-    rednet.send(self.hostID, turtleData:Serialize(), TNet.TurtleHost.PROTOCOL.TURTLE_DATA_UPDATE)
+    rednet.send(self.hostID, serializedTurtleData, TNet.TurtleHost.PROTOCOL.TURTLE_DATA_UPDATE)
 end
 
 function TNet.TurtleHostClient:SendGridMap()

@@ -8,14 +8,14 @@ local CONST = require("GCC/Util/const")
 local JsonDB = require("GCC/Util/jsondb")
 local f = string.format
 
----@class GTurtle.RubberTurtle.DB.Data.Serialized
+---@class GTurtle.RubberTurtle.DB.Data.Serialized : GTurtle.BaseDB.Data.Serialized
 ---@field resourceChestPos GVector.Serialized
 ---@field produceChestPos GVector.Serialized
 ---@field treePositions GVector.Serialized[]
 ---@field fenceCorners GVector.Serialized[]
 ---@field treeCount number
 
----@class GTurtle.RubberTurtle.DB.Data
+---@class GTurtle.RubberTurtle.DB.Data : GTurtle.BaseDB.Data
 ---@field resourceChestPos GVector
 ---@field produceChestPos GVector
 ---@field treePositions GVector[]
@@ -24,7 +24,8 @@ local f = string.format
 
 ---@class GTurtle.RubberTurtle.DB : JsonDB
 ---@field data GTurtle.RubberTurtle.DB.Data
-local RubberTurtleDB = JsonDB:extend()
+---@overload fun(options: JsonDB.Options) : GTurtle.RubberTurtle.DB
+local RubberTurtleDB = GTurtle.BaseDB:extend()
 
 ---@return GTurtle.RubberTurtle.DB.Data.Serialized
 function RubberTurtleDB:SerializeData()
@@ -33,7 +34,8 @@ function RubberTurtleDB:SerializeData()
         produceChestPos = self.data.produceChestPos and self.data.produceChestPos:Serialize(),
         fenceCorners = self.data.fenceCorners and GVector:SerializeList(self.data.fenceCorners),
         treePositions = self.data.treePositions and GVector:SerializeList(self.data.treePositions),
-        treeCount = self.data.treeCount
+        treeCount = self.data.treeCount,
+        gridMap = self.data.gridMap:Serialize()
     }
 end
 
@@ -45,7 +47,8 @@ function RubberTurtleDB:DeserializeData(data)
         produceChestPos = data.produceChestPos and GVector:Deserialize(data.produceChestPos),
         fenceCorners = data.fenceCorners and GVector:DeserializeList(data.fenceCorners),
         treePositions = data.treePositions and GVector:DeserializeList(data.treePositions),
-        treeCount = data.treeCount
+        treeCount = data.treeCount,
+        gridMap = (data.gridMap and GNAV.GridMap:Deserialize(data.gridMap)) or GNAV.GridMap {}
     }
 end
 
@@ -88,14 +91,18 @@ function RubberTurtle:new(options)
     options.avoidAllBlocks = false
     options.fuelWhitelist = {CONST.ITEMS.RUBBER_WOOD, CONST.ITEMS.COAL, CONST.ITEMS.LAVA_BUCKET}
     options.digWhitelist = {CONST.ITEMS.RUBBER_WOOD, CONST.ITEMS.RUBBER_LEAVES}
+    options.dbFile = options.dbFile or "rubberTurtleDB.json"
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
     self.type = GTurtle.TYPES.RUBBER
-    ---@type GTurtle.RubberTurtle.DB
-    self.db = RubberTurtleDB {file = "rubberTurtleDB.json"}
     self.treeCount = 1
     ---@type table<GNAV.GridNode, number>
     self.saplingPlantTimes = {}
+end
+
+---@param file string
+function RubberTurtle:InitDB(file)
+    self.db = RubberTurtleDB {file = file}
 end
 
 function RubberTurtle:INIT()

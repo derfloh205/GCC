@@ -4,6 +4,7 @@ local GNAV = require("GCC/GNav/gnav")
 local TNet = require("GCC/GTurtle/tnet")
 local GState = require("GCC/Util/gstate")
 local CONST = require("GCC/Util/const")
+local JsonDB = require("GCC/Util/jsondb")
 local f = string.format
 
 ---@class GTurtle
@@ -24,6 +25,31 @@ GTurtle.RETURN_CODE = {
     NO_PATH = "NO_PATH"
 }
 
+---@class GTurtle.BaseDB.Data
+---@field gridMap GNAV.GridMap
+
+---@class GTurtle.BaseDB.Data.Serialized
+---@field gridMap GNAV.GridMap.Serialized
+
+---@class GTurtle.BaseDB : JsonDB
+---@field data GTurtle.BaseDB.Data
+---@overload fun(options: JsonDB.Options) : GTurtle.BaseDB
+GTurtle.BaseDB = JsonDB:extend()
+
+---@return GTurtle.BaseDB.Data.Serialized
+function GTurtle.BaseDB:SerializeData()
+    return {
+        gridMap = self.data.gridMap:Serialize()
+    }
+end
+
+---@param data GTurtle.BaseDB.Data.Serialized
+function GTurtle.BaseDB:DeserializeData(data)
+    return {
+        gridMap = GNAV.GridMap:Deserialize(data.gridMap)
+    }
+end
+
 ---@class GTurtle.Base.Options : GState.StateMachine.Options
 ---@field name string
 ---@field fuelWhitelist? string[]
@@ -35,8 +61,8 @@ GTurtle.RETURN_CODE = {
 ---@field avoidAllBlocks? boolean otherwise the turtle will look at digBlacklist and digWhitelist
 ---@field digBlacklist? string[] if not all blocks are avoided
 ---@field digWhitelist? string[] if not all blocks are avoided
----@field cacheGrid? boolean
 ---@field fenceCorners? GVector[]
+---@field dbFile? string
 
 ---@class GTurtle.Base : GState.StateMachine
 ---@overload fun(options: GTurtle.Base.Options) : GTurtle.Base
@@ -61,7 +87,7 @@ function GTurtle.Base:new(options)
     self.type = GTurtle.TYPES.BASE
     self.term = options.term or term
     options.avoidUnknown = options.avoidUnknown or false
-
+    self:InitDB(options.dbFile or "baseTurtleDB.json")
     if not self:Refuel() then
         self:RequestFuel()
     end
@@ -71,8 +97,6 @@ function GTurtle.Base:new(options)
     end
     self.term.clear()
     self.term.setCursorPos(1, 1)
-    self.cacheGrid = options.cacheGrid or false
-    self.gridFile = f("%d_grid.json", self.id)
 
     self.tnav =
         TNav.GridNav(
@@ -82,7 +106,6 @@ function GTurtle.Base:new(options)
             avoidAllBlocks = self.avoidAllBlocks,
             blockBlacklist = self.digBlacklist,
             blockWhitelist = self.digWhitelist,
-            gridFile = self.cacheGrid and self.gridFile,
             fenceCorners = options.fenceCorners
         }
     )
@@ -101,6 +124,11 @@ function GTurtle.Base:new(options)
         clearLog = options.clearLog,
         logFile = f("TurtleHost[%d].log", self.id)
     }
+end
+
+---@param file string
+function GTurtle.Base:InitDB(file)
+    self.db = GTurtle.BaseDB {file = file}
 end
 
 ---@return table<number, table>
@@ -386,6 +414,7 @@ function GTurtle.Base:Move(dir)
             self:VisualizeGrid()
         end
         self.tNetClient:SendGridMap()
+        self.db:Persist()
         return GTurtle.RETURN_CODE.SUCCESS
     else
         self:Log(f("- %s", tostring(err)))
@@ -433,6 +462,7 @@ function GTurtle.Base:Turn(turn)
             self:VisualizeGrid()
         end
         self.tNetClient:SendGridMap()
+        self.db:Persist()
         return GTurtle.RETURN_CODE.SUCCESS
     else
         self:FLog("Turning Blocked: %s", err)
@@ -491,6 +521,7 @@ function GTurtle.Base:Dig(dir, side)
     if success then
         self.tnav:UpdateSurroundings()
         self.tNetClient:SendGridMap()
+        self.db:Persist()
         return GTurtle.RETURN_CODE.SUCCESS
     else
         self:FLog("Could not dig: %s", err)

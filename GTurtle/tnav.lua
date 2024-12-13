@@ -151,20 +151,16 @@ function TNAV.GridNav:new(options)
     local gpsPos = self:GetGPSPos()
     self.gpsEnabled = gpsPos ~= nil
 
-    self.gridMap =
-        GNAV.GridMap(
-        {
-            logger = self.gTurtle,
-            saveFile = self.gridFile,
-            loadFile = self.gridFile,
-            gridNodeMapFunc = function(gridNode)
-                if gridNode:EqualPos(self.currentGN) then
-                    return "[T]"
-                elseif self.activePath and self.activePath:IsOnPath(gridNode) then
-                    return " . "
-                end
+    self.gridMap = self.gTurtle.db.data.gridMap
+
+    self.gridMap:SetGNMapFunction(
+        function(gridNode)
+            if gridNode:EqualPos(self.currentGN) then
+                return "[T]"
+            elseif self.activePath and self.activePath:IsOnPath(gridNode) then
+                return " . "
             end
-        }
+        end
     )
 
     self.initGN = self.gridMap:GetGridNode(gpsPos or GVector(0, 0, 0))

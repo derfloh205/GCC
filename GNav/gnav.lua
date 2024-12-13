@@ -57,6 +57,12 @@ function GNAV.Boundary:GetSize()
     return sizeX, sizeY, sizeZ
 end
 
+---@class GNAV.Boundary.Serialized
+---@field x GNAV.Boundary.Range
+---@field y GNAV.Boundary.Range
+---@field z GNAV.Boundary.Range
+
+---@return GNAV.Boundary.Serialized
 function GNAV.Boundary:Serialize()
     return {
         x = {min = self.x.min, max = self.x.max},
@@ -65,6 +71,7 @@ function GNAV.Boundary:Serialize()
     }
 end
 
+---@param serialized GNAV.Boundary.Serialized
 ---@return GNAV.Boundary
 function GNAV.Boundary:Deserialize(serialized)
     local boundary = GNAV.Boundary
@@ -273,11 +280,41 @@ function GNAV.GridNode:GetClosestNeighbor(gridNode, flat)
     return closest
 end
 
+---@class GNAV.GridNode.Serialized
+---@field unknown boolean
+---@field blockData BlockData?
+---@field pos GVector.Serialized
+---@field visited boolean
+
+---@return GNAV.GridNode.Serialized
+function GNAV.GridNode:Serialize()
+    return {
+        unknown = self.unknown,
+        blockData = self.blockData,
+        pos = self.pos:Serialize(),
+        visited = self.visited
+    }
+end
+
+---@param serializedGN GNAV.GridNode.Serialized
+---@param gridMap GNAV.GridMap
+---@return GNAV.GridNode
+function GNAV.GridNode:Deserialize(serializedGN, gridMap)
+    local gridNode =
+        GNAV.GridNode {
+        gridMap = gridMap,
+        pos = GVector:Deserialize(serializedGN.pos),
+        blockData = serializedGN.blockData,
+        unknown = serializedGN.unknown
+    }
+    gridNode.visited = serializedGN.visited
+    return gridNode
+end
+
+---@alias GNAV.GridMap.Grid table<number, table<number, table<number, GNAV.GridNode>>>
+---@alias GNAV.GridMap.Grid.Serialized table<number, table<number, table<number, GNAV.GridNode.Serialized>>>
+
 ---@class GNAV.GridMap.Options
----@field logger GLogAble
----@field gridNodeMapFunc? fun(gridNode: GNAV.GridNode): string?
----@field saveFile? string if set save grid to file continously
----@field loadFile? string if set attempt to load data from file at initialization
 
 ---@class GNAV.GridMap : Object
 ---@overload fun(options: GNAV.GridMap.Options) : GNAV.GridMap
@@ -286,27 +323,20 @@ GNAV.GridMap = Object:extend()
 ---@param options GNAV.GridMap.Options
 function GNAV.GridMap:new(options)
     options = options or {}
-    self.logger = options.logger
     self.boundary = GNAV.Boundary()
-    -- 3D Array
-    ---@type table<number, table<number, table<number, GNAV.GridNode>>>
+    ---@type GNAV.GridMap.Grid
     self.grid = {}
-    self.gridNodeMapFunc = options.gridNodeMapFunc
+    ---@type fun(gridNode: GNAV.GridNode): string?
+    self.gridNodeMapFunc = nil
+end
 
-    self.saveFile = options.saveFile
-    self.loadFile = options.loadFile
-
-    if self.loadFile and fs.exists(self.loadFile) then
-        local loadFile = fs.open(self.loadFile, "r")
-        -- serialized -> no functions or metatables, only base types (table, number, string ...)
-        local serializedGridMap = textutils.unserialiseJSON(loadFile.readAll())
-        self:DeserializeGrid(serializedGridMap)
-        loadFile.close()
-    end
+---@param func fun(gridNode: GNAV.GridNode): string?
+function GNAV.GridMap:SetGNMapFunction(func)
+    self.gridNodeMapFunc = func
 end
 
 ---@param serializedGridMap table
-function GNAV.GridMap:DeserializeGrid(serializedGridMap)
+function GNAV.GridMap:MergeSerializedGrid(serializedGridMap)
     for x, xData in pairs(serializedGridMap.grid) do
         for y, yData in pairs(xData) do
             for z, serializedGN in pairs(yData) do
@@ -318,8 +348,55 @@ function GNAV.GridMap:DeserializeGrid(serializedGridMap)
     end
 end
 
----@return table serializedGrid
+---@return GNAV.GridMap.Grid.Serialized
 function GNAV.GridMap:SerializeGrid()
+    local serializedGrid = {}
+    for x, xData in pairs(self.grid) do
+        serializedGrid[x] = {}
+        for y, yData in pairs(xData) do
+            serializedGrid[x][y] = {}
+            for z, gridNode in pairs(yData) do
+                serializedGrid[x][y][z] = gridNode:Serialize()
+            end
+        end
+    end
+    return serializedGrid
+end
+
+---@param serializedGrid GNAV.GridMap.Grid.Serialized
+---@return GNAV.GridMap.Grid
+function GNAV.GridMap:DeserializeGrid(serializedGrid)
+    local grid = {}
+    for x, xData in pairs(serializedGrid) do
+        grid[x] = {}
+        for y, yData in pairs(xData) do
+            grid[x][y] = {}
+            for z, serializedGN in pairs(yData) do
+                grid[x][y][z] = GNAV.GridNode:Deserialize(serializedGN, self)
+            end
+        end
+    end
+    return grid
+end
+
+---@class GNAV.GridMap.Serialized
+---@field boundary GNAV.Boundary.Serialized
+---@field grid GNAV.GridMap.Grid.Serialized
+
+---@return GNAV.GridMap.Serialized
+function GNAV.GridMap:Serialize()
+    return {
+        boundary = self.boundary:Serialize(),
+        grid = self:SerializeGrid()
+    }
+end
+
+---@return GNAV.GridMap
+function GNAV.GridMap:Deserialize(serializedGridMap)
+    local gridMap = GNAV.GridMap {}
+    self.boundary = GNAV.Boundary:Deserialize(serializedGridMap.boundary)
+    self.grid = self:DeserializeGrid(serializedGridMap.grid)
+    return gridMap
 end
 
 function GNAV.GridMap:WriteFile()
@@ -433,19 +510,7 @@ function GNAV.GridMap:GetCenteredGridString(centerPos, sizeX, sizeY)
     return self:GetGridStringByBoundary(centerPos.z, centeredBoundary)
 end
 
-function GNAV.GridMap:Log(txt)
-    if self.logger then
-        self.logger:Log(txt)
-    end
-end
-function GNAV.GridMap:FLog(...)
-    if self.logger then
-        self.logger:FLog(...)
-    end
-end
-
 function GNAV.GridMap:IncreaseGridSize(incX, incY, incZ)
-    self:Log("Increasing Grid Size..")
     for x = self.boundary.x.min - incX, self.boundary.x.max + incX do
         if not MUtil:InRange(x, self.boundary.x.min, self.boundary.x.max) then
             for y = self.boundary.y.min - incY, self.boundary.y.max + incY do
@@ -459,7 +524,6 @@ function GNAV.GridMap:IncreaseGridSize(incX, incY, incZ)
             end
         end
     end
-    self:Log("Increased")
 end
 
 ---@param gridNode GNAV.GridNode
