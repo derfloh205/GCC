@@ -195,10 +195,17 @@ function GTurtle.Base:SuckFromChest(name, requestedCount)
     end
 end
 
-function GTurtle.Base:CollectNearbyItems()
-    turtle.suckUp()
-    turtle.suckDown()
-    turtle.suck()
+function GTurtle.Base:CollectDrops()
+    local scanBlocks = self:ScanBlocks()
+    if not scanBlocks[GNAV.DIR.F] then
+        turtle.suck()
+    end
+    if not scanBlocks[GNAV.DIR.U] then
+        turtle.suckUp()
+    end
+    if not scanBlocks[GNAV.DIR.D] then
+        turtle.suckDown()
+    end
 end
 
 function GTurtle.Base:SuckEverythingFromChest()

@@ -411,7 +411,7 @@ function RubberTurtle:HarvestTree(treeBaseGN)
                     )
                 end
             until usedTreeTap
-            self:CollectNearbyItems()
+            self:CollectDrops()
         end
 
         self:LogFeed("Harvesting Wood..")
@@ -491,6 +491,20 @@ function RubberTurtle:FARM_TREES()
         repeat
             self:LogFeed("Climbing Down..")
         until self:Move("D") == GTurtle.RETURN_CODE.BLOCKED
+        -- collect possible drops in area (navigate to each node except the middle one)
+        local area = self.tnav.gridMap:GetAreaAround(treeGN, 3)
+        self:LogFeed("Searching for Loot..")
+        local searchNodes =
+            TUtil:Filter(
+            area.nodeList,
+            function(gn)
+                return gn ~= treeGN
+            end
+        )
+        for _, gn in ipairs(searchNodes) do
+            self:NavigateToPosition(gn.pos)
+            self:CollectDrops()
+        end
     end
 
     -- Repeat Cycle
