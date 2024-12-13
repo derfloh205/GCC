@@ -29,7 +29,7 @@ function FileDB:Load()
 
     local file = fs.open(self.file, "r")
     self.data = self:DeserializeData(textutils.unserialise(file.readAll()).data)
-    file:close()
+    file.close()
 end
 
 --- OVERRIDE
