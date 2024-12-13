@@ -23,12 +23,12 @@ function JsonDB:Load()
     end
     if not fs.exists(self.file) then
         fs.open(self.file, "w")
-        fs.write("{}")
+        fs.write(textutils.serialiseJSON({data = {}}))
         fs.close()
     end
 
     local file = fs.open(self.file, "r")
-    self.data = self:DeserializeData(textutils.unserialiseJSON(file.readAll()))
+    self.data = self:DeserializeData(textutils.unserialiseJSON(file.readAll()).data)
     file:close()
 end
 
@@ -49,7 +49,7 @@ function JsonDB:Persist()
     end
 
     local file = fs.open(self.file, "w")
-    file.write(textutils.serialiseJSON(self:SerializeData()))
+    file.write(textutils.serialiseJSON({data = self:SerializeData()}))
     file.close()
 end
 
