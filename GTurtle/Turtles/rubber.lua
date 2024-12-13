@@ -26,6 +26,11 @@ local f = string.format
 ---@field data GTurtle.RubberTurtle.DB.Data
 local RubberTurtleDB = JsonDB:extend()
 
+function RubberTurtleDB:new(options)
+    ---@diagnostic disable-next-line: redundant-parameter
+    self.super.new(self, options)
+end
+
 ---@return GTurtle.RubberTurtle.DB.Data.Serialized
 function RubberTurtleDB:SerializeData()
     return {
