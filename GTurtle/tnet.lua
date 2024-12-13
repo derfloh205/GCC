@@ -168,7 +168,7 @@ function TNet.TurtleHost:new(options)
     self.gridMap =
         GNAV.GridMap {
         gridNodeMapFunc = function(gridNode)
-            for id, turtleData in pairs(self.turtleData) do
+            for id, turtleData in pairs(self.db.data.turtleData) do
                 if turtleData.pos:Equal(gridNode.pos) then
                     return f("[%d]", id)
                 end
@@ -219,7 +219,7 @@ function TNet.TurtleHost:InitFrontend()
         colorMapFunc = function(gridNode)
             local isTurtlePos =
                 TUtil:Some(
-                self.turtleData,
+                self.db.data.turtleData,
                 function(turtleData)
                     return gridNode.pos:Equal(turtleData.pos)
                 end
