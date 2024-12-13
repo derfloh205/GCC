@@ -62,6 +62,7 @@ RubberTurtle.PRODUCE_CHEST_ITEMS = {
 function RubberTurtle:new(options)
     options = options or {}
     options.avoidAllBlocks = false
+    options.fuelWhitelist = {CONST.ITEMS.RUBBER_WOOD, CONST.ITEMS.COAL, CONST.ITEMS.LAVA_BUCKET}
     options.digWhitelist = {CONST.ITEMS.RUBBER_WOOD, CONST.ITEMS.RUBBER_LEAVES}
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)

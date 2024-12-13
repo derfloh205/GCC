@@ -26,7 +26,8 @@ CONST.ITEMS = {
     RUBBER_LEAVES = "ic2:leaves",
     RESIN = "ic2:itemharz",
     COAL = "minecraft:coal", -- also charcoal
-    BONE_MEAL = "minecraft:dye" -- ??
+    BONE_MEAL = "minecraft:dye", -- ??
+    LAVA_BUCKET = "minecraft:lava_bucket"
 }
 
 CONST.TOOLS = {
