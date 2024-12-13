@@ -1,56 +1,56 @@
 local Object = require("GCC/Util/classics")
 
----@class JsonDB.Options
+---@class FileDB.Options
 ---@field file string
 
----@class JsonDB : Object
+---@class FileDB : Object
 ---@field file string
 ---@field data table
----@overload fun(options: JsonDB.Options):JsonDB
-local JsonDB = Object:extend()
+---@overload fun(options: FileDB.Options):FileDB
+local FileDB = Object:extend()
 
-function JsonDB:new(options)
+function FileDB:new(options)
     options = options or {}
     self.file = options.file
     self.data = {}
     self:Load()
 end
 
-function JsonDB:Load()
+function FileDB:Load()
     if not self.file then
-        error("JsonDB: No file specified")
+        error("FileDB: No file specified")
         return
     end
     if not fs.exists(self.file) then
         fs.open(self.file, "w")
-        fs.write(textutils.serialiseJSON({data = {}}))
+        fs.write(textutils.serialise({data = {}}))
         fs.close()
     end
 
     local file = fs.open(self.file, "r")
-    self.data = self:DeserializeData(textutils.unserialiseJSON(file.readAll()).data)
+    self.data = self:DeserializeData(textutils.unserialise(file.readAll()).data)
     file:close()
 end
 
 --- OVERRIDE
-function JsonDB:SerializeData()
+function FileDB:SerializeData()
     return self.data
 end
 
 --- OVERRIDE
-function JsonDB:DeserializeData(data)
+function FileDB:DeserializeData(data)
     return data
 end
 
-function JsonDB:Persist()
+function FileDB:Persist()
     if not self.file then
-        error("JsonDB: No file specified")
+        error("FileDB: No file specified")
         return
     end
 
     local file = fs.open(self.file, "w")
-    file.write(textutils.serialiseJSON({data = self:SerializeData()}))
+    file.write(textutils.serialise({data = self:SerializeData()}))
     file.close()
 end
 
-return JsonDB
+return FileDB

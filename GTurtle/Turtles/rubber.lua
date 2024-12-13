@@ -21,9 +21,9 @@ local f = string.format
 ---@field fenceCorners GVector[]
 ---@field treeCount number
 
----@class GTurtle.RubberTurtle.DB : JsonDB
+---@class GTurtle.RubberTurtle.DB : FileDB
 ---@field data GTurtle.RubberTurtle.DB.Data
----@overload fun(options: JsonDB.Options) : GTurtle.RubberTurtle.DB
+---@overload fun(options: FileDB.Options) : GTurtle.RubberTurtle.DB
 local RubberTurtleDB = GTurtle.BaseDB:extend()
 
 ---@return GTurtle.RubberTurtle.DB.Data.Serialized

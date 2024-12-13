@@ -4,7 +4,7 @@ local GNAV = require("GCC/GNav/gnav")
 local TNet = require("GCC/GTurtle/tnet")
 local GState = require("GCC/Util/gstate")
 local CONST = require("GCC/Util/const")
-local JsonDB = require("GCC/Util/jsondb")
+local FileDB = require("GCC/Util/filedb")
 local f = string.format
 
 ---@class GTurtle
@@ -31,10 +31,10 @@ GTurtle.RETURN_CODE = {
 ---@class GTurtle.BaseDB.Data.Serialized
 ---@field gridMap GNAV.GridMap.Serialized
 
----@class GTurtle.BaseDB : JsonDB
+---@class GTurtle.BaseDB : FileDB
 ---@field data GTurtle.BaseDB.Data
----@overload fun(options: JsonDB.Options) : GTurtle.BaseDB
-GTurtle.BaseDB = JsonDB:extend()
+---@overload fun(options: FileDB.Options) : GTurtle.BaseDB
+GTurtle.BaseDB = FileDB:extend()
 
 ---@return GTurtle.BaseDB.Data.Serialized
 function GTurtle.BaseDB:SerializeData()

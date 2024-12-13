@@ -7,7 +7,7 @@ local GUI = require("GCC/GUI/gui")
 local GGrid = require("GCC/GUI/ggrid")
 local DHook = require("GCC/Lib/discohook")
 local CONST = require("GCC/Util/const")
-local JsonDB = require("GCC/Util/jsondb")
+local FileDB = require("GCC/Util/filedb")
 local f = string.format
 
 ---@class TNet
@@ -41,10 +41,10 @@ local TNet = {}
 ---@field gridMap GNAV.GridMap
 ---@field discordMsgID number
 
----@class TNet.TurtleHostDB : JsonDB
+---@class TNet.TurtleHostDB : FileDB
 ---@field data TNet.TurtleHostDB.Data
----@overload fun(options: JsonDB.Options) : TNet.TurtleHostDB
-TNet.TurtleHostDB = JsonDB:extend()
+---@overload fun(options: FileDB.Options) : TNet.TurtleHostDB
+TNet.TurtleHostDB = FileDB:extend()
 
 function TNet.TurtleHostDB:SerializeData()
     local serializedData = {
