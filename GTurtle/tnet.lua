@@ -268,9 +268,11 @@ function TNet.TurtleHost:UpdateTurtleStatusDisplay(turtleID)
 end
 
 function TNet.TurtleHost:UpdateDiscordHookMessage(turtleID)
+    self:Log("UpdateDiscordHookMessage")
     if self.discordMsgID then
         local statusText = self:GetTurtleStatusText(turtleID)
         if statusText then
+            self:FLog("Edit Message.. ID: %s", self.discordMsgID)
             self.discordHook:editMessage(self.discordMsgID, statusText)
         end
     end
