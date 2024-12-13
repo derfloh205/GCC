@@ -5,24 +5,49 @@ local TUtil = require("GCC/Util/tutil")
 local TermUtil = require("GCC/Util/termutil")
 local GVector = require("GCC/GNav/gvector")
 local CONST = require("GCC/Util/const")
+local JsonDB = require("GCC/Util/jsondb")
 local f = string.format
 
----@class GTurtle.TurtleB.Rubber.Data.Serialized
+---@class GTurtle.RubberTurtle.DB.Data.Serialized
 ---@field resourceChestPos GVector.Serialized
 ---@field produceChestPos GVector.Serialized
 ---@field treePositions GVector.Serialized[]
 ---@field fenceCorners GVector.Serialized[]
 ---@field treeCount number
 
----@class GTurtle.TurtleDB.Rubber.Data
+---@class GTurtle.RubberTurtle.DB.Data
 ---@field resourceChestPos GVector
 ---@field produceChestPos GVector
 ---@field treePositions GVector[]
 ---@field fenceCorners GVector[]
 ---@field treeCount number
 
----@class GTurtle.TurtleDB.Rubber : GTurtle.TurtleDB
----@field data GTurtle.TurtleDB.Rubber.Data
+---@class GTurtle.RubberTurtle.DB : JsonDB
+---@field data GTurtle.RubberTurtle.DB.Data
+local RubberTurtleDB = JsonDB:extend()
+
+---@return GTurtle.RubberTurtle.DB.Data.Serialized
+function RubberTurtleDB:SerializeData()
+    return {
+        resourceChestPos = self.data.resourceChestPos and self.data.resourceChestPos:Serialize(),
+        produceChestPos = self.data.produceChestPos and self.data.produceChestPos:Serialize(),
+        fenceCorners = self.data.fenceCorners and GVector:SerializeList(self.data.fenceCorners),
+        treePositions = self.data.treePositions and GVector:SerializeList(self.data.treePositions),
+        treeCount = self.data.treeCount
+    }
+end
+
+---@param data GTurtle.RubberTurtle.DB.Data.Serialized
+---@return GTurtle.RubberTurtle.DB.Data
+function RubberTurtleDB:DeserializeData(data)
+    return {
+        resourceChestPos = data.resourceChestPos and GVector:Deserialize(data.resourceChestPos),
+        produceChestPos = data.produceChestPos and GVector:Deserialize(data.produceChestPos),
+        fenceCorners = data.fenceCorners and GVector:DeserializeList(data.fenceCorners),
+        treePositions = data.treePositions and GVector:DeserializeList(data.treePositions),
+        treeCount = data.treeCount
+    }
+end
 
 ---@class GTurtle.RubberTurtle.Options : GTurtle.Base.Options
 
@@ -66,85 +91,61 @@ function RubberTurtle:new(options)
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
     self.type = GTurtle.TYPES.RUBBER
-    ---@type GTurtle.TurtleDB.Rubber
-    self.turtleDB = self.turtleDB
+    ---@type GTurtle.RubberTurtle.DB
+    self.db = RubberTurtleDB {file = "rubberTurtleDB.json"}
     self.treeCount = 1
     ---@type table<GNAV.GridNode, number>
     self.saplingPlantTimes = {}
 end
 
----@param data GTurtle.TurtleDB.Rubber.Data
----@return GTurtle.TurtleB.Rubber.Data.Serialized
-function RubberTurtle:SerializeTurtleDB(data)
-    return {
-        resourceChestPos = data.resourceChestPos:Serialize(),
-        produceChestPos = data.produceChestPos:Serialize(),
-        fenceCorners = GVector:SerializeList(data.fenceCorners),
-        treePositions = GVector:SerializeList(data.treePositions),
-        treeCount = data.treeCount
-    }
-end
-
----@param data GTurtle.TurtleB.Rubber.Data.Serialized
----@return GTurtle.TurtleDB.Rubber.Data
-function RubberTurtle:DeserializeTurtleDB(data)
-    return {
-        resourceChestPos = GVector:Deserialize(data.resourceChestPos),
-        produceChestPos = GVector:Deserialize(data.produceChestPos),
-        fenceCorners = GVector:DeserializeList(data.fenceCorners),
-        treePositions = GVector:DeserializeList(data.treePositions),
-        treeCount = data.treeCount
-    }
-end
-
 function RubberTurtle:INIT()
     self:FLogFeed("Initiating %s", self.name)
-    local turtleDB = self.turtleDB.data --[[@as GTurtle.TurtleDB.Rubber.Data]]
-    if not turtleDB.resourceChestPos then
+    local rtData = self.db.data
+    if not rtData.resourceChestPos then
         self:LogFeed("Requesting Position..")
-        turtleDB.resourceChestPos = TermUtil:ReadGVector("Resource Chest Position?")
+        rtData.resourceChestPos = TermUtil:ReadGVector("Resource Chest Position?")
     end
-    if not turtleDB.produceChestPos then
+    if not rtData.produceChestPos then
         self:LogFeed("Requesting Position..")
-        turtleDB.produceChestPos = TermUtil:ReadGVector("Produce Chest Position?")
+        rtData.produceChestPos = TermUtil:ReadGVector("Produce Chest Position?")
     end
 
-    if not turtleDB.fenceCorners or #turtleDB.fenceCorners < 4 then
+    if not rtData.fenceCorners or #rtData.fenceCorners < 4 then
         self:LogFeed("Requesting GeoFence..")
-        turtleDB.fenceCorners = turtleDB.fenceCorners or {}
-        turtleDB.fenceCorners[1] = TermUtil:ReadGVector("Fence #1")
-        turtleDB.fenceCorners[2] = TermUtil:ReadGVector("Fence #2")
-        turtleDB.fenceCorners[3] = TermUtil:ReadGVector("Fence #3")
-        turtleDB.fenceCorners[4] = TermUtil:ReadGVector("Fence #4")
+        rtData.fenceCorners = rtData.fenceCorners or {}
+        rtData.fenceCorners[1] = TermUtil:ReadGVector("Fence #1")
+        rtData.fenceCorners[2] = TermUtil:ReadGVector("Fence #2")
+        rtData.fenceCorners[3] = TermUtil:ReadGVector("Fence #3")
+        rtData.fenceCorners[4] = TermUtil:ReadGVector("Fence #4")
     end
 
-    if not turtleDB.treeCount then
+    if not rtData.treeCount then
         self:LogFeed("Requesting Tree Count..")
-        turtleDB.treeCount = TermUtil:ReadNumber("Tree Count?")
-        self.treeCount = turtleDB.treeCount
+        rtData.treeCount = TermUtil:ReadNumber("Tree Count?")
+        self.treeCount = rtData.treeCount
     end
 
-    turtleDB.treePositions = turtleDB.treePositions or {}
+    rtData.treePositions = rtData.treePositions or {}
 
     self.invalidTreeGNs =
         TUtil:Map(
-        turtleDB.treePositions,
+        rtData.treePositions,
         function(gvector)
             return self.tnav.gridMap:GetGridNode(gvector)
         end
     )
 
-    self:PersistTurtleDB()
+    self.db:Persist()
 
-    self.tnav:SetGeoFence(turtleDB.fenceCorners)
+    self.tnav:SetGeoFence(rtData.fenceCorners)
 
-    self.resourceGN = self.tnav.gridMap:GetGridNode(turtleDB.resourceChestPos)
+    self.resourceGN = self.tnav.gridMap:GetGridNode(rtData.resourceChestPos)
     self.resourceGN.unknown = false
-    self.produceGN = self.tnav.gridMap:GetGridNode(turtleDB.produceChestPos)
+    self.produceGN = self.tnav.gridMap:GetGridNode(rtData.produceChestPos)
     self.produceGN.unknown = false
     self.treeGNs =
         TUtil:Map(
-        turtleDB.treePositions,
+        rtData.treePositions,
         function(treePositionGV)
             return self.tnav.gridMap:GetGridNode(treePositionGV)
         end
@@ -267,7 +268,7 @@ function RubberTurtle:GetTreePositionCandidate()
 end
 
 function RubberTurtle:INIT_TREE_POSITIONS()
-    local rtData = self.turtleDB.data
+    local rtData = self.db.data
     self:LogFeed("Init Tree Positions..")
     while #self.treeGNs < self.treeCount do
         local candidateGN, candidateArea = self:GetTreePositionCandidate()
@@ -297,7 +298,7 @@ function RubberTurtle:INIT_TREE_POSITIONS()
                     table.insert(self.treeGNs, candidateGN)
                     table.insert(rtData.treePositions, candidateGN.pos)
                     self.tnav:AddAvoidGN(candidateGN)
-                    self:PersistTurtleDB()
+                    self.db:Persist()
                 end
             else
                 self:Log("Not able to navigate to tree pos")
@@ -315,8 +316,8 @@ function RubberTurtle:INIT_TREE_POSITIONS()
             else
                 self:FLog("Viable Tree Count Found: %d / %d", rtData.treeCount, self.treeCount)
                 self:FLogFeed("Tree Positions: %d", rtData.treeCount)
-                rtData:PersistTurtleDB()
                 self.treeCount = rtData.treeCount
+                self.db:Persist()
                 break
             end
         end
@@ -497,22 +498,22 @@ function RubberTurtle:FARM_TREES()
         repeat
             self:LogFeed("Climbing Down..")
         until self:Move("D") == GTurtle.RETURN_CODE.BLOCKED
-        if harvestedSomething then
-            -- collect possible drops in area (navigate to each node except the middle one)
-            local area = self.tnav.gridMap:GetAreaAround(treeGN, 3)
-            self:LogFeed("Searching for Loot..")
-            local searchNodes =
-                TUtil:Filter(
-                area.nodeList,
-                function(gn)
-                    return gn ~= treeGN
-                end
-            )
-            for _, gn in ipairs(searchNodes) do
-                self:NavigateToPosition(gn.pos)
-                self:CollectDrops()
-            end
-        end
+        -- if harvestedSomething then
+        --     -- collect possible drops in area (navigate to each node except the middle one)
+        --     local area = self.tnav.gridMap:GetAreaAround(treeGN, 3)
+        --     self:LogFeed("Searching for Loot..")
+        --     local searchNodes =
+        --         TUtil:Filter(
+        --         area.nodeList,
+        --         function(gn)
+        --             return gn ~= treeGN
+        --         end
+        --     )
+        --     for _, gn in ipairs(searchNodes) do
+        --         self:NavigateToPosition(gn.pos)
+        --         self:CollectDrops()
+        --     end
+        -- end
     end
 
     -- Repeat Cycle

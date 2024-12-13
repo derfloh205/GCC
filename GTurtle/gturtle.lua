@@ -24,10 +24,6 @@ GTurtle.RETURN_CODE = {
     NO_PATH = "NO_PATH"
 }
 
----@class GTurtle.TurtleDB
----@field data table
----@field id number
-
 ---@class GTurtle.Base.Options : GState.StateMachine.Options
 ---@field name string
 ---@field fuelWhitelist? string[]
@@ -61,9 +57,6 @@ function GTurtle.Base:new(options)
     self.fuelWhitelist = options.fuelWhitelist or CONST.DEFAULT_FUEL_ITEMS
     self.visualizeGridOnMove = options.visualizeGridOnMove
     self.minimumFuel = options.minimumFuel or 100
-    self.turtleDBFile = f("turtleDB_%d.json", self.id)
-    ---@type GTurtle.TurtleDB
-    self.turtleDB = self:LoadTurtleDB()
     ---@type GTurtle.TYPES
     self.type = GTurtle.TYPES.BASE
     self.term = options.term or term
@@ -108,48 +101,6 @@ function GTurtle.Base:new(options)
         clearLog = options.clearLog,
         logFile = f("TurtleHost[%d].log", self.id)
     }
-end
-
----@return GTurtle.TurtleDB turtleDB
-function GTurtle.Base:LoadTurtleDB()
-    if self.turtleDBFile and fs.exists(self.turtleDBFile) then
-        local file = fs.open(self.turtleDBFile, "r")
-        local fileData = textutils.unserialiseJSON(file.readAll())
-        fileData.data = self:DeserializeTurtleDB(fileData.data)
-        file.close()
-        return fileData
-    else
-        return {
-            id = self.id,
-            data = {}
-        }
-    end
-end
-
---- to be overridden by child turtle types
----@param data table
----@return table
-function GTurtle.Base:DeserializeTurtleDB(data)
-    return data
-end
-
---- to be overridden by child turtle types
----@param data table
----@return table
-function GTurtle.Base:SerializeTurtleDB(data)
-    return data
-end
-
-function GTurtle.Base:PersistTurtleDB()
-    if self.turtleDB and self.turtleDBFile then
-        local file = fs.open(self.turtleDBFile, "w")
-        local dbData = {
-            id = self.turtleDB.id,
-            data = self:SerializeTurtleDB(self.turtleDB.data)
-        }
-        file.write(textutils.serialiseJSON(dbData))
-        file.close()
-    end
 end
 
 ---@return table<number, table>
