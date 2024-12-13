@@ -3,7 +3,7 @@ local p = require("cc.pretty")
 local f = string.format
 
 ---@class GLogAble.Options
----@field log boolean
+---@field log? boolean
 ---@field logFile? string
 ---@field clearLog? boolean
 ---@field logFeedSize? number default: 0
@@ -38,7 +38,7 @@ function GLogAble:AddLogFeed(logString)
 end
 
 function GLogAble:ClearLog()
-    if self.logFile ~= "" and fs.exists(self.logFile) then
+    if self.logFile and self.logFile ~= "" and fs.exists(self.logFile) then
         fs.delete(self.logFile)
     end
 end
@@ -49,7 +49,7 @@ function GLogAble:SetLog(log)
 end
 
 function GLogAble:SetLogFile(logFile)
-    self.logFile = logFile or f("PC_%d.log", os.getComputerID())
+    self.logFile = logFile
 end
 
 ---@param logString string?
@@ -58,6 +58,11 @@ function GLogAble:WriteLogFile(logString, logFeed)
     if logFeed then
         self:AddLogFeed(logString)
     end
+
+    if not self.logFile then
+        return
+    end
+
     local logFile = fs.open(self.logFile, "a")
     logFile.write(f("[%s]: %s\n", os.date("%T"), logString or ""))
     logFile.close()
