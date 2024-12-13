@@ -264,7 +264,7 @@ function TNet.TurtleHost:InitFrontend()
 end
 
 function TNet.TurtleHost:GetTurtleStatusText(turtleID)
-    local turtleData = self.turtleData[turtleID]
+    local turtleData = self.db.data.turtleData[turtleID]
     if not turtleData then
         return
     end
@@ -292,7 +292,7 @@ Pos:   %s
 end
 
 function TNet.TurtleHost:UpdateTurtleStatusDisplay(turtleID)
-    local turtleData = self.turtleData[turtleID]
+    local turtleData = self.db.data.turtleData[turtleID]
     if not turtleData then
         return
     end
@@ -302,12 +302,12 @@ end
 
 function TNet.TurtleHost:UpdateDiscordHookMessage(turtleID)
     self:Log("UpdateDiscordHookMessage")
-    if self.discordMsgID then
+    if self.db.data.discordMsgID then
         local statusText = self:GetTurtleStatusText(turtleID)
         if statusText then
             local escapedStatusText = statusText:gsub("\n", "\r")
-            self:FLog("Edit Message.. ID: %s", self.discordMsgID)
-            local success = self.discordHook:editMessage(self.discordMsgID, escapedStatusText)
+            self:FLog("Edit Message.. ID: %s", self.db.data.discordMsgID)
+            local success = self.discordHook:editMessage(self.db.data.discordMsgID, escapedStatusText)
             self:FLog("Edit Msg Success: %s", tostring(success))
         end
     end
