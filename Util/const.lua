@@ -43,4 +43,8 @@ CONST.DEFAULT_FUEL_ITEMS = {
     CONST.ITEMS.COAL
 }
 
+CONST.DISCORD_HOOKS = {
+    TURTLE_HOST = "https://discord.com/api/webhooks/1317077071863742504/3z9krO8cJfi778veJtniXPBEQ1-8gPJAxpsekzuZTNBWC7_tY4bijIyiXINCqCWO-QuU"
+}
+
 return CONST

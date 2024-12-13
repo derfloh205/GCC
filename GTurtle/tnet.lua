@@ -6,10 +6,14 @@ local GVector = require("GCC/GNav/gvector")
 local GNAV = require("GCC/GNav/gnav")
 local GUI = require("GCC/GUI/gui")
 local GGrid = require("GCC/GUI/ggrid")
+local DHook = require("GCC/Lib/discohook")
+local CONST = require("GCC/Util/const")
 local f = string.format
 
 ---@class TNet
 local TNet = {}
+
+---@alias DiscordMessage string | integer | nil
 
 ---@class TNet.TurtleData.Options
 ---@field id number
@@ -154,6 +158,17 @@ function TNet.TurtleHost:new(options)
     self:InitFrontend()
 
     self:FLog("Initializing %s", self.name)
+
+    self.discordHook = DHook.create(CONST.DISCORD_HOOKS.TURTLE_HOST)
+    self.discordMsgID = nil
+end
+
+function TNet.TurtleHost:GetDiscordMessageID()
+    if not self.discordMsgID then
+        self.discordMsgID = self.discordHook:sendMessage(f("Turtle Host [%d] Initialized", self.id))
+    end
+
+    return self.discordMsgID
 end
 
 function TNet.TurtleHost:InitFrontend()
@@ -217,7 +232,7 @@ function TNet.TurtleHost:InitFrontend()
     }
 end
 
-function TNet.TurtleHost:UpdateTurtleStatusDisplay(turtleID)
+function TNet.TurtleHost:GetTurtleStatusText(turtleID)
     local turtleData = self.turtleData[turtleID]
     if not turtleData then
         return
@@ -242,7 +257,26 @@ Pos:   %s
         table.concat(turtleData.logFeed, "\n")
     )
 
-    self.ui.turtleStatusSummary:SetText(statusText)
+    return statusText
+end
+
+function TNet.TurtleHost:UpdateTurtleStatusDisplay(turtleID)
+    local turtleData = self.turtleData[turtleID]
+    if not turtleData then
+        return
+    end
+
+    self.ui.turtleStatusSummary:SetText(self:GetTurtleStatusText(turtleID))
+end
+
+function TNet.TurtleHost:UpdateDiscordHookMessage(turtleID)
+    local discordMessage = self:GetDiscordMessageID()
+    if discordMessage then
+        local statusText = self:GetTurtleStatusText(turtleID)
+        if statusText then
+            self.discordHook:editMessage(self.discordMsgID, statusText)
+        end
+    end
 end
 
 ---@param id number
@@ -277,6 +311,7 @@ function TNet.TurtleHost:OnTurtleDataUpdate(id, serializedTurtleData)
     self:FLog("Received TURTLE_POS_UPDATE from [%d]", id)
     self.turtleData[id] = TNet.TurtleData:Deserialize(serializedTurtleData)
     self:UpdateTurtleStatusDisplay(id)
+    self:UpdateDiscordHookMessage(id)
 end
 
 function TNet.TurtleHost:UpdateGridMapDisplay(turtleID)
