@@ -90,7 +90,7 @@ function RubberTurtle:new(options)
     options.avoidAllBlocks = false
     options.fuelWhitelist = {CONST.ITEMS.RUBBER_WOOD, CONST.ITEMS.COAL, CONST.ITEMS.LAVA_BUCKET}
     options.digWhitelist = {CONST.ITEMS.RUBBER_WOOD, CONST.ITEMS.RUBBER_LEAVES}
-    options.dbFile = options.dbFile or "rubberTurtleDB.json"
+    options.dbFile = options.dbFile or "rubberTurtle.db"
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
     self.type = GTurtle.TYPES.RUBBER
