@@ -164,7 +164,7 @@ function TNet.TurtleHost:new(options)
     term:clear()
     peripheral.find("modem", rednet.open)
 
-    self.db = TNet.TurtleHostDB {file = "turtleHostDB.json"}
+    self.db = TNet.TurtleHostDB {file = "turtleHost.db"}
     self.gridMap =
         GNAV.GridMap {
         gridNodeMapFunc = function(gridNode)
