@@ -380,16 +380,20 @@ function RubberTurtle:GetResinHead(treeGN)
 end
 
 ---@param treeBaseGN GNAV.GridNode
+---@return boolean harvestedSomething
 function RubberTurtle:HarvestTree(treeBaseGN)
     self:LogFeed("Harvesting..")
     local startHeight = treeBaseGN.pos.z
     local maxHeight = startHeight + 10
+    local harvestedSomething = false
     repeat
         local woodGN = self.tnav.currentGN:GetRelativeNode(self.tnav.head, GNAV.DIR.F)
         if not woodGN:IsItem(CONST.ITEMS.RUBBER_WOOD) then
             self:LogFeed("No Wood to Harvest..")
             break
         end
+
+        harvestedSomething = true
 
         local resinHead = self:GetResinHead(woodGN)
         if resinHead then
@@ -421,6 +425,8 @@ function RubberTurtle:HarvestTree(treeBaseGN)
         self:Dig("U") -- only leaves and wood
         local climbResponse = self:Move("U")
     until maxHeight <= self.tnav.currentGN.pos.z or climbResponse == GTurtle.RETURN_CODE.BLOCKED
+
+    return harvestedSomething
 end
 
 ---@param treeGN GNAV.GridNode
@@ -487,24 +493,26 @@ function RubberTurtle:FARM_TREES()
         -- turn to tree pos
         self:TurnToHead(self.tnav.currentGN:GetRelativeHeading(treeGN))
         self:NurtureTree(treeGN)
-        self:HarvestTree(treeGN)
+        local harvestedSomething = self:HarvestTree(treeGN)
         -- climb down
         repeat
             self:LogFeed("Climbing Down..")
         until self:Move("D") == GTurtle.RETURN_CODE.BLOCKED
-        -- collect possible drops in area (navigate to each node except the middle one)
-        local area = self.tnav.gridMap:GetAreaAround(treeGN, 3)
-        self:LogFeed("Searching for Loot..")
-        local searchNodes =
-            TUtil:Filter(
-            area.nodeList,
-            function(gn)
-                return gn ~= treeGN
+        if harvestedSomething then
+            -- collect possible drops in area (navigate to each node except the middle one)
+            local area = self.tnav.gridMap:GetAreaAround(treeGN, 3)
+            self:LogFeed("Searching for Loot..")
+            local searchNodes =
+                TUtil:Filter(
+                area.nodeList,
+                function(gn)
+                    return gn ~= treeGN
+                end
+            )
+            for _, gn in ipairs(searchNodes) do
+                self:NavigateToPosition(gn.pos)
+                self:CollectDrops()
             end
-        )
-        for _, gn in ipairs(searchNodes) do
-            self:NavigateToPosition(gn.pos)
-            self:CollectDrops()
         end
     end
 
