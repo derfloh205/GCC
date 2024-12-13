@@ -192,13 +192,13 @@ function TNet.TurtleHost:new(options)
     self:FLog("Initializing %s", self.name)
 
     self.discordHook = DHook.create(CONST.DISCORD_HOOKS.TURTLE_HOST)
-    if not self.discordMsgID then
-        self:InitDiscordMessage()
-    end
+    self:InitDiscordMessage()
 end
 
 function TNet.TurtleHost:InitDiscordMessage()
-    self.discordMsgID = self.discordHook:sendMessage(f("Turtle Host [%d] Initialized", self.id))
+    if not self.db.data.discordMsgID or not self.discordHook:getMessage(self.db.data.discordMsgID) then
+        self.discordMsgID = self.discordHook:sendMessage(f("Turtle Host [%d] Initialized", self.id))
+    end
 end
 
 function TNet.TurtleHost:InitFrontend()
