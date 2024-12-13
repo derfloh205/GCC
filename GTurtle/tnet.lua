@@ -193,6 +193,7 @@ function TNet.TurtleHost:new(options)
 
     self.discordHook = DHook.create(CONST.DISCORD_HOOKS.TURTLE_HOST)
     self:InitDiscordMessage()
+    self.db:Persist()
 end
 
 function TNet.TurtleHost:InitDiscordMessage()
