@@ -55,7 +55,7 @@ function TNet.TurtleHostDB:SerializeData()
             end,
             true
         ),
-        gridMap = self.data.gridMap:Serialize(),
+        gridMap = self.data.gridMap and self.data.gridMap:Serialize(),
         discordMsgID = self.data.discordMsgID
     }
     return serializedData
@@ -72,8 +72,8 @@ function TNet.TurtleHostDB:DeserializeData(data)
     )
 
     return {
-        turtleData = turtleData,
-        gridMap = GNAV.GridMap:Deserialize(data.gridMap),
+        turtleData = turtleData or {},
+        gridMap = (data.gridMap and GNAV.GridMap:Deserialize(data.gridMap)) or GNAV.GridMap {},
         discordMsgID = data.discordMsgID
     }
 end
