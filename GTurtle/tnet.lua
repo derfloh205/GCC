@@ -34,12 +34,12 @@ local TNet = {}
 ---@class TNet.TurtleHostDB.Data.Serialized
 ---@field turtleData table<TurtleID, TNet.TurtleData.Serialized>
 ---@field gridMap GNAV.GridMap.Serialized
----@field discordMsgID number
+---@field discordMsgID string
 
 ---@class TNet.TurtleHostDB.Data
 ---@field turtleData table<TurtleID, TNet.TurtleData>
 ---@field gridMap GNAV.GridMap
----@field discordMsgID number
+---@field discordMsgID string
 
 ---@class TNet.TurtleHostDB : FileDB
 ---@field data TNet.TurtleHostDB.Data
