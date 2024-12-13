@@ -160,15 +160,13 @@ function TNet.TurtleHost:new(options)
     self:FLog("Initializing %s", self.name)
 
     self.discordHook = DHook.create(CONST.DISCORD_HOOKS.TURTLE_HOST)
-    self.discordMsgID = nil
+    if not self.discordMsgID then
+        self:InitDiscordMessage()
+    end
 end
 
-function TNet.TurtleHost:GetDiscordMessageID()
-    if not self.discordMsgID then
-        self.discordMsgID = self.discordHook:sendMessage(f("Turtle Host [%d] Initialized", self.id))
-    end
-
-    return self.discordMsgID
+function TNet.TurtleHost:InitDiscordMessage()
+    self.discordMsgID = self.discordHook:sendMessage(f("Turtle Host [%d] Initialized", self.id))
 end
 
 function TNet.TurtleHost:InitFrontend()
@@ -270,8 +268,7 @@ function TNet.TurtleHost:UpdateTurtleStatusDisplay(turtleID)
 end
 
 function TNet.TurtleHost:UpdateDiscordHookMessage(turtleID)
-    local discordMessage = self:GetDiscordMessageID()
-    if discordMessage then
+    if self.discordMsgID then
         local statusText = self:GetTurtleStatusText(turtleID)
         if statusText then
             self.discordHook:editMessage(self.discordMsgID, statusText)
