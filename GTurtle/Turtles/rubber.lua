@@ -53,7 +53,6 @@ RubberTurtle.STATE = {
 TUtil:Inject(RubberTurtle.STATE, GState.STATE)
 
 RubberTurtle.PRODUCE_CHEST_ITEMS = {
-    CONST.ITEMS.RUBBER_WOOD,
     CONST.ITEMS.RESIN,
     CONST.ITEMS.RUBBER_LEAVES
 }
