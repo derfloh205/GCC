@@ -73,7 +73,6 @@ function GTurtle.Base:new(options)
     options = options or {}
     self.id = os.getComputerID()
     self.name = f("%s[%d]", options.name, self.id)
-    options.logFile = f("GTurtle[%d].log", self.id)
     ---@diagnostic disable-next-line: redundant-parameter
     GTurtle.Base.super.new(self, options)
     os.setComputerLabel(self.name)
