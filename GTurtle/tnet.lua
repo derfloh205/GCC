@@ -272,8 +272,9 @@ function TNet.TurtleHost:UpdateDiscordHookMessage(turtleID)
     if self.discordMsgID then
         local statusText = self:GetTurtleStatusText(turtleID)
         if statusText then
+            local escapedStatusText = statusText:gsub("\n", "\r")
             self:FLog("Edit Message.. ID: %s", self.discordMsgID)
-            local success = self.discordHook:editMessage(self.discordMsgID, statusText)
+            local success = self.discordHook:editMessage(self.discordMsgID, escapedStatusText)
             self:FLog("Edit Msg Success: %s", tostring(success))
         end
     end
