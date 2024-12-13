@@ -49,7 +49,7 @@ TNet.TurtleHostDB = FileDB:extend()
 function TNet.TurtleHostDB:SerializeData()
     local serializedData = {
         turtleData = TUtil:Map(
-            self.data.turtleData,
+            self.data.turtleData or {},
             function(turtleData)
                 return self:SerializeTurtleData(turtleData)
             end,
@@ -64,7 +64,7 @@ end
 function TNet.TurtleHostDB:DeserializeData(data)
     local turtleData =
         TUtil:Map(
-        data.turtleData,
+        data.turtleData or {},
         function(turtleData)
             return self:DeserializeTurtleData(turtleData)
         end,
