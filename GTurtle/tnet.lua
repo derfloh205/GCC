@@ -198,7 +198,7 @@ end
 
 function TNet.TurtleHost:InitDiscordMessage()
     if not self.db.data.discordMsgID or not self.discordHook:getMessage(self.db.data.discordMsgID) then
-        self.discordMsgID = self.discordHook:sendMessage(f("Turtle Host [%d] Initialized", self.id))
+        self.db.data.discordMsgID = self.discordHook:sendMessage(f("Turtle Host [%d] Initialized", self.id))
     end
 end
 
