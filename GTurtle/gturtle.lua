@@ -13,7 +13,8 @@ local GTurtle = {}
 ---@enum GTurtle.TYPES
 GTurtle.TYPES = {
     BASE = "BASE",
-    RUBBER = "RUBBER"
+    RUBBER = "RUBBER",
+    BUILDER = "BUILDER"
 }
 
 ---@enum GTurtle.RETURN_CODE

@@ -15,6 +15,7 @@
         "read",
         "window",
         "paintutils",
-        "colors"
+        "colors",
+        "redstone"
     ]
 }
