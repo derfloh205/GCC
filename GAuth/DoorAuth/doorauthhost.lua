@@ -84,6 +84,8 @@ function DoorAuthHost:ShowAuthentication(user)
 end
 
 function DoorAuthHost:Init()
+    local prevTerm = term.current()
+    term.redirect(term.native())
     if not self.db.data.permittedUsers then
         self.db.data.permittedUsers = TermUtil:ReadList("Enter permitted users (comma-separated):")
     end
@@ -110,6 +112,8 @@ function DoorAuthHost:Init()
     self:FLog("Door Auth Host Initiated [%d]", self.id)
 
     self.db:Persist()
+
+    term.redirect(prevTerm)
 end
 
 function DoorAuthHost:OpenDoors()
