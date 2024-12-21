@@ -128,7 +128,7 @@ function GAuth.AuthClient:BroadcastAuthenticationRequest(username, position, tim
         position = position
     }
     rednet.broadcast(request, GAuth.AuthHost.PROTOCOL.AUTHENTICATION_REQUEST)
-    local response = rednet.receive(GAuth.AuthHost.PROTOCOL.AUTHENTICATION_RESPONSE, timeout)
+    local id, response = rednet.receive(GAuth.AuthHost.PROTOCOL.AUTHENTICATION_RESPONSE, timeout)
     return response
 end
 
