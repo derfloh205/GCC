@@ -67,8 +67,8 @@ function DoorAuthHost:InitFrontend()
         GUI.Text {
         monitor = self.ui.frontend.monitor,
         parent = self.ui.frontend.monitor,
-        x = 15,
-        y = 5,
+        x = 12,
+        y = 7,
         sizeX = 50,
         sizeY = 2,
         text = "Door Authentication System",
