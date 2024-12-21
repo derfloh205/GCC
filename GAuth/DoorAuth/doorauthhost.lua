@@ -2,7 +2,6 @@ local GAuth = require("GCC/GAuth/gauth")
 local DoorController = require("GCC/GNet/DoorControl/doorcontroller")
 local FileDB = require("GCC/Util/filedb")
 local TermUtil = require("GCC/Util/termutil")
-local GVector = require("GCC/GNav/gvector")
 local GNav = require("GCC/GNav/gnav")
 local f = string.format
 
