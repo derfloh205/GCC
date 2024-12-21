@@ -105,8 +105,8 @@ end
 function GNAV.Boundary:Deserialize(serialized)
     local boundary = GNAV.Boundary
     boundary.x = {min = serialized.x.min, max = serialized.x.max}
-    boundary.x = {min = serialized.y.min, max = serialized.y.max}
-    boundary.x = {min = serialized.z.min, max = serialized.z.max}
+    boundary.y = {min = serialized.y.min, max = serialized.y.max}
+    boundary.z = {min = serialized.z.min, max = serialized.z.max}
     return boundary
 end
 
