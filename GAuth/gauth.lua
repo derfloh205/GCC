@@ -89,7 +89,6 @@ function GAuth.AuthHost:SendAuthenticationResponse(id, success, message)
 end
 
 ---@class GAuth.AuthClient.Options : GLogAble.Options
----@field username string
 
 ---@class GAuth.AuthClient : GLogAble
 ---@overload fun(options: GAuth.AuthClient.Options) : GAuth.AuthClient
@@ -101,7 +100,6 @@ function GAuth.AuthClient:new(options)
     self.id = os.getComputerID()
     ---@diagnostic disable-next-line: redundant-parameter
     GAuth.AuthClient.super.new(self, options)
-    self.username = options.username or "Unknown"
     self:Login()
     self:Run()
 end
