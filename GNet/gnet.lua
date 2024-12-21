@@ -19,6 +19,7 @@ GNet.Server = GLogAble:extend()
 function GNet.Server:new(options)
     options = options or {}
 
+    print("In Server:new")
     ---@diagnostic disable-next-line: redundant-parameter
     GNet.Server.super.new(self, options)
     self.id = os.getComputerID()

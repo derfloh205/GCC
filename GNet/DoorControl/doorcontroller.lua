@@ -40,6 +40,7 @@ function DoorController:new(options)
             callback = self.OpenDoors
         }
     }
+    print("In DoorController:new")
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
     self.db = DoorControllerDB {file = "doorcontroller.db"}
