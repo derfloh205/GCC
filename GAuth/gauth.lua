@@ -18,8 +18,8 @@ local GAuth = {}
 
 ---@class GAuth.AuthHost.Options : GNet.Server.Options
 ---@field permittedUsers string[]
----@field permittedArea GVector[]
----@field onUserAuthenticated fun(id: number, authenticationMsg: GAuth.AuthHost.AuthenticationMessage)
+---@field permittedArea? GVector[]
+---@field onUserAuthenticated? fun(id: number, authenticationMsg: GAuth.AuthHost.AuthenticationMessage)
 
 ---@class GAuth.AuthHost : GNet.Server
 ---@overload fun(options: GAuth.AuthHost.Options) : GAuth.AuthHost

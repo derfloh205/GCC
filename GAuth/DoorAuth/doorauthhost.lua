@@ -41,6 +41,10 @@ local DoorAuthHost = GAuth.AuthHost:extend()
 ---@param options DoorAuthHost.Options
 function DoorAuthHost:new(options)
     options = options or {}
+    options.onUserAuthenticated = function(id, authenticationMsg)
+        print("User Authenticated: " .. authenticationMsg.username)
+        self:OpenDoors()
+    end
     ---@diagnostic disable-next-line: redundant-parameter
     DoorAuthHost.super.new(self, options)
     self.db = DoorAuthHostDB {file = "doorauthhost.db"}
