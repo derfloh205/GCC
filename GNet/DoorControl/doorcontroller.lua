@@ -56,6 +56,10 @@ function DoorController:Init()
     if not self.db.data.invertSignals then
         self.invertSignals = TermUtil:ReadConfirmation("Invert signals?")
     end
+
+    term.clear()
+    term.setCursorPos(1, 1)
+    print("Door Controller Initiated..")
 end
 
 function DoorController:OpenDoors()
