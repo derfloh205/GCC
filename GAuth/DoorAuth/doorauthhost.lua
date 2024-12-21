@@ -32,7 +32,6 @@ function DoorAuthHostDB:SerializeData()
 end
 
 ---@class DoorAuthHost.Options : GAuth.AuthHost.Options
----@field doorControllerID number
 
 ---@class DoorAuthHost : GAuth.AuthHost
 ---@overload fun(options: DoorAuthHost.Options) : DoorAuthHost
@@ -43,14 +42,13 @@ function DoorAuthHost:new(options)
     options = options or {}
     ---@diagnostic disable-next-line: redundant-parameter
     DoorAuthHost.super.new(self, options)
-    self.doorControllerID = options.doorControllerID
     self.db = DoorAuthHostDB {file = "doorauthhost.db"}
     self:Init()
 end
 
 function DoorAuthHost:Init()
     if not self.db.data.permittedUsers then
-        self.permittedUsers = TermUtil:ReadList("Enter permitted users (comma-separated):")
+        self.db.data.permittedUsers = TermUtil:ReadList("Enter permitted users (comma-separated):")
     end
     if not self.db.data.permittedPositions then
         local positions = {}
@@ -58,12 +56,15 @@ function DoorAuthHost:Init()
             local pos = TermUtil:ReadGVector(f("Enter Scan Position #%d:", i))
             table.insert(positions, pos)
         end
-        self.permittedPositions = positions
+        self.db.data.permittedPositions = positions
     end
 
     if not self.db.data.doorControllerID then
         self.db.data.doorControllerID = TermUtil:ReadNumber("Enter Door Controller ID:")
     end
+
+    self.permittedPositions = self.db.data.permittedPositions
+    self.permittedUsers = self.db.data.permittedUsers
 
     term.clear()
     term.setCursorPos(1, 1)
@@ -74,7 +75,7 @@ function DoorAuthHost:Init()
 end
 
 function DoorAuthHost:OpenDoors()
-    rednet.send(self.doorControllerID, DoorController.PROTOCOL.DOOR_OPEN)
+    rednet.send(self.db.data.doorControllerID, DoorController.PROTOCOL.DOOR_OPEN)
 end
 
 return DoorAuthHost
