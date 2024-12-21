@@ -76,3 +76,5 @@ end
 function DoorAuthHost:OpenDoors()
     rednet.send(self.doorControllerID, DoorController.PROTOCOL.DOOR_OPEN)
 end
+
+return DoorAuthHost
