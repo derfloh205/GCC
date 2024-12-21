@@ -15,12 +15,7 @@ function DoorAuthClient:Run()
             term.setCursorPos(1, 1)
             print("Broadcasting to nearby doors...")
             local response =
-                self:BroadcastAuthenticationRequest(
-                self.id,
-                self.username,
-                self.position,
-                DoorAuthClient.BROADCAST_TIMEOUT
-            )
+                self:BroadcastAuthenticationRequest(self.username, self.position, DoorAuthClient.BROADCAST_TIMEOUT)
             if response and response.success then
                 print("Authenticated!")
                 sleep(1)

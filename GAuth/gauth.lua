@@ -111,18 +111,17 @@ function GAuth.AuthClient:Login()
     self.username = TermUtil:ReadString("Enter username: ")
 end
 
----@param id number
 ---@param username string
 ---@param position GVector
 ---@param timeout number
 ---@return GAuth.AuthHost.AuthenticationResponse?
-function GAuth.AuthClient:BroadcastAuthenticationRequest(id, username, position, timeout)
+function GAuth.AuthClient:BroadcastAuthenticationRequest(username, position, timeout)
     ---@type GAuth.AuthHost.AuthenticationMessage
     local request = {
         username = username,
         position = position
     }
-    rednet.broadcast(id, request, GAuth.AuthHost.PROTOCOL.AUTHENTICATION_REQUEST)
+    rednet.broadcast(request, GAuth.AuthHost.PROTOCOL.AUTHENTICATION_REQUEST)
     local response = rednet.receive(GAuth.AuthHost.PROTOCOL.AUTHENTICATION_RESPONSE, timeout)
     return response
 end
