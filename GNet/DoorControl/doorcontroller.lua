@@ -1,6 +1,7 @@
 local RSController = require("GCC/GNet/redstonecontroller")
 local TermUtil = require("GCC/Util/termutil")
 local FileDB = require("GCC/Util/filedb")
+local f = string.format
 
 ---@class DoorControllerDB.Data
 ---@field doorSides table<number, "left" | "right" | "top" | "bottom" | "front" | "back">
@@ -61,7 +62,7 @@ function DoorController:Init()
 
     term.clear()
     term.setCursorPos(1, 1)
-    print("Door Controller Initiated..")
+    print(f("Door Controller Initiated [%d]", self.id))
 end
 
 function DoorController:OpenDoors()

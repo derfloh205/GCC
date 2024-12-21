@@ -68,7 +68,7 @@ function DoorAuthHost:Init()
     term.clear()
     term.setCursorPos(1, 1)
 
-    print("Door Auth Host Initiated..")
+    print(f("Door Auth Host Initiated [%d]", self.id))
 
     self.db:Persist()
 end
