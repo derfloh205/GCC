@@ -97,4 +97,12 @@ function GVector:SerializeList(list)
     )
 end
 
+---@return GVector? pos
+function GVector:FromGPS()
+    local gpsPos = {gps.locate()}
+    if gpsPos and #gpsPos == 3 then
+        return GVector(gpsPos[1], gpsPos[2], gpsPos[3])
+    end
+end
+
 return GVector

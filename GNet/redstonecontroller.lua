@@ -1,5 +1,9 @@
 local GNet = require("GCC/GNet/gnet")
 
+---@class RedstoneController.Options : GNet.Server.Options
+
+---@class RedstoneController : GNet.Server
+---@overload fun(options: RedstoneController.Options) : RedstoneController
 local RedstoneController = GNet.Server:extend()
 
 ---@class RedstoneController.Command
@@ -14,7 +18,7 @@ RedstoneController.PROTOCOL = {
     REDSTONE_COMMAND = "REDSTONE_COMMAND"
 }
 
----@param options GNet.Server.Options
+---@param options RedstoneController.Options
 function RedstoneController:new(options)
     options = options or {}
     options.endpointConfigs = {

@@ -148,7 +148,7 @@ function TNAV.GridNav:new(options)
     self.gridFile = options.gridFile
     self.avoidGNs = options.avoidGNs or {}
 
-    local gpsPos = self:GetGPSPos()
+    local gpsPos = GVector:FromGPS()
     self.gpsEnabled = gpsPos ~= nil
 
     self.gridMap = self.gTurtle.db.data.gridMap
@@ -245,7 +245,7 @@ function TNAV.GridNav:InitializeHeading()
         return self:InitializeHeading() -- try again
     end
 
-    local newGridNode = self.gridMap:GetGridNode(self:GetGPSPos())
+    local newGridNode = self.gridMap:GetGridNode(GVector:FromGPS())
     newGridNode:SetEmpty()
 
     local head
@@ -267,14 +267,6 @@ function TNAV.GridNav:InitializeHeading()
     else
         self.head = head
         return true
-    end
-end
-
----@return GVector? pos
-function TNAV.GridNav:GetGPSPos()
-    local gpsPos = {gps.locate()}
-    if gpsPos and #gpsPos == 3 then
-        return GVector(gpsPos[1], gpsPos[2], gpsPos[3])
     end
 end
 

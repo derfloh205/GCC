@@ -43,4 +43,9 @@ function TermUtil:ReadNumber(prompt)
     return number
 end
 
+function TermUtil:ReadString(prompt)
+    print(prompt)
+    return read()
+end
+
 return TermUtil
