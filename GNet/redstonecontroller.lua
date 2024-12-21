@@ -30,6 +30,7 @@ function RedstoneController:new(options)
     print("In RedstoneController:new")
     ---@diagnostic disable-next-line: redundant-parameter
     self.super.new(self, options)
+    print("After Super Call")
 end
 
 ---@param id number
