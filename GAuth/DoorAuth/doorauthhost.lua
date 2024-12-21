@@ -65,6 +65,11 @@ function DoorAuthHost:Init()
         self.db.data.doorControllerID = TermUtil:ReadNumber("Enter Door Controller ID:")
     end
 
+    term.clear()
+    term.setCursorPos(1, 1)
+
+    print("Door Auth Host Initiated..")
+
     self.db:Persist()
 end
 
