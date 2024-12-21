@@ -3,11 +3,12 @@ local DoorController = require("GCC/GNet/DoorControl/doorcontroller")
 local FileDB = require("GCC/Util/filedb")
 local TermUtil = require("GCC/Util/termutil")
 local GVector = require("GCC/GNav/gvector")
+local GNav = require("GCC/GNav/gnav")
 local f = string.format
 
 ---@class DoorAuthHostDB.Data
 ---@field permittedUsers string[]
----@field permittedPositions GVector[]
+---@field permittedBoundary GNAV.Boundary
 ---@field doorControllerID number
 
 ---@class DoorAuthHostDB : FileDB
@@ -18,16 +19,16 @@ local DoorAuthHostDB = FileDB:extend()
 function DoorAuthHostDB:DeserializeData(data)
     return {
         permittedUsers = data.permittedUsers,
-        permittedPositions = GVector:DeserializeList(data.permittedPositions),
-        doorControllerID = data.doorControllerID
+        doorControllerID = data.doorControllerID,
+        permittedBoundary = data.permittedBoundary and GNav.Boundary:Deserialize(data.permittedBoundary)
     }
 end
 
 function DoorAuthHostDB:SerializeData()
     return {
         permittedUsers = self.data.permittedUsers,
-        permittedPositions = GVector:SerializeList(self.data.permittedPositions),
-        doorControllerID = self.data.doorControllerID
+        doorControllerID = self.data.doorControllerID,
+        permittedBoundary = self.data.permittedBoundary and self.data.permittedBoundary:Serialize()
     }
 end
 
@@ -50,21 +51,22 @@ function DoorAuthHost:Init()
     if not self.db.data.permittedUsers then
         self.db.data.permittedUsers = TermUtil:ReadList("Enter permitted users (comma-separated):")
     end
-    if not self.db.data.permittedPositions then
+    if not self.db.data.permittedBoundary then
         local positions = {}
         for i = 1, 4 do
             local pos = TermUtil:ReadGVector(f("Enter Scan Position #%d:", i))
             table.insert(positions, pos)
         end
-        self.db.data.permittedPositions = positions
+        self:SetPermittedBoundary(positions)
+        self.db.data.permittedBoundary = self.permittedBoundary
     end
 
     if not self.db.data.doorControllerID then
         self.db.data.doorControllerID = TermUtil:ReadNumber("Enter Door Controller ID:")
     end
 
-    self.permittedPositions = self.db.data.permittedPositions
     self.permittedUsers = self.db.data.permittedUsers
+    self.permittedBoundary = self.db.data.permittedBoundary
 
     term.clear()
     term.setCursorPos(1, 1)

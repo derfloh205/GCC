@@ -2,6 +2,8 @@ local GNet = require("GCC/GNet/gnet")
 local GLogAble = require("GCC/Util/glog")
 local TUtil = require("GCC/Util/tutil")
 local TermUtil = require("GCC/Util/termutil")
+local GVector = require("GCC/GNav/gvector")
+local GNav = require("GCC/GNav/gnav")
 
 ---@class GAuth
 local GAuth = {}
@@ -16,7 +18,7 @@ local GAuth = {}
 
 ---@class GAuth.AuthHost.Options : GNet.Server.Options
 ---@field permittedUsers string[]
----@field permittedPositions GVector[]
+---@field permittedArea GVector[]
 ---@field onUserAuthenticated fun(id: number, authenticationMsg: GAuth.AuthHost.AuthenticationMessage)
 
 ---@class GAuth.AuthHost : GNet.Server
@@ -40,19 +42,23 @@ function GAuth.AuthHost:new(options)
     ---@diagnostic disable-next-line: redundant-parameter
     GAuth.AuthHost.super.new(self, options)
 
-    self.permittedPositions = options.permittedPositions or {}
+    self.permittedBoundary = GNav.Boundary()
     self.permittedUsers = options.permittedUsers or {}
+    if options.permittedArea then
+        self:SetPermittedBoundary(options.permittedArea)
+    end
     self.onUserAuthenticated = options.onUserAuthenticated
+end
+
+---@param gvList GVector[]
+function GAuth.AuthHost:SetPermittedBoundary(gvList)
+    self.permittedBoundary = GNav.Boundary()
+    self.permittedBoundary:UpdateFromGVectorList(gvList)
 end
 
 ---@param userPosition GVector
 function GAuth.AuthHost:InScanArea(userPosition)
-    for _, position in ipairs(self.permittedPositions) do
-        if userPosition:Equal(position) then
-            return true
-        end
-    end
-    return false
+    return self.permittedBoundary:IsWithin(userPosition)
 end
 
 ---@param id number
