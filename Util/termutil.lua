@@ -26,9 +26,9 @@ function TermUtil:ReadConfirmation(prompt)
     print(prompt .. " (Y/n)")
     local response = read()
     if response == "y" or response == "Y" or response == "" then
-        return false
-    else
         return true
+    else
+        return false
     end
 end
 
