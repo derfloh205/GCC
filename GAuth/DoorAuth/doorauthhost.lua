@@ -48,6 +48,8 @@ function DoorAuthHost:new(options)
         sleep(1)
         self:ShowDefaultText()
     end
+    term.clear()
+    term.setCursorPos(1, 1)
     ---@diagnostic disable-next-line: redundant-parameter
     DoorAuthHost.super.new(self, options)
     self.db = DoorAuthHostDB {file = "doorauthhost.db"}
@@ -67,8 +69,8 @@ function DoorAuthHost:InitFrontend()
         GUI.Text {
         monitor = self.ui.frontend.monitor,
         parent = self.ui.frontend.monitor,
-        x = 12,
-        y = 7,
+        x = 10,
+        y = 6,
         sizeX = 50,
         sizeY = 2,
         text = "Door Authentication System",
