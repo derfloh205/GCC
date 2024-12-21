@@ -80,7 +80,7 @@ function DoorAuthHost:Init()
 end
 
 function DoorAuthHost:OpenDoors()
-    rednet.send(self.db.data.doorControllerID, DoorController.PROTOCOL.DOOR_OPEN)
+    rednet.send(self.db.data.doorControllerID, nil, DoorController.PROTOCOL.DOOR_OPEN)
 end
 
 return DoorAuthHost
