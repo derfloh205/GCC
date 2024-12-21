@@ -48,4 +48,10 @@ function TermUtil:ReadString(prompt)
     return read()
 end
 
+function TermUtil:ReadList(prompt)
+    print(prompt)
+    local list = read()
+    return SUtil:Split(list, ",")
+end
+
 return TermUtil
