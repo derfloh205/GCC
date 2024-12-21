@@ -23,7 +23,7 @@ function BuilderTurtle:new(options)
     options.fuelWhitelist = {CONST.ITEMS.RUBBER_WOOD, CONST.ITEMS.COAL, CONST.ITEMS.LAVA_BUCKET}
     options.dbFile = options.dbFile or "builderTurtle.db"
     ---@diagnostic disable-next-line: redundant-parameter
-    self.super.new(self, options)
+    BuilderTurtle.super.new(self, options)
     self.type = GTurtle.TYPES.BUILDER
 end
 

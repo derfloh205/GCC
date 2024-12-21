@@ -16,7 +16,7 @@ local DoorControllerDB = FileDB:extend()
 function DoorControllerDB:new(options)
     options = options or {}
     ---@diagnostic disable-next-line: redundant-parameter
-    self.super.new(self, options)
+    DoorControllerDB.super.new(self, options)
 end
 
 ---@class DoorController.Options : RedstoneController.Options
@@ -42,7 +42,7 @@ function DoorController:new(options)
     }
     print("In DoorController:new")
     ---@diagnostic disable-next-line: redundant-parameter
-    self.super.new(self, options)
+    DoorController.super.new(self, options)
     self.db = DoorControllerDB {file = "doorcontroller.db"}
     self:Init()
 end

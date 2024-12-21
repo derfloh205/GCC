@@ -92,7 +92,7 @@ function RubberTurtle:new(options)
     options.digWhitelist = {CONST.ITEMS.RUBBER_WOOD, CONST.ITEMS.RUBBER_LEAVES}
     options.dbFile = options.dbFile or "rubberTurtle.db"
     ---@diagnostic disable-next-line: redundant-parameter
-    self.super.new(self, options)
+    RubberTurtle.super.new(self, options)
     self.type = GTurtle.TYPES.RUBBER
     self.treeCount = 1
     ---@type table<GNAV.GridNode, number>

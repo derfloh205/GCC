@@ -12,7 +12,7 @@ local DoorAuthHost = GAuth.AuthHost:extend()
 function DoorAuthHost:new(options)
     options = options or {}
     ---@diagnostic disable-next-line: redundant-parameter
-    self.super.new(self, options)
+    DoorAuthHost.super.new(self, options)
     self.doorControllerID = options.doorControllerID
 end
 

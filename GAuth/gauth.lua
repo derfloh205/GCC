@@ -38,7 +38,7 @@ function GAuth.AuthHost:new(options)
         }
     }
     ---@diagnostic disable-next-line: redundant-parameter
-    self.super.new(self, options)
+    GAuth.AuthHost.super.new(self, options)
 
     self.permittedPositions = options.permittedPositions or {}
     self.permittedUsers = options.permittedUsers or {}
@@ -100,7 +100,7 @@ function GAuth.AuthClient:new(options)
     options = options or {}
     self.id = os.getComputerID()
     ---@diagnostic disable-next-line: redundant-parameter
-    self.super.new(self, options)
+    GAuth.AuthClient.super.new(self, options)
     self.username = options.username or "Unknown"
     self:Login()
     self:Run()
