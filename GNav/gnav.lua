@@ -47,15 +47,24 @@ function GNAV.Boundary:UpdateFromList(gnList)
     end
 end
 
+---@param gVector GVector
+function GNAV.Boundary:UpdateFromGVector(gVector)
+    self.x = {min = self.x.min or gVector.x, max = self.x.max or gVector.x}
+    self.y = {min = self.y.min or gVector.y, max = self.y.max or gVector.y}
+    self.z = {min = self.z.min or gVector.z, max = self.z.max or gVector.z}
+
+    self.x.min = math.min(self.x.min, gVector.x)
+    self.y.min = math.min(self.y.min, gVector.y)
+    self.z.min = math.min(self.z.min, gVector.z)
+
+    self.x.max = math.max(self.x.max, gVector.x)
+    self.y.max = math.max(self.y.max, gVector.y)
+    self.z.max = math.max(self.z.max, gVector.z)
+end
+
 function GNAV.Boundary:UpdateFromGVectorList(gvList)
     for _, gv in ipairs(gvList) do
-        self.x.min = math.min(self.x.min, gv.x)
-        self.y.min = math.min(self.y.min, gv.y)
-        self.z.min = math.min(self.z.min, gv.z)
-
-        self.x.max = math.max(self.x.max, gv.x)
-        self.y.max = math.max(self.y.max, gv.y)
-        self.z.max = math.max(self.z.max, gv.z)
+        self:UpdateFromGVector(gv)
     end
 end
 
