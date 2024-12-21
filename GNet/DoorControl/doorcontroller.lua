@@ -63,6 +63,7 @@ function DoorController:Init()
     term.clear()
     term.setCursorPos(1, 1)
     print(f("Door Controller Initiated [%d]", self.id))
+    self:CloseDoors()
 end
 
 function DoorController:OpenDoors()
@@ -70,6 +71,10 @@ function DoorController:OpenDoors()
         redstone.setOutput(side, not self.invertSignals)
     end
     sleep(self.doorCloseDelay)
+    self:CloseDoors()
+end
+
+function DoorController:CloseDoors()
     for _, side in ipairs(self.doorSides) do
         redstone.setOutput(side, self.invertSignals)
     end
