@@ -3,6 +3,7 @@ local DoorController = require("GCC/GNet/DoorControl/doorcontroller")
 local FileDB = require("GCC/Util/filedb")
 local TermUtil = require("GCC/Util/termutil")
 local GNav = require("GCC/GNav/gnav")
+local GUI = require("GCC/GUI/gui")
 local f = string.format
 
 ---@class DoorAuthHostDB.Data
@@ -41,13 +42,45 @@ local DoorAuthHost = GAuth.AuthHost:extend()
 function DoorAuthHost:new(options)
     options = options or {}
     options.onUserAuthenticated = function(id, authenticationMsg)
-        print("User Authenticated: " .. authenticationMsg.username)
+        self:FLog("User Authenticated: %s", authenticationMsg.username)
+        self:ShowAuthentication(authenticationMsg.username)
         self:OpenDoors()
+        sleep(1)
+        self:ShowDefaultText()
     end
     ---@diagnostic disable-next-line: redundant-parameter
     DoorAuthHost.super.new(self, options)
     self.db = DoorAuthHostDB {file = "doorauthhost.db"}
+    self:InitFrontend()
     self:Init()
+end
+
+function DoorAuthHost:InitFrontend()
+    self.ui = {}
+    self.ui.frontend =
+        GUI.Frontend {
+        monitor = term.current(),
+        touchscreen = true
+    }
+
+    self.ui.authText =
+        GUI.Text {
+        monitor = self.ui.frontend.monitor,
+        parent = self.ui.frontend.monitor,
+        x = 1,
+        y = 1,
+        sizeX = 20,
+        sizeY = 2,
+        text = "Door Authentication System",
+        textColor = colors.yellow
+    }
+end
+
+function DoorAuthHost:ShowDefaultText()
+    self.ui.authText:SetText("Door Authentication System", colors.yellow)
+end
+function DoorAuthHost:ShowAuthentication(user)
+    self.ui.authText:SetText("Welcome, " .. user, colors.green)
 end
 
 function DoorAuthHost:Init()
@@ -74,7 +107,7 @@ function DoorAuthHost:Init()
     term.clear()
     term.setCursorPos(1, 1)
 
-    print(f("Door Auth Host Initiated [%d]", self.id))
+    self:FLog("Door Auth Host Initiated [%d]", self.id)
 
     self.db:Persist()
 end
