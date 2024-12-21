@@ -53,8 +53,8 @@ function DoorAuthHost:Init()
     end
     if not self.db.data.permittedBoundary then
         local positions = {}
-        for i = 1, 4 do
-            local pos = TermUtil:ReadGVector(f("Enter Scan Position #%d:", i))
+        for i = 1, 3 do
+            local pos = TermUtil:ReadGVector(f("Enter Boundary Corner #%d:", i))
             table.insert(positions, pos)
         end
         self:SetPermittedBoundary(positions)
