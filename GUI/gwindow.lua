@@ -25,7 +25,7 @@ function GWindow:new(options)
         self:SetBackgroundColor(options.backgroundColor)
     end
     if options.textColor then
-        self.window.setTextColor(options.backgroundColor)
+        self.window.setTextColor(options.textColor)
     end
 end
 
