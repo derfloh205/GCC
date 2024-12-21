@@ -49,13 +49,13 @@ end
 
 function DoorController:Init()
     if not self.db.data.doorSides then
-        self.doorSides = TermUtil:ReadList("Enter door sides (comma-separated):")
+        self.db.data.doorSides = TermUtil:ReadList("Enter door sides (comma-separated):")
     end
     if not self.db.data.doorCloseDelay then
-        self.doorCloseDelay = TermUtil:ReadNumber("Enter door close delay (seconds):")
+        self.db.data.doorCloseDelay = TermUtil:ReadNumber("Enter door close delay (seconds):")
     end
     if not self.db.data.invertSignals then
-        self.invertSignals = TermUtil:ReadConfirmation("Invert signals?")
+        self.db.data.invertSignals = TermUtil:ReadConfirmation("Invert signals?")
     end
 
     self.db:Persist()
@@ -67,16 +67,18 @@ function DoorController:Init()
 end
 
 function DoorController:OpenDoors()
-    for _, side in ipairs(self.doorSides) do
-        redstone.setOutput(side, not self.invertSignals)
+    local data = self.db.data
+    for _, side in ipairs(data.doorSides) do
+        redstone.setOutput(side, not data.invertSignals)
     end
-    sleep(self.doorCloseDelay)
+    sleep(data.doorCloseDelay)
     self:CloseDoors()
 end
 
 function DoorController:CloseDoors()
-    for _, side in ipairs(self.doorSides) do
-        redstone.setOutput(side, self.invertSignals)
+    local data = self.db.data
+    for _, side in ipairs(data.doorSides) do
+        redstone.setOutput(side, data.invertSignals)
     end
 end
 
