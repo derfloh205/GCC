@@ -27,10 +27,8 @@ function RedstoneController:new(options)
             callback = self.OnRedstoneCommand
         }
     }
-    print("In RedstoneController:new")
     ---@diagnostic disable-next-line: redundant-parameter
     RedstoneController.super.new(self, options)
-    print("After Super Call")
 end
 
 ---@param id number
