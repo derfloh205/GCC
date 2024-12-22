@@ -12,6 +12,10 @@ local GAuth = {}
 ---@field username string
 ---@field position GVector
 
+---@class GAuth.AuthHost.AuthenticationMessage.Serialized
+---@field username string
+---@field position GVector.Serialized
+
 ---@class GAuth.AuthHost.AuthenticationResponse
 ---@field success boolean
 ---@field message string
@@ -62,11 +66,16 @@ function GAuth.AuthHost:InScanArea(userPosition)
 end
 
 ---@param id number
----@param authenticationMsg GAuth.AuthHost.AuthenticationMessage
-function GAuth.AuthHost:OnAuthenticationRequest(id, authenticationMsg)
+---@param serializedAuthenticationMsg GAuth.AuthHost.AuthenticationMessage.Serialized
+function GAuth.AuthHost:OnAuthenticationRequest(id, serializedAuthenticationMsg)
     local response = {
         success = false,
         message = "Invalid authentication message"
+    }
+
+    local authenticationMsg = {
+        username = serializedAuthenticationMsg.username,
+        position = GVector:Deserialize(serializedAuthenticationMsg.position)
     }
     self:FLog("Authentication request from %d: %s", id, authenticationMsg.username)
     local userPermitted = TUtil:tContains(self.permittedUsers, authenticationMsg.username)
