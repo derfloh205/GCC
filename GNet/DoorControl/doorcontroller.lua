@@ -1,5 +1,6 @@
 local RSController = require("GCC/GNet/redstonecontroller")
 local TermUtil = require("GCC/Util/termutil")
+local TUtil = require("GCC/Util/tutil")
 local FileDB = require("GCC/Util/filedb")
 local f = string.format
 
@@ -35,12 +36,16 @@ DoorController.PROTOCOL = {
 ---@param options DoorController.Options
 function DoorController:new(options)
     options = options or {}
-    options.endpointConfigs = {
+    options.endpointConfigs =
+        TUtil:Concat(
         {
-            protocol = DoorController.PROTOCOL.DOOR_OPEN,
-            callback = self.OpenDoors
-        }
-    }
+            {
+                protocol = DoorController.PROTOCOL.DOOR_OPEN,
+                callback = self.OpenDoors
+            }
+        },
+        options.endpointConfigs or {}
+    )
     ---@diagnostic disable-next-line: redundant-parameter
     DoorController.super.new(self, options)
     self.db = DoorControllerDB {file = "doorcontroller.db"}

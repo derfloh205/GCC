@@ -1,4 +1,5 @@
 local GNet = require("GCC/GNet/gnet")
+local TUtil = require("GCC/Util/tutil")
 
 ---@class RedstoneController.Options : GNet.Server.Options
 
@@ -21,12 +22,17 @@ RedstoneController.PROTOCOL = {
 ---@param options RedstoneController.Options
 function RedstoneController:new(options)
     options = options or {}
-    options.endpointConfigs = {
+    options.endpointConfigs =
+        TUtil:Concat(
         {
-            protocol = RedstoneController.PROTOCOL.REDSTONE_COMMAND,
-            callback = self.OnRedstoneCommand
-        }
-    }
+            {
+                protocol = RedstoneController.PROTOCOL.REDSTONE_COMMAND,
+                callback = self.OnRedstoneCommand
+            }
+        },
+        options.endpointConfigs or {}
+    )
+
     ---@diagnostic disable-next-line: redundant-parameter
     RedstoneController.super.new(self, options)
 end
