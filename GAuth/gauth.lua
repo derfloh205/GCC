@@ -79,9 +79,11 @@ function GAuth.AuthHost:OnAuthenticationRequest(id, authenticationMsg)
     elseif userPermitted then
         response.success = false
         response.message = "Position not within scan area"
+        self:FLog("User %s not within scan area: %s", authenticationMsg.username, authenticationMsg.position)
     else
         response.success = false
         response.message = "Not authorized"
+        self:FLog("User %s not authorized", authenticationMsg.username)
     end
     self:SendAuthenticationResponse(id, response.success, response.message)
 end
