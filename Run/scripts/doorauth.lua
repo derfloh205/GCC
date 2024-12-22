@@ -1,8 +1,9 @@
 local DoorAuthHost = require("GCC/GAuth/DoorAuth/doorauthhost")
 local monitor = peripheral.find("monitor")
+monitor.setTextScale(3)
 term.redirect(monitor)
 DoorAuthHost {
-    logFile = "doorauthhost.log",
-    log = true,
-    clearLog = true
+    log = false,
+    clearLog = true,
+    logFile = "doorauthhost.log"
 }:Run()

@@ -45,7 +45,7 @@ function DoorAuthHost:new(options)
         self:FLog("User Authenticated: %s", authenticationMsg.username)
         self:ShowAuthentication(authenticationMsg.username)
         self:OpenDoors()
-        sleep(1)
+        sleep(2)
         self:ShowDefaultText()
     end
     term.clear()
@@ -72,17 +72,17 @@ function DoorAuthHost:InitFrontend()
         x = 10,
         y = 6,
         sizeX = 50,
-        sizeY = 2,
-        text = "Door Authentication System",
-        textColor = colors.yellow
+        sizeY = 2
     }
+
+    self:ShowDefaultText()
 end
 
 function DoorAuthHost:ShowDefaultText()
-    self.ui.authText:SetText("Door Authentication System", colors.yellow)
+    self.ui.authText:SetText("Authentication\nRequired", colors.yellow)
 end
 function DoorAuthHost:ShowAuthentication(user)
-    self.ui.authText:SetText("Welcome, " .. user, colors.green)
+    self.ui.authText:SetText("Welcome\n" .. user, colors.green)
 end
 
 function DoorAuthHost:Init()

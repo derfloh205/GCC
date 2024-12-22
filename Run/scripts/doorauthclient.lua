@@ -1,7 +1,7 @@
 local DoorAuthClient = require("GCC/GAuth/DoorAuth/doorauthclient")
 
 DoorAuthClient {
-    log = true,
+    log = false,
     clearLog = true,
     logFile = "doorauthclient.log"
 }:Run()

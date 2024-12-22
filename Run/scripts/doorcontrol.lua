@@ -1,7 +1,7 @@
 local DoorController = require("GCC/GNet/DoorControl/doorcontroller")
 
 DoorController {
-    log = true,
+    log = false,
     clearLog = true,
     logFile = "doorcontrol.log"
 }:Run()
