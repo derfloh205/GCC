@@ -68,6 +68,7 @@ function GAuth.AuthHost:OnAuthenticationRequest(id, authenticationMsg)
         success = false,
         message = "Invalid authentication message"
     }
+    self:FLog("Authentication request from %d: %s", id, authenticationMsg.username)
     local userPermitted = TUtil:tContains(self.permittedUsers, authenticationMsg.username)
     local positionPermitted = self:InScanArea(authenticationMsg.position)
     if userPermitted and positionPermitted then
