@@ -1,6 +1,6 @@
 local DoorAuthHost = require("GCC/GAuth/DoorAuth/doorauthhost")
 local monitor = peripheral.find("monitor")
-monitor.setTextScale(3)
+monitor.setTextScale(2)
 term.redirect(monitor)
 DoorAuthHost {
     log = false,
