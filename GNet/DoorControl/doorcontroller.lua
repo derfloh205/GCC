@@ -67,6 +67,7 @@ function DoorController:Init()
 end
 
 function DoorController:OpenDoors()
+    self:FLog("Opening doors")
     local data = self.db.data
     for _, side in ipairs(data.doorSides) do
         redstone.setOutput(side, not data.invertSignals)
@@ -76,6 +77,7 @@ function DoorController:OpenDoors()
 end
 
 function DoorController:CloseDoors()
+    self:FLog("Closing doors")
     local data = self.db.data
     for _, side in ipairs(data.doorSides) do
         redstone.setOutput(side, data.invertSignals)

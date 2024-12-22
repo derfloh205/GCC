@@ -34,6 +34,7 @@ end
 ---@param id number
 ---@param commandMsg RedstoneController.NetworkMessage
 function RedstoneController:OnRedstoneCommand(id, commandMsg)
+    self:FLog("Received redstone command")
     for _, command in ipairs(commandMsg.commands) do
         redstone.setOutput(command.side, command.value)
     end
