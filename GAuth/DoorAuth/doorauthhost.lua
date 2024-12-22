@@ -69,8 +69,8 @@ function DoorAuthHost:InitFrontend()
         GUI.Text {
         monitor = self.ui.frontend.monitor,
         parent = self.ui.frontend.monitor,
-        x = 2,
-        y = 2,
+        x = 4,
+        y = 4,
         sizeX = 20,
         sizeY = 5
     }
@@ -79,10 +79,10 @@ function DoorAuthHost:InitFrontend()
 end
 
 function DoorAuthHost:ShowDefaultText()
-    self.ui.authText:SetText("Authentication\nRequired", colors.yellow)
+    self.ui.authText:SetText("Please Authenticate", colors.yellow)
 end
 function DoorAuthHost:ShowAuthentication(user)
-    self.ui.authText:SetText("Welcome\n" .. user, colors.green)
+    self.ui.authText:SetText("Welcome " .. user, colors.green)
 end
 
 function DoorAuthHost:Init()
