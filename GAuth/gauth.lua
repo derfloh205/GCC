@@ -109,6 +109,8 @@ function GAuth.AuthClient:new(options)
     self.id = os.getComputerID()
     ---@diagnostic disable-next-line: redundant-parameter
     GAuth.AuthClient.super.new(self, options)
+    local modem = peripheral.find("modem")
+    rednet.open(modem)
     self:Login()
     self:Run()
 end
@@ -130,7 +132,6 @@ function GAuth.AuthClient:BroadcastAuthenticationRequest(username, position, tim
         username = username,
         position = position
     }
-    self:FLog("Broadcasting Request: %s", username)
     rednet.broadcast(request, GAuth.AuthHost.PROTOCOL.AUTHENTICATION_REQUEST)
     local id, response = rednet.receive(GAuth.AuthHost.PROTOCOL.AUTHENTICATION_RESPONSE, timeout)
     return response

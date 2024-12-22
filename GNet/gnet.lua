@@ -39,7 +39,6 @@ function GNet.Server:Run()
                 self:FLog("Listening for: [%s]", endpointConfig.protocol)
                 while true do
                     local id, msg = rednet.receive(endpointConfig.protocol)
-                    self:FLog("Received: [%s] from [%d]", msg, id)
                     endpointConfig.callback(self, id, msg)
                 end
             end
