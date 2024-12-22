@@ -10,6 +10,7 @@ DoorAuthClient.BROADCAST_TIMEOUT = 2
 function DoorAuthClient:Run()
     while true do
         self.position = GVector:FromGPS(true)
+        self.position.z = self.position.z - 1 -- pocket pc is 2 blocks too high when rounded
         if self.position then
             term.clear()
             term.setCursorPos(1, 1)
