@@ -130,6 +130,7 @@ function GAuth.AuthClient:BroadcastAuthenticationRequest(username, position, tim
         username = username,
         position = position
     }
+    self:FLog("Broadcasting authentication request: %s", username)
     rednet.broadcast(request, GAuth.AuthHost.PROTOCOL.AUTHENTICATION_REQUEST)
     local id, response = rednet.receive(GAuth.AuthHost.PROTOCOL.AUTHENTICATION_RESPONSE, timeout)
     return response
