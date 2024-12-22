@@ -36,10 +36,10 @@ function GNet.Server:Run()
         table.insert(
             endpointCallbacks,
             function()
-                self:Log(f("Listening for: [%s]", endpointConfig.protocol))
+                self:FLog("Listening for: [%s]", endpointConfig.protocol)
                 while true do
                     local id, msg = rednet.receive(endpointConfig.protocol)
-                    self:FLog(f("Received: [%s] from [%d]", msg, id))
+                    self:FLog("Received: [%s] from [%d]", msg, id)
                     endpointConfig.callback(self, id, msg)
                 end
             end
