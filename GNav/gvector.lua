@@ -98,7 +98,7 @@ function GVector:SerializeList(list)
     )
 end
 
----@param round boolean
+---@param round? boolean
 ---@return GVector? pos
 function GVector:FromGPS(round)
     local gpsPos = {gps.locate()}

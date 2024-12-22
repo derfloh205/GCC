@@ -9,7 +9,7 @@ DoorAuthClient.BROADCAST_INTERVAL = 1
 DoorAuthClient.BROADCAST_TIMEOUT = 2
 function DoorAuthClient:Run()
     while true do
-        self.position = GVector:FromGPS()
+        self.position = GVector:FromGPS(true)
         if self.position then
             term.clear()
             term.setCursorPos(1, 1)
