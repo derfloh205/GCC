@@ -69,10 +69,10 @@ function DoorAuthHost:InitFrontend()
         GUI.Text {
         monitor = self.ui.frontend.monitor,
         parent = self.ui.frontend.monitor,
-        x = 1,
+        x = 2,
         y = 2,
-        sizeX = 50,
-        sizeY = 2
+        sizeX = 20,
+        sizeY = 5
     }
 
     self:ShowDefaultText()
