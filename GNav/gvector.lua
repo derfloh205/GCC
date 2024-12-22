@@ -1,5 +1,6 @@
 local Object = require("GCC/Util/classics")
 local TUtil = require("GCC/Util/tutil")
+local MUtil = require("GCC/Util/mutil")
 local f = string.format
 --- GVector
 ---@class GVector
@@ -97,10 +98,14 @@ function GVector:SerializeList(list)
     )
 end
 
+---@param round boolean
 ---@return GVector? pos
-function GVector:FromGPS()
+function GVector:FromGPS(round)
     local gpsPos = {gps.locate()}
     if gpsPos and #gpsPos == 3 then
+        if round then
+            return GVector(MUtil:Round(gpsPos[1]), MUtil:Round(gpsPos[2]), MUtil:Round(gpsPos[3]))
+        end
         return GVector(gpsPos[1], gpsPos[2], gpsPos[3])
     end
 end

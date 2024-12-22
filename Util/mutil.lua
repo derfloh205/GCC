@@ -10,4 +10,10 @@ function MUtil:InRange(value, low, high)
     return value <= high and value >= low
 end
 
+---@param value number
+---@return number
+function MUtil:Round(value)
+    return math.floor(value + 0.5)
+end
+
 return MUtil
