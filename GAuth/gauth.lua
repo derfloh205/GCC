@@ -109,8 +109,7 @@ function GAuth.AuthClient:new(options)
     self.id = os.getComputerID()
     ---@diagnostic disable-next-line: redundant-parameter
     GAuth.AuthClient.super.new(self, options)
-    local modem = peripheral.find("modem")
-    rednet.open(modem)
+    peripheral.find("modem", rednet.open)
     self:Login()
     self:Run()
 end
